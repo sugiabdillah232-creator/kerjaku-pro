@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KerjaKu Pro V5</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      background:#020617;
+      color:white;
+    }
+
+    .glass{
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(12px);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .gradient{
+      background:linear-gradient(
+      135deg,
+      #4f46e5,
+      #7c3aed
+      );
+    }
+
+    .glow{
+      box-shadow:
+      0 0 25px rgba(99,102,241,.25);
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage"
+class="min-h-screen flex items-center justify-center p-5">
+
+  <div class="glass rounded-3xl p-8 w-full max-w-md">
+
+    <div class="text-center mb-8">
+
+      <div class="w-20 h-20 rounded-3xl gradient glow
+      mx-auto flex items-center justify-center mb-5">
+
+        <i data-lucide="briefcase-business"></i>
+
+      </div>
+
+      <h1 class="text-3xl font-bold">
+        KerjaKu Pro
+      </h1>
+
+      <p class="text-slate-400 mt-2">
+        Teman pekerja Indonesia
+      </p>
+
+    </div>
+
+    <div class="space-y-4">
+
+      <input
+      type="text"
+      id="username"
+      placeholder="Username"
+      class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none">
+
+      <input
+      type="password"
+      id="pin"
+      maxlength="6"
+      placeholder="PIN 6 Digit"
+      class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none">
+
+      <button
+      onclick="login()"
+      class="w-full gradient py-4 rounded-2xl font-bold">
+        Masuk Aplikasi
+      </button>
+
+      <button
+      onclick="register()"
+      class="w-full bg-slate-800 py-4 rounded-2xl font-bold">
+        Daftar Akun Baru
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboardPage" class="hidden pb-32">
+
+  <!-- HEADER -->
+  <header class="p-5 flex justify-between items-center">
+
+    <div>
+
+      <h1 class="text-3xl font-bold">
+        KerjaKu 👋
+      </h1>
+
+      <p id="welcomeUser"
+      class="text-slate-400 mt-1">
+      </p>
+
+    </div>
+
+    <button
+    onclick="logout()"
+    class="glass p-3 rounded-2xl">
+
+      <i data-lucide="log-out"></i>
+
+    </button>
+
+  </header>
+
+  <!-- STATS -->
+  <section class="px-5">
+
+    <div class="glass rounded-3xl p-6 glow">
+
+      <p class="text-slate-400">
+        Total Upah Lembur
+      </p>
+
+      <h2 id="totalUpah"
+      class="text-4xl font-bold mt-3">
+        Rp 0
+      </h2>
+
+      <div class="grid grid-cols-2 gap-4 mt-6">
+
+        <div class="bg-slate-900 rounded-2xl p-4">
+
+          <p class="text-slate-400 text-sm">
+            Total Jam
+          </p>
+
+          <h3 id="totalJam"
+          class="text-2xl font-bold mt-2">
+            0 Jam
+          </h3>
+
+        </div>
+
+        <div class="bg-slate-900 rounded-2xl p-4">
+
+          <p class="text-slate-400 text-sm">
+            Data Tersimpan
+          </p>
+
+          <h3 id="jumlahData"
+          class="text-2xl font-bold mt-2">
+            0
+          </h3>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- FORM -->
+  <section class="px-5 mt-6">
+
+    <div class="glass rounded-3xl p-5">
+
+      <h2 class="text-2xl font-bold mb-5">
+        Kalkulator Lembur
+      </h2>
+
+      <div class="space-y-4">
+
+        <input
+        type="date"
+        id="tanggal"
+        class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700">
+
+        <input
+        type="number"
+        id="gaji"
+        placeholder="Gaji Bulanan"
+        class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700">
+
+        <select
+        id="jenisHari"
+        class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700">
+
+          <option value="kerja">
+            Hari Kerja
+          </option>
+
+          <option value="libur">
+            Hari Libur
+          </option>
+
+        </select>
+
+        <div>
+
+          <div class="flex justify-between mb-2">
+
+            <span>Jam Lembur</span>
+
+            <span id="jamText">
+              1
+            </span>
+
+          </div>
+
+          <input
+          type="range"
+          id="jam"
+          min="1"
+          max="24"
+          value="1"
+          class="w-full">
+
+        </div>
+
+        <button
+        onclick="simpanLembur()"
+        class="w-full gradient py-4 rounded-2xl font-bold">
+
+          Simpan Lembur
+
+        </button>
+
+        <button
+        onclick="downloadPDF()"
+        class="w-full bg-emerald-600 py-4 rounded-2xl font-bold">
+
+          Download PDF
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- REKAP -->
+  <section class="px-5 mt-6">
+
+    <div class="glass rounded-3xl p-5">
+
+      <div class="flex justify-between items-center mb-5">
+
+        <h2 class="text-2xl font-bold">
+          Rekap Data
+        </h2>
+
+        <button
+        onclick="hapusData()"
+        class="bg-red-600 px-4 py-2 rounded-xl text-sm">
+
+          Hapus
+
+        </button>
+
+      </div>
+
+      <div id="listData"
+      class="space-y-4">
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+<script>
+
+lucide.createIcons();
+
+const slider = document.getElementById("jam");
+const jamText = document.getElementById("jamText");
+
+slider.addEventListener("input", () => {
+  jamText.innerText = slider.value;
+});
+
+function rupiah(angka){
+  return "Rp " + Math.round(angka)
+  .toLocaleString("id-ID");
+}
+
+function register(){
+
+  const username =
+  document.getElementById("username")
+  .value.trim();
+
+  const pin =
+  document.getElementById("pin")
+  .value;
+
+  if(!username || pin.length !== 6){
+
+    alert("Isi username dan PIN 6 digit");
+    return;
+  }
+
+  let users =
+  JSON.parse(localStorage
+  .getItem("users")) || [];
+
+  const cek =
+  users.find(u => u.username === username);
+
+  if(cek){
+
+    alert("Username sudah ada");
+    return;
+  }
+
+  users.push({
+    username,
+    pin
+  });
+
+  localStorage.setItem(
+  "users",
+  JSON.stringify(users)
+  );
+
+  alert("Pendaftaran berhasil");
+}
+
+function login(){
+
+  const username =
+  document.getElementById("username")
+  .value.trim();
+
+  const pin =
+  document.getElementById("pin")
+  .value;
+
+  let users =
+  JSON.parse(localStorage
+  .getItem("users")) || [];
+
+  const user =
+  users.find(
+  u => u.username === username
+  && u.pin === pin
+  );
+
+  if(!user){
+
+    alert("Username atau PIN salah");
+    return;
+  }
+
+  localStorage.setItem(
+  "activeUser",
+  username
+  );
+
+  tampilDashboard();
+}
+
+function tampilDashboard(){
+
+  const user =
+  localStorage.getItem("activeUser");
+
+  if(!user) return;
+
+  document.getElementById("loginPage")
+  .classList.add("hidden");
+
+  document.getElementById("dashboardPage")
+  .classList.remove("hidden");
+
+  document.getElementById("welcomeUser")
+  .innerText =
+  "Selamat datang, " + user;
+
+  tampilkanData();
+}
+
+window.onload = tampilDashboard;
+
+function logout(){
+
+  localStorage.removeItem(
+  "activeUser"
+  );
+
+  location.reload();
+}
+
+function hitungLembur(
+gaji,
+jenisHari,
+jam
+){
+
+  const upahPerJam =
+  gaji / 173;
+
+  let konversi = 0;
+
+  if(jenisHari === "kerja"){
+
+    if(jam >= 1)
+    konversi += 1.5;
+
+    if(jam > 1)
+    konversi +=
+    (jam - 1) * 2;
+
+  } else {
+
+    for(let i=1; i<=jam; i++){
+
+      if(i<=8)
+      konversi += 2;
+
+      else if(i===9)
+      konversi += 3;
+
+      else
+      konversi += 4;
+    }
+
+  }
+
+  return upahPerJam * konversi;
+}
+
+function simpanLembur(){
+
+  const tanggal =
+  document.getElementById("tanggal")
+  .value;
+
+  const gaji =
+  parseFloat(
+  document.getElementById("gaji")
+  .value);
+
+  const jenisHari =
+  document.getElementById("jenisHari")
+  .value;
+
+  const jam =
+  parseInt(slider.value);
+
+  if(!tanggal || !gaji){
+
+    alert("Lengkapi data");
+    return;
+  }
+
+  const total =
+  hitungLembur(
+  gaji,
+  jenisHari,
+  jam
+  );
+
+  const data = {
+    tanggal,
+    jam,
+    jenisHari,
+    total
+  };
+
+  const user =
+  localStorage.getItem(
+  "activeUser"
+  );
+
+  const key =
+  "lembur_" + user;
+
+  let daftar =
+  JSON.parse(
+  localStorage.getItem(key)
+  ) || [];
+
+  daftar.push(data);
+
+  localStorage.setItem(
+  key,
+  JSON.stringify(daftar)
+  );
+
+  tampilkanData();
+
+  alert("Data berhasil disimpan");
+}
+
+function tampilkanData(){
+
+  const user =
+  localStorage.getItem(
+  "activeUser"
+  );
+
+  const key =
+  "lembur_" + user;
+
+  let daftar =
+  JSON.parse(
+  localStorage.getItem(key)
+  ) || [];
+
+  const list =
+  document.getElementById(
+  "listData"
+  );
+
+  list.innerHTML = "";
+
+  let grandTotal = 0;
+  let totalJam = 0;
+
+  daftar.reverse().forEach(item => {
+
+    grandTotal += item.total;
+    totalJam += item.jam;
+
+    list.innerHTML += `
+
+    <div class="bg-slate-900 rounded-2xl p-4 flex justify-between items-center">
+
+      <div>
+
+        <h3 class="font-bold">
+          ${item.tanggal}
+        </h3>
+
+        <p class="text-slate-400 text-sm mt-1">
+          ${item.jam} Jam • ${item.jenisHari}
+        </p>
+
+      </div>
+
+      <div class="text-right">
+
+        <h3 class="font-bold text-xl">
+          ${rupiah(item.total)}
+        </h3>
+
+      </div>
+
+    </div>
+
+    `;
+  });
+
+  document.getElementById(
+  "totalUpah"
+  ).innerText =
+  rupiah(grandTotal);
+
+  document.getElementById(
+  "totalJam"
+  ).innerText =
+  totalJam + " Jam";
+
+  document.getElementById(
+  "jumlahData"
+  ).innerText =
+  daftar.length;
+}
+
+function hapusData(){
+
+  const user =
+  localStorage.getItem(
+  "activeUser"
+  );
+
+  if(confirm(
+  "Hapus semua data?"
+  )){
+
+    localStorage.removeItem(
+    "lembur_" + user
+    );
+
+    tampilkanData();
+  }
+}
+
+async function downloadPDF(){
+
+  const { jsPDF } =
+  window.jspdf;
+
+  const doc =
+  new jsPDF();
+
+  const user =
+  localStorage.getItem(
+  "activeUser"
+  );
+
+  const key =
+  "lembur_" + user;
+
+  let daftar =
+  JSON.parse(
+  localStorage.getItem(key)
+  ) || [];
+
+  if(daftar.length === 0){
+
+    alert("Belum ada data");
+    return;
+  }
+
+  let y = 20;
+  let grandTotal = 0;
+
+  doc.setFontSize(20);
+  doc.text(
+  "KERJAKU PRO",
+  20,
+  y
+  );
+
+  y += 15;
+
+  doc.setFontSize(12);
+
+  doc.text(
+  "Nama: " + user,
+  20,
+  y
+  );
+
+  y += 15;
+
+  daftar.forEach((item,index)=>{
+
+    grandTotal += item.total;
+
+    doc.text(
+    `${index+1}. ${item.tanggal} | ${item.jam} Jam | ${rupiah(item.total)}`,
+    20,
+    y
+    );
+
+    y += 10;
+
+  });
+
+  y += 10;
+
+  doc.setFontSize(14);
+
+  doc.text(
+  "GRAND TOTAL: " +
+  rupiah(grandTotal),
+  20,
+  y
+  );
+
+  doc.save(
+  "KerjaKu-Pro.pdf"
+  );
+}
+
+</script>
+
+</body>
+</html>
