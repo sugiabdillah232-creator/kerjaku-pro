@@ -3,7 +3,7 @@
 <head>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4f46e5">
-  <link class="rounded-2xl" rel="apple-touch-icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -12,6 +12,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     body{
@@ -119,7 +120,7 @@
     <div class="glass rounded-3xl p-5">
       <div class="flex justify-between items-center mb-5">
         <h2 class="text-2xl font-bold">Rekap Data</h2>
-        <button onclick="hapusData()" class="bg-red-600 px-4 py-2 rounded-xl text-sm font-bold text-white">Hapus Semua</button>
+        <button onclick="hapusData()" class="bg-red-600 px-4 py-2 rounded-xl text-sm font-bold text-white">Hapus</button>
       </div>
       <div id="listData" class="space-y-4"></div>
     </div>
@@ -145,7 +146,7 @@ function register(){
   const pin = document.getElementById("pin").value;
 
   if(!username || pin.length !== 6){
-    alert("Isi username dan PIN harus tepat 6 digit");
+    alert("Isi username dan PIN 6 digit");
     return;
   }
 
@@ -153,13 +154,13 @@ function register(){
   const cek = users.find(u => u.username.toLowerCase() === username.toLowerCase());
 
   if(cek){
-    alert("Username sudah terdaftar");
+    alert("Username sudah ada");
     return;
   }
 
   users.push({ username, pin });
   localStorage.setItem("users", JSON.stringify(users));
-  alert("Pendaftaran berhasil! Silakan masuk.");
+  alert("Pendaftaran berhasil");
 }
 
 function login(){
@@ -198,19 +199,19 @@ function logout(){
 
 function hitungLembur(gaji, jenisHari, jam){
   const upahPerJam = gaji / 173;
-  let konversi = 0;
+  let konversions = 0;
 
   if(jenisHari === "kerja"){
-    if(jam >= 1) konversi += 1.5;
-    if(jam > 1)  konversi += (jam - 1) * 2;
+    if(jam >= 1) konversions += 1.5;
+    if(jam > 1)  konversions += (jam - 1) * 2;
   } else {
     for(let i = 1; i <= jam; i++){
-      if(i <= 8)       konversi += 2;
-      else if(i === 9) konversi += 3;
-      else             konversi += 4;
+      if(i <= 8)       konversions += 2;
+      else if(i === 9) konversions += 3;
+      else             konversions += 4;
     }
   }
-  return upahPerJam * konversi;
+  return upahPerJam * konversions;
 }
 
 function simpanLembur(){
@@ -250,13 +251,13 @@ function tampilkanData(){
   let grandTotal = 0;
   let totalJam = 0;
 
-  // Hitung total dari data asli yang stabil
+  // Hitung total dari susunan data asli yang stabil
   daftar.forEach(item => {
     grandTotal += item.total;
     totalJam += item.jam;
   });
 
-  // Salin array sebelum dibalik agar urutan data asli di localStorage aman
+  // Salin array sebelum dibalik agar tidak merusak urutan penyimpanan asli
   const dataTampil = [...daftar].reverse();
 
   dataTampil.forEach(item => {
@@ -287,11 +288,11 @@ function hapusData(){
   let daftar = JSON.parse(localStorage.getItem(key)) || [];
 
   if(daftar.length === 0){
-    alert("Belum ada data untuk dihapus.");
+    alert("Belum ada data untuk dihapus");
     return;
   }
 
-  if(confirm("Hapus semua data rekap lembur?")){
+  if(confirm("Hapus semua data?")){
     localStorage.removeItem(key);
     tampilkanData();
   }
@@ -300,46 +301,119 @@ function hapusData(){
 async function downloadPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  
   const user = localStorage.getItem("activeUser");
   const key = "lembur_" + user;
   let daftar = JSON.parse(localStorage.getItem(key)) || [];
 
   if(daftar.length === 0){
-    alert("Belum ada data untuk di-download");
+    alert("Belum ada data");
     return;
   }
 
-  let y = 20;
+  // --- DESIGN BANNER ATAS ---
+  doc.setFillColor(79, 70, 229); // Indigo premium (#4f46e5)
+  doc.rect(0, 0, 210, 40, 'F');
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(255, 255, 255);
+  doc.text("KERJAKU PRO", 15, 20);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(218, 211, 249);
+  doc.text("Laporan Rekapitulasi Upah Lembur Karyawan", 15, 28);
+
+  // --- INFORMASI KARYAWAN ---
+  let y = 55;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(51, 65, 85); // Slate-700
+  doc.text("NAMA KARYAWAN :", 15, y);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(15, 23, 42); 
+  doc.text(user.toUpperCase(), 58, y);
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(51, 65, 85);
+  doc.text("TANGGAL CETAK  :", 15, y + 6);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(15, 23, 42);
+  const tglSekarang = new Date().toLocaleDateString("id-ID", { year: 'numeric', month: 'long', day: 'numeric' });
+  doc.text(tglSekarang, 58, y + 6);
+
+  // --- STRUKTUR TABEL DATA ---
   let grandTotal = 0;
-
-  doc.setFontSize(20);
-  doc.text("KERJAKU PRO REKAP LEMBUR", 20, y);
-  y += 15;
-
-  doc.setFontSize(12);
-  doc.text("Nama Karyawan: " + user, 20, y);
-  y += 15;
-
-  doc.text("No.  Tanggal       | Jam  | Jenis Hari  | Total Upah", 20, y);
-  doc.text("----------------------------------------------------------", 20, y + 4);
-  y += 12;
+  let totalJamLembur = 0;
+  const barisTabel = [];
 
   daftar.forEach((item, index) => {
     grandTotal += item.total;
-    const infoHari = item.jenisHari === 'kerja' ? 'Kerja' : 'Libur';
-    doc.text(
-      `${index + 1}.   ${item.tanggal}  | ${item.jam} j   | ${infoHari.padEnd(5, ' ')}       | ${rupiah(item.total)}`,
-      20,
-      y
-    );
-    y += 10;
+    totalJamLembur += item.jam;
+    const infoHari = item.jenisHari === 'kerja' ? 'Hari Kerja' : 'Hari Libur';
+    
+    barisTabel.push([
+      index + 1,
+      item.tanggal,
+      `${item.jam} Jam`,
+      infoHari,
+      rupiah(item.total)
+    ]);
   });
 
-  y += 5;
-  doc.setFontSize(14);
-  doc.text("GRAND TOTAL UPAH: " + rupiah(grandTotal), 20, y);
+  // Pembuatan Tabel Otomatis Menggunakan AutoTable plugin
+  doc.autoTable({
+    startY: y + 16,
+    head: [['No', 'Tanggal', 'Durasi', 'Jenis Hari', 'Jumlah Upah']],
+    body: barisTabel,
+    theme: 'striped',
+    headStyles: { 
+      fillColor: [15, 23, 42], // Slate-900 Gelap
+      textColor: [255, 255, 255], 
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    columnStyles: {
+      0: { halign: 'center', width: 15 },
+      1: { halign: 'center' },
+      2: { halign: 'center' },
+      3: { halign: 'left' },
+      4: { halign: 'right', fontStyle: 'bold' }
+    },
+    styles: { font: 'helvetica', fontSize: 10, cellPadding: 4 },
+    alternateRowStyles: { fillColor: [248, 250, 252] }
+  });
 
-  doc.save(`KerjaKu-Pro-${user}.pdf`);
+  // --- KOTAK RANGKUMAN TOTAL ---
+  let finalY = doc.lastAutoTable.finalY + 10;
+  if (finalY > 240) {
+    doc.addPage();
+    finalY = 20;
+  }
+
+  // Membuat Box Total Elegan
+  doc.setFillColor(241, 245, 249);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(110, finalY, 85, 30, 4, 4, 'FD');
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Total Akumulasi Jam: ${totalJamLembur} Jam`, 115, finalY + 10);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text("GRAND TOTAL UPAH:", 115, finalY + 18);
+  
+  doc.setFontSize(14);
+  doc.setTextColor(79, 70, 229); // Indigo Accent
+  doc.text(rupiah(grandTotal), 115, finalY + 25);
+
+  doc.save(`Laporan_Lembur_${user}.pdf`);
 }
 </script>
 
