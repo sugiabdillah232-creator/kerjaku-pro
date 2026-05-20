@@ -7,12 +7,14 @@
   
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KerjaKu Pro V5</title>
+  <title>KerjaKu Pro V6 - Professional Edition</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
     body{
@@ -20,24 +22,20 @@
       background:#020617;
       color:white;
     }
-
     .glass{
       background: rgba(255,255,255,0.05);
       backdrop-filter: blur(12px);
       border:1px solid rgba(255,255,255,0.08);
     }
-
     .gradient{
-      background:linear-gradient(
-      135deg,
-      #4f46e5,
-      #7c3aed
-      );
+      background:linear-gradient(135deg, #4f46e5, #7c3aed);
     }
-
     .glow{
-      box-shadow:
-      0 0 25px rgba(99,102,241,.25);
+      box-shadow: 0 0 25px rgba(99,102,241,.25);
+    }
+    /* Custom style for range slider */
+    input[type="range"] {
+      accent-color: #4f46e5;
     }
   </style>
 </head>
@@ -51,207 +49,287 @@
         <i data-lucide="briefcase-business"></i>
       </div>
       <h1 class="text-3xl font-bold">KerjaKu Pro</h1>
-      <p class="text-slate-400 mt-2">Teman pekerja Indonesia</p>
+      <p class="text-slate-400 mt-2">Professional Edition V6</p>
     </div>
 
     <div class="space-y-4">
-      <input type="text" id="username" placeholder="Username" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none">
-      <input type="password" id="pin" maxlength="6" placeholder="PIN 6 Digit" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none">
-      <button onclick="login()" class="w-full gradient py-4 rounded-2xl font-bold text-white">Masuk Aplikasi</button>
-      <button onclick="register()" class="w-full bg-slate-800 py-4 rounded-2xl font-bold text-white">Daftar Akun Baru</button>
+      <input type="text" id="username" placeholder="Username" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none">
+      <input type="password" id="pin" maxlength="6" placeholder="PIN 6 Digit" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none">
+      <button onclick="login()" class="w-full gradient py-4 rounded-2xl font-bold text-white hover:opacity-90 transition">Masuk Aplikasi</button>
+      <button onclick="register()" class="w-full bg-slate-800 py-4 rounded-2xl font-bold text-white hover:bg-slate-700 transition">Daftar Akun Baru</button>
     </div>
   </div>
 </div>
 
 <div id="dashboardPage" class="hidden pb-32">
-  <header class="p-5 flex justify-between items-center">
+  <header class="p-5 flex justify-between items-center max-w-6xl mx-auto">
     <div>
       <h1 class="text-3xl font-bold">KerjaKu 👋</h1>
       <p id="welcomeUser" class="text-slate-400 mt-1"></p>
     </div>
-    <button onclick="logout()" class="glass p-3 rounded-2xl">
-      <i data-lucide="log-out"></i>
-    </button>
+    <div class="flex gap-2">
+      <button onclick="bukaModalBackup()" class="glass p-3 rounded-2xl title="Backup & Restore">
+        <i data-lucide="database"></i>
+      </button>
+      <button onclick="logout()" class="glass p-3 rounded-2xl text-red-400">
+        <i data-lucide="log-out"></i>
+      </button>
+    </div>
   </header>
 
-  <section class="px-5">
-    <div class="glass rounded-3xl p-6 glow">
-      <p class="text-slate-400">Total Upah Lembur</p>
-      <h2 id="totalUpah" class="text-4xl font-bold mt-3">Rp 0</h2>
-      <div class="grid grid-cols-2 gap-4 mt-6">
-        <div class="bg-slate-900 rounded-2xl p-4">
-          <p class="text-slate-400 text-sm">Total Jam</p>
-          <h3 id="totalJam" class="text-2xl font-bold mt-2">0 Jam</h3>
-        </div>
-        <div class="bg-slate-900 rounded-2xl p-4">
-          <p class="text-slate-400 text-sm">Data Tersimpan</p>
-          <h3 id="jumlahData" class="text-2xl font-bold mt-2">0</h3>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="px-5 mt-6">
-    <div class="glass rounded-3xl p-5">
-      <h2 class="text-2xl font-bold mb-5">Kalkulator Lembur</h2>
-      <div class="space-y-4">
-        <input type="date" id="tanggal" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white">
-        <input type="number" id="gaji" placeholder="Gaji Bulanan" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white">
-        <select id="jenisHari" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white">
-          <option value="kerja">Hari Kerja</option>
-          <option value="libur">Hari Libur</option>
-        </select>
-
-        <div>
-          <div class="flex justify-between mb-2">
-            <span>Jam Lembur</span>
-            <span id="jamText">1</span>
+  <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 px-5">
+    
+    <div class="lg:col-span-2 space-y-6">
+      
+      <section class="glass rounded-3xl p-6 glow">
+        <p class="text-slate-400 font-medium">Estimasi Take Home Pay Lembur (Netto)</p>
+        <h2 id="totalUpah" class="text-4xl font-bold mt-2 text-indigo-400">Rp 0</h2>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 border-t border-slate-800 pt-4">
+          <div>
+            <p class="text-slate-400 text-xs">Total Jam</p>
+            <h3 id="totalJam" class="text-xl font-bold mt-1">0 Jam</h3>
           </div>
-          <input type="range" id="jam" min="1" max="24" value="1" class="w-full">
+          <div>
+            <p class="text-slate-400 text-xs">Kotor (Bruto)</p>
+            <h3 id="totalBruto" class="text-xl font-bold mt-1 text-emerald-400">Rp 0</h3>
+          </div>
+          <div>
+            <p class="text-slate-400 text-xs">Potongan BPJS (1%)</p>
+            <h3 id="totalBpjs" class="text-xl font-bold mt-1 text-amber-500">Rp 0</h3>
+          </div>
+          <div>
+            <p class="text-slate-400 text-xs">PPh 21 (5%)</p>
+            <h3 id="totalPph" class="text-xl font-bold mt-1 text-red-400">Rp 0</h3>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass rounded-3xl p-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i data-lucide="trending-up" class="text-indigo-400"></i> Analitik Lembur Bulanan
+        </h2>
+        <div class="w-full h-64 bg-slate-900/50 rounded-2xl p-2">
+          <canvas id="trenChart"></canvas>
+        </div>
+      </section>
+
+      <section class="glass rounded-3xl p-6">
+        <h2 class="text-xl font-bold mb-5 flex items-center gap-2">
+          <i data-lucide="calculator" class="text-indigo-400"></i> Kalkulator Lembur Pro
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-400 text-sm mb-2">Tanggal Kerja</label>
+            <input type="date" id="tanggal" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 text-sm mb-2">Jenis Hari Operasional</label>
+            <select id="jenisHari" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none">
+              <option value="kerja">Hari Kerja Biasa</option>
+              <option value="libur_istirahat">Hari Istirahat Mingguan (Sabtu/Minggu)</option>
+              <option value="libur_nasional">Hari Libur Resmi / Nasional</option>
+            </select>
+          </div>
         </div>
 
-        <button onclick="simpanLembur()" class="w-full gradient py-4 rounded-2xl font-bold text-white">Simpan Lembur</button>
-        <button onclick="downloadPDF()" class="w-full bg-emerald-600 py-4 rounded-2xl font-bold text-white">Download PDF</button>
-      </div>
-    </div>
-  </section>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label class="block text-slate-400 text-sm mb-2">Gaji Pokok (Bulanan)</label>
+            <input type="number" id="gajiPokok" value="5000000" placeholder="Rp" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 text-sm mb-2">Tunjangan Tetap (Bulanan)</label>
+            <input type="number" id="tunjanganTetap" value="0" placeholder="Rp" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none">
+          </div>
+        </div>
 
-  <section class="px-5 mt-6">
-    <div class="glass rounded-3xl p-5">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-bold">Rekap Data</h2>
-        <button onclick="hapusData()" class="bg-red-600 px-4 py-2 rounded-xl text-sm font-bold text-white">Hapus</button>
-      </div>
-      <div id="listData" class="space-y-4"></div>
+        <div class="mt-5 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-slate-300 font-medium">Durasi Jam Lembur</span>
+            <span id="jamText" class="text-xl font-bold text-indigo-400">1 Jam</span>
+          </div>
+          <input type="range" id="jam" min="1" max="24" value="1" class="w-full cursor-pointer">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+          <button onclick="simpanLembur()" class="sm:col-span-1 gradient py-4 rounded-2xl font-bold text-white shadow-lg hover:opacity-90 transition flex justify-center items-center gap-2">
+            <i data-lucide="save" class="w-5 h-5"></i> Simpan Data
+          </button>
+          <button onclick="downloadPDF()" class="bg-red-600/90 py-4 rounded-2xl font-bold text-white hover:bg-red-600 transition flex justify-center items-center gap-2">
+            <i data-lucide="file-text" class="w-5 h-5"></i> Cetak PDF
+          </button>
+          <button onclick="downloadExcel()" class="bg-emerald-600/90 py-4 rounded-2xl font-bold text-white hover:bg-emerald-600 transition flex justify-center items-center gap-2">
+            <i data-lucide="file-spreadsheet" class="w-5 h-5"></i> Ekspor Excel
+          </button>
+        </div>
+      </section>
     </div>
-  </section>
+
+    <div class="space-y-6">
+      <section class="glass rounded-3xl p-5 max-h-[810px] flex flex-col">
+        <div class="flex justify-between items-center mb-5 pb-2 border-b border-slate-800">
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="history" class="text-indigo-400"></i> Log Rekapitulasi
+          </h2>
+          <button onclick="hapusData()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition">Hapus Semua</button>
+        </div>
+        <div id="listData" class="space-y-3 overflow-y-auto pr-1 flex-1">
+          </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="backupModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-5 z-50">
+  <div class="glass rounded-3xl p-6 w-full max-w-md border border-slate-700">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold flex items-center gap-2"><i data-lucide="database"></i> Sinkronisasi Data</h3>
+      <button onclick="tutupModalBackup()" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
+    </div>
+    <p class="text-sm text-slate-400 mb-6">Amankan data rekap lembur kamu agar tidak hilang saat browser dibersihkan.</p>
+    
+    <div class="space-y-4">
+      <button onclick="exportJSON()" class="w-full bg-slate-800 p-4 rounded-2xl font-bold text-white flex items-center justify-center gap-2 hover:bg-slate-700 transition">
+        <i data-lucide="download" class="text-indigo-400"></i> Download File Cadangan (.json)
+      </button>
+      
+      <div class="border-t border-slate-800 pt-4">
+        <label class="block text-sm font-bold mb-2 text-slate-300">Pulihkan dari File Cadangan:</label>
+        <input type="file" id="importFile" accept=".json" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
+        <button onclick="importJSON()" class="w-full mt-3 gradient py-3 rounded-xl font-bold text-white hover:opacity-90 transition">Proses Import</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
+// Inisialisasi awal UI Lucide
 lucide.createIcons();
 
+// Kontrol Slider
 const slider = document.getElementById("jam");
 const jamText = document.getElementById("jamText");
+slider.addEventListener("input", () => { jamText.innerText = slider.value + " Jam"; });
 
-slider.addEventListener("input", () => {
-  jamText.innerText = slider.value;
-});
+let trenChartInstance = null;
 
+// Format Rupiah Tradisional
 function rupiah(angka){
   return "Rp " + Math.round(angka).toLocaleString("id-ID");
 }
 
+// Autentikasi dasar
 function register(){
   const username = document.getElementById("username").value.trim();
   const pin = document.getElementById("pin").value;
-
-  if(!username || pin.length !== 6){
-    alert("Isi username dan PIN 6 digit");
-    return;
-  }
-
+  if(!username || pin.length !== 6){ alert("Isi username dan PIN 6 digit"); return; }
   let users = JSON.parse(localStorage.getItem("users")) || [];
-  const cek = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-
-  if(cek){
-    alert("Username sudah ada");
-    return;
-  }
-
+  if(users.find(u => u.username.toLowerCase() === username.toLowerCase())){ alert("Username sudah terdaftar"); return; }
   users.push({ username, pin });
   localStorage.setItem("users", JSON.stringify(users));
-  alert("Pendaftaran berhasil");
+  alert("Pendaftaran berhasil! Silakan login.");
 }
 
 function login(){
   const username = document.getElementById("username").value.trim();
   const pin = document.getElementById("pin").value;
-
   let users = JSON.parse(localStorage.getItem("users")) || [];
   const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.pin === pin);
-
-  if(!user){
-    alert("Username atau PIN salah");
-    return;
-  }
-
+  if(!user){ alert("Username atau PIN salah"); return; }
   localStorage.setItem("activeUser", user.username);
   tampilDashboard();
 }
-
-function tampilDashboard(){
-  const user = localStorage.getItem("activeUser");
-  if(!user) return;
-
-  document.getElementById("loginPage").classList.add("hidden");
-  document.getElementById("dashboardPage").classList.remove("hidden");
-  document.getElementById("welcomeUser").innerText = "Selamat datang, " + user;
-
-  tampilkanData();
-}
-
-window.onload = tampilDashboard;
 
 function logout(){
   localStorage.removeItem("activeUser");
   location.reload();
 }
 
-// Perbaikan logika kalkulasi lembur agar lebih solid & sesuai regulasi pasar kerja Indonesia
-function hitungLembur(gaji, jenisHari, jam){
-  const upahPerJam = gaji / 173;
-  let konversions = 0;
+function tampilDashboard(){
+  const user = localStorage.getItem("activeUser");
+  if(!user) return;
+  document.getElementById("loginPage").classList.add("hidden");
+  document.getElementById("dashboardPage").classList.remove("hidden");
+  document.getElementById("welcomeUser").innerText = "Selamat datang, " + user;
+  tampilkanData();
+}
+window.onload = tampilDashboard;
 
-  if (jam <= 0) return 0;
+// LOGIKA PERHITUNGAN LEMBUR PROFESIONAL (UU Cipta Kerja No 6 Tahun 2023)
+function kalkulasiLemburPro(gajiPokok, tunjanganTetap, jenisHari, jam) {
+  const upahSebulan = gajiPokok + tunjanganTetap;
+  const upahPerJam = upahSebulan / 173;
+  let konversiJam = 0;
 
-  if(jenisHari === "kerja"){
-    // Jam pertama dikali 1.5
-    konversions += 1.5;
-    // Jam berikutnya dikali 2
-    if(jam > 1) {
-      konversions += (jam - 1) * 2;
+  if (jam <= 0) return { bruto: 0, bpjs: 0, pph: 0, netto: 0 };
+
+  if (jenisHari === "kerja") {
+    // Hari Kerja: jam ke-1 dikali 1.5, jam ke-2 dst dikali 2
+    konversiJam += 1.5;
+    if (jam > 1) {
+      konversiJam += (jam - 1) * 2;
     }
-  } else {
-    // Hari Libur
-    for(let i = 1; i <= jam; i++){
-      if(i <= 8)       konversions += 2;
-      else if(i === 9) konversions += 3;
-      else             konversions += 4;
+  } else if (jenisHari === "libur_istirahat") {
+    // Hari Istirahat Mingguan (Umumnya 5 hari kerja, lembur di hari ke-6/7)
+    for (let i = 1; i <= jam; i++) {
+      if (i <= 8)       konversiJam += 2;
+      else if (i === 9) konversiJam += 3;
+      else              konversiJam += 4;
+    }
+  } else if (jenisHari === "libur_nasional") {
+    // Hari Libur Resmi Nasional (Aturan ketat kompensasi premium)
+    for (let i = 1; i <= jam; i++) {
+      if (i <= 7)       konversiJam += 2;
+      else if (i === 8) konversiJam += 3;
+      else              konversiJam += 4;
     }
   }
-  return upahPerJam * konversions;
+
+  const bruto = upahPerJam * konversiJam;
+  const bpjs = bruto * 0.01; // Estimasi jaminan BPJS Tenaga Kerja beban pekerja
+  const pph = bruto * 0.05;  // Asumsi pph 21 tarif progresif terendah (5%)
+  const netto = bruto - (bpjs + pph);
+
+  return { bruto, bpjs, pph, netto };
 }
 
+// CRUD & Penyimpanan Data
 function simpanLembur(){
   const tanggal = document.getElementById("tanggal").value;
-  const gajiInput = document.getElementById("gaji").value;
-  const gaji = parseFloat(gajiInput);
+  const gapok = parseFloat(document.getElementById("gajiPokok").value) || 0;
+  const tunjangan = parseFloat(document.getElementById("tunjanganTetap").value) || 0;
   const jenisHari = document.getElementById("jenisHari").value;
   const jam = parseInt(slider.value);
 
-  if(!tanggal || !gajiInput || isNaN(gaji) || gaji <= 0){
-    alert("Lengkapi data dengan benar (Gaji harus berupa angka positif)");
+  if(!tanggal || gapok <= 0){
+    alert("Lengkapi input tanggal dan Gaji Pokok minimal di atas 0!");
     return;
   }
 
-  // Validasi tambahan: cegah simpan jika jam lembur adalah 0
-  if(jam <= 0) {
-    alert("Durasi lembur harus minimal 1 jam");
-    return;
-  }
-
-  const total = hitungLembur(gaji, jenisHari, jam);
-  const data = { tanggal, jam, jenisHari, total };
-
+  const hasil = kalkulasiLemburPro(gapok, tunjangan, jenisHari, jam);
   const user = localStorage.getItem("activeUser");
-  const key = "lembur_" + user;
+  
+  const payload = {
+    tanggal,
+    gapok,
+    tunjangan,
+    jenisHari,
+    jam,
+    bruto: hasil.bruto,
+    bpjs: hasil.bpjs,
+    pph: hasil.pph,
+    netto: hasil.netto
+  };
 
+  const key = "lembur_" + user;
   let daftar = JSON.parse(localStorage.getItem(key)) || [];
-  daftar.push(data);
+  daftar.push(payload);
   localStorage.setItem(key, JSON.stringify(daftar));
 
   tampilkanData();
-  alert("Data berhasil disimpan");
+  alert("Data lembur profesional berhasil disimpan!");
 }
 
 function tampilkanData(){
@@ -262,164 +340,241 @@ function tampilkanData(){
   const list = document.getElementById("listData");
   list.innerHTML = "";
 
-  let grandTotal = 0;
-  let totalJam = 0;
+  let totalNetto = 0, totalBruto = 0, totalBpjs = 0, totalPph = 0, totalJam = 0;
+  let bulananMap = {}; // Untuk integrasi Chart.js
 
   daftar.forEach(item => {
-    grandTotal += item.total;
+    totalNetto += item.netto;
+    totalBruto += (item.bruto || item.total || 0); // fallback v5 data
+    totalBpjs += (item.bpjs || 0);
+    totalPph += (item.pph || 0);
     totalJam += item.jam;
+
+    // Mapping grafik bulanan (Format: YYYY-MM)
+    if(item.tanggal) {
+      const bulan = item.tanggal.substring(0, 7);
+      bulananMap[bulan] = (bulananMap[bulan] || 0) + (item.netto || item.total);
+    }
   });
 
+  // Render log item terbalik
   const dataTampil = [...daftar].reverse();
-
   dataTampil.forEach(item => {
-    const labelHari = item.jenisHari === 'kerja' ? 'Hari Kerja' : 'Hari Libur';
+    let labelHari = 'Hari Kerja';
+    if(item.jenisHari === 'libur_istirahat') labelHari = 'Istirahat Mingguan';
+    if(item.jenisHari === 'libur_nasional') labelHari = 'Libur Nasional';
+
     list.innerHTML += `
-    <div class="bg-slate-900 rounded-2xl p-4 flex justify-between items-center border border-slate-800/60">
+    <div class="bg-slate-900 rounded-2xl p-4 border border-slate-800 flex justify-between items-center hover:border-indigo-500/40 transition">
       <div>
-        <h3 class="font-bold">${item.tanggal}</h3>
-        <p class="text-slate-400 text-sm mt-1">
-          ${item.jam} Jam • ${labelHari}
-        </p>
+        <h3 class="font-bold text-sm">${item.tanggal}</h3>
+        <p class="text-slate-400 text-xs mt-1">${item.jam} Jam • ${labelHari}</p>
+        <p class="text-[10px] text-slate-500 mt-0.5">Potongan PPh: ${rupiah(item.pph || 0)}</p>
       </div>
       <div class="text-right">
-        <h3 class="font-bold text-xl text-indigo-400">${rupiah(item.total)}</h3>
+        <h3 class="font-bold text-md text-indigo-400">${rupiah(item.netto || item.total)}</h3>
+        <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md">Netto</span>
       </div>
     </div>
     `;
   });
 
-  document.getElementById("totalUpah").innerText = rupiah(grandTotal);
+  // Update counter dashboard
+  document.getElementById("totalUpah").innerText = rupiah(totalNetto);
   document.getElementById("totalJam").innerText = totalJam + " Jam";
+  document.getElementById("totalBruto").innerText = rupiah(totalBruto);
+  document.getElementById("totalBpjs").innerText = rupiah(totalBpjs);
+  document.getElementById("totalPph").innerText = rupiah(totalPph);
   document.getElementById("jumlahData").innerText = daftar.length;
+
+  // Render atau update Chart analitik
+  updateGrafik(bulananMap);
+  lucide.createIcons();
+}
+
+function updateGrafik(dataMap) {
+  const ctx = document.getElementById('trenChart').getContext('2d');
+  const labels = Object.keys(dataMap).sort();
+  const dataValues = labels.map(label => dataMap[label]);
+
+  if (trenChartInstance) {
+    trenChartInstance.destroy();
+  }
+
+  trenChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Pendapatan Bersih (Netto)',
+        data: dataValues,
+        backgroundColor: 'rgba(79, 70, 229, 0.6)',
+        borderColor: '#4f46e5',
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+      }
+    }
+  });
 }
 
 function hapusData(){
   const user = localStorage.getItem("activeUser");
   const key = "lembur_" + user;
-  let daftar = JSON.parse(localStorage.getItem(key)) || [];
-
-  if(daftar.length === 0){
-    alert("Belum ada data untuk dihapus");
-    return;
-  }
-
-  if(confirm("Hapus semua data?")){
+  if(confirm("Apakah Anda yakin ingin menghapus seluruh rekaman data kerja secara permanen?")){
     localStorage.removeItem(key);
     tampilkanData();
   }
 }
 
+// EKSPOR LAPORAN PDF PROFESIONAL
 async function downloadPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  
   const user = localStorage.getItem("activeUser");
-  const key = "lembur_" + user;
-  let daftar = JSON.parse(localStorage.getItem(key)) || [];
+  let daftar = JSON.parse(localStorage.getItem("lembur_" + user)) || [];
 
-  if(daftar.length === 0){
-    alert("Belum ada data");
-    return;
-  }
+  if(daftar.length === 0){ alert("Tidak ada data untuk dicetak!"); return; }
 
-  doc.setFillColor(79, 70, 229); 
-  doc.rect(0, 0, 210, 40, 'F');
+  // Banner Premium
+  doc.setFillColor(79, 70, 229);
+  doc.rect(0, 0, 210, 38, 'F');
+  doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(255, 255, 255);
+  doc.text("KERJAKU PRO - AUDIT REPORT", 15, 18);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(218, 211, 249);
+  doc.text("Laporan Analisis Akumulasi Lembur & Estimasi Potongan Pajak Resmi", 15, 26);
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
-  doc.setTextColor(255, 255, 255);
-  doc.text("KERJAKU PRO", 15, 20);
+  // Metadata Karyawan
+  let y = 52;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(71, 85, 105);
+  doc.text("IDENTITAS KARYAWAN :", 15, y); doc.setTextColor(15, 23, 42); doc.text(user.toUpperCase(), 60, y);
+  doc.setTextColor(71, 85, 105); doc.text("TANGGAL CETAK DOKUMEN:", 15, y+6); doc.setTextColor(15, 23, 42);
+  doc.text(new Date().toLocaleDateString("id-ID", {year: 'numeric', month: 'long', day: 'numeric'}), 60, y+6);
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(218, 211, 249);
-  doc.text("Laporan Rekapitulasi Upah Lembur Karyawan", 15, 28);
-
-  let y = 55;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(51, 65, 85); 
-  doc.text("NAMA KARYAWAN :", 15, y);
-  
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(15, 23, 42); 
-  doc.text(user.toUpperCase(), 58, y);
-
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(51, 65, 85);
-  doc.text("TANGGAL CETAK  :", 15, y + 6);
-  
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(15, 23, 42);
-  const tglSekarang = new Date().toLocaleDateString("id-ID", { year: 'numeric', month: 'long', day: 'numeric' });
-  doc.text(tglSekarang, 58, y + 6);
-
-  let grandTotal = 0;
-  let totalJamLembur = 0;
+  // Konten Tabel
   const barisTabel = [];
+  let tBruto = 0, tBpjs = 0, tPph = 0, tNetto = 0;
 
   daftar.forEach((item, index) => {
-    grandTotal += item.total;
-    totalJamLembur += item.jam;
-    const infoHari = item.jenisHari === 'kerja' ? 'Hari Kerja' : 'Hari Libur';
-    
+    tBruto += (item.bruto || item.total);
+    tBpjs += (item.bpjs || 0);
+    tPph += (item.pph || 0);
+    tNetto += (item.netto || item.total);
+
     barisTabel.push([
       index + 1,
       item.tanggal,
       `${item.jam} Jam`,
-      infoHari,
-      rupiah(item.total)
+      item.jenisHari === 'kerja' ? 'Hari Kerja' : (item.jenisHari === 'libur_nasional' ? 'Libur Nasional' : 'Istirahat Mingguan'),
+      rupiah(item.bruto || item.total),
+      rupiah(item.pph || 0),
+      rupiah(item.netto || item.total)
     ]);
   });
 
   doc.autoTable({
     startY: y + 16,
-    head: [['No', 'Tanggal', 'Durasi', 'Jenis Hari', 'Jumlah Upah']],
+    head: [['No', 'Tanggal', 'Durasi', 'Jenis Operasional', 'Bruto', 'PPh 21', 'Netto']],
     body: barisTabel,
     theme: 'striped',
-    headStyles: { 
-      fillColor: [15, 23, 42], 
-      textColor: [255, 255, 255], 
-      fontStyle: 'bold',
-      halign: 'center'
-    },
-    columnStyles: {
-      0: { halign: 'center', width: 15 },
-      1: { halign: 'center' },
-      2: { halign: 'center' },
-      3: { halign: 'left' },
-      4: { halign: 'right', fontStyle: 'bold' }
-    },
-    styles: { font: 'helvetica', fontSize: 10, cellPadding: 4 },
-    alternateRowStyles: { fillColor: [248, 250, 252] }
+    headStyles: { fillColor: [15, 23, 42], halign: 'center', fontStyle: 'bold' },
+    columnStyles: { 0: {halign:'center'}, 1: {halign:'center'}, 2: {halign:'center'}, 4:{halign:'right'}, 5:{halign:'right'}, 6:{halign:'right'} },
+    styles: { fontSize: 9 }
   });
 
+  // Box Summary Final
   let finalY = doc.lastAutoTable.finalY + 10;
-  if (finalY > 240) {
-    doc.addPage();
-    finalY = 20;
-  }
+  if (finalY > 230) { doc.addPage(); finalY = 20; }
 
-  doc.setFillColor(241, 245, 249);
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(110, finalY, 85, 30, 4, 4, 'FD');
+  doc.setFillColor(248, 250, 252); doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(105, finalY, 90, 38, 3, 3, 'FD');
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(100, 116, 139);
-  doc.text(`Total Akumulasi Jam: ${totalJamLembur} Jam`, 115, finalY + 10);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(15, 23, 42);
-  doc.text("GRAND TOTAL UPAH:", 115, finalY + 18);
+  doc.setFontSize(9); doc.setTextColor(100, 116, 139); doc.setFont("helvetica", "normal");
+  doc.text(`Total Akumulasi Bruto: ${rupiah(tBruto)}`, 110, finalY + 10);
+  doc.text(`Total Potongan BPJS (1%): ${rupiah(tBpjs)}`, 110, finalY + 16);
+  doc.text(`Total Potongan PPh 21 (5%): ${rupiah(tPph)}`, 110, finalY + 22);
   
-  doc.setFontSize(14);
-  doc.setTextColor(79, 70, 229); 
-  doc.text(rupiah(grandTotal), 115, finalY + 25);
+  doc.setFont("helvetica", "bold"); doc.setTextColor(79, 70, 229); doc.setFontSize(11);
+  doc.text(`GRAND TOTAL NETTO: ${rupiah(tNetto)}`, 110, finalY + 31);
 
-  doc.save(`Laporan_Lembur_${user}.pdf`);
+  doc.save(`Audit_Lembur_Pro_${user}.pdf`);
+}
+
+// EKSPOR LAPORAN EXCEL (SheetJS)
+function downloadExcel() {
+  const user = localStorage.getItem("activeUser");
+  let daftar = JSON.parse(localStorage.getItem("lembur_" + user)) || [];
+  if(daftar.length === 0){ alert("Tidak ada data untuk diekspor!"); return; }
+
+  // Mapping data mentah ke format worksheet Excel yang rapi
+  const dataExcel = daftar.map((item, index) => ({
+    "No": index + 1,
+    "Tanggal": item.tanggal,
+    "Durasi (Jam)": item.jam,
+    "Jenis Hari": item.jenisHari,
+    "Gaji Pokok": item.gapok,
+    "Tunjangan Tetap": item.tunjangan,
+    "Upah Bruto (Rp)": Math.round(item.bruto || item.total),
+    "Potongan BPJS (Rp)": Math.round(item.bpjs || 0),
+    "Potongan PPh 21 (Rp)": Math.round(item.pph || 0),
+    "Upah Bersih Netto (Rp)": Math.round(item.netto || item.total)
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(dataExcel);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Lembur");
+
+  // Download File Excel (.xlsx)
+  XLSX.writeFile(workbook, `Rekap_Lembur_Professional_${user}.xlsx`);
+}
+
+// MODAL CONTROLLER & JSON BACKUP/RESTORE SYSTEM
+function bukaModalBackup() { document.getElementById("backupModal").classList.remove("hidden"); }
+function tutupModalBackup() { document.getElementById("backupModal").classList.add("hidden"); }
+
+function exportJSON() {
+  const user = localStorage.getItem("activeUser");
+  const key = "lembur_" + user;
+  const data = localStorage.getItem(key);
+  if(!data || data === "[]") { alert("Belum ada data cadangan yang terekam."); return; }
+
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Backup_KerjaKu_${user}.json`;
+  a.click();
+}
+
+function importJSON() {
+  const fileInput = document.getElementById("importFile");
+  const user = localStorage.getItem("activeUser");
+  if(!fileInput.files[0]) { alert("Pilih file cadangan .json terlebih dahulu!"); return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsedData = JSON.parse(e.target.result);
+      if(!Array.isArray(parsedData)) throw new Error("Format file harus berupa array data!");
+      
+      const key = "lembur_" + user;
+      localStorage.setItem(key, JSON.stringify(parsedData));
+      tampilkanData();
+      tutupModalBackup();
+      alert("Sinkronisasi data cadangan sukses dipulihkan!");
+    } catch(err) {
+      alert("Gagal membaca file backup. Pastikan struktur file .json valid.");
+    }
+  };
+  reader.readAsText(fileInput.files[0]);
 }
 </script>
 
