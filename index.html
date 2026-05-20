@@ -1,44 +1,42 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>KerjaKu Pro V6</title>
+
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4f46e5">
   <link rel="apple-touch-icon" href="icon-192.png">
 
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KerjaKu Pro V6 - Professional Edition</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
     body{
-      font-family: Arial, sans-serif;
+      font-family:Arial,sans-serif;
       background:#020617;
       color:white;
     }
 
     .glass{
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(12px);
+      background:rgba(255,255,255,0.05);
+      backdrop-filter:blur(12px);
       border:1px solid rgba(255,255,255,0.08);
     }
 
     .gradient{
-      background:linear-gradient(135deg, #4f46e5, #7c3aed);
+      background:linear-gradient(135deg,#4f46e5,#7c3aed);
     }
 
     .glow{
-      box-shadow: 0 0 25px rgba(99,102,241,.25);
+      box-shadow:0 0 25px rgba(99,102,241,.25);
     }
 
-    input[type="range"] {
-      accent-color: #4f46e5;
+    input[type="range"]{
+      accent-color:#4f46e5;
     }
 
     ::-webkit-scrollbar{
@@ -54,25 +52,32 @@
 
 <body>
 
-<!-- LOGIN PAGE -->
+<!-- LOGIN -->
 <div id="loginPage" class="min-h-screen flex items-center justify-center p-5">
+
   <div class="glass rounded-3xl p-8 w-full max-w-md">
 
     <div class="text-center mb-8">
+
       <div class="w-20 h-20 rounded-3xl gradient glow mx-auto flex items-center justify-center mb-5">
         <i data-lucide="briefcase-business"></i>
       </div>
 
       <h1 class="text-3xl font-bold">KerjaKu Pro</h1>
-      <p class="text-slate-400 mt-2">Professional Edition V6</p>
+
+      <p class="text-slate-400 mt-2">
+        Professional Edition V6
+      </p>
+
     </div>
 
     <div class="space-y-4">
+
       <input
         type="text"
         id="username"
         placeholder="Username"
-        class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none"
+        class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none"
       >
 
       <input
@@ -80,25 +85,27 @@
         id="pin"
         maxlength="6"
         placeholder="PIN 6 Digit"
-        class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none"
+        class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none"
       >
 
       <button
         onclick="login()"
-        class="w-full gradient py-4 rounded-2xl font-bold text-white hover:opacity-90 transition"
+        class="w-full gradient py-4 rounded-2xl font-bold"
       >
         Masuk Aplikasi
       </button>
 
       <button
         onclick="register()"
-        class="w-full bg-slate-800 py-4 rounded-2xl font-bold text-white hover:bg-slate-700 transition"
+        class="w-full bg-slate-800 py-4 rounded-2xl font-bold"
       >
         Daftar Akun Baru
       </button>
+
     </div>
 
   </div>
+
 </div>
 
 <!-- DASHBOARD -->
@@ -111,24 +118,12 @@
       <p id="welcomeUser" class="text-slate-400 mt-1"></p>
     </div>
 
-    <div class="flex gap-2">
-
-      <button
-        onclick="bukaModalBackup()"
-        class="glass p-3 rounded-2xl"
-        title="Backup & Restore"
-      >
-        <i data-lucide="database"></i>
-      </button>
-
-      <button
-        onclick="logout()"
-        class="glass p-3 rounded-2xl text-red-400"
-      >
-        <i data-lucide="log-out"></i>
-      </button>
-
-    </div>
+    <button
+      onclick="logout()"
+      class="glass p-3 rounded-2xl text-red-400"
+    >
+      <i data-lucide="log-out"></i>
+    </button>
 
   </header>
 
@@ -144,10 +139,7 @@
           Estimasi Take Home Pay Lembur (Netto)
         </p>
 
-        <h2
-          id="totalUpah"
-          class="text-4xl font-bold mt-2 text-indigo-400"
-        >
+        <h2 id="totalUpah" class="text-4xl font-bold mt-2 text-indigo-400">
           Rp 0
         </h2>
 
@@ -159,21 +151,21 @@
           </div>
 
           <div>
-            <p class="text-slate-400 text-xs">Kotor (Bruto)</p>
+            <p class="text-slate-400 text-xs">Bruto</p>
             <h3 id="totalBruto" class="text-xl font-bold mt-1 text-emerald-400">
               Rp 0
             </h3>
           </div>
 
           <div>
-            <p class="text-slate-400 text-xs">Potongan BPJS (1%)</p>
-            <h3 id="totalBpjs" class="text-xl font-bold mt-1 text-amber-500">
+            <p class="text-slate-400 text-xs">BPJS</p>
+            <h3 id="totalBpjs" class="text-xl font-bold mt-1 text-amber-400">
               Rp 0
             </h3>
           </div>
 
           <div>
-            <p class="text-slate-400 text-xs">PPh 21 (5%)</p>
+            <p class="text-slate-400 text-xs">PPh 21</p>
             <h3 id="totalPph" class="text-xl font-bold mt-1 text-red-400">
               Rp 0
             </h3>
@@ -194,11 +186,11 @@
       <section class="glass rounded-3xl p-6">
 
         <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-          <i data-lucide="trending-up" class="text-indigo-400"></i>
-          Analitik Lembur Bulanan
+          <i data-lucide="bar-chart-3" class="text-indigo-400"></i>
+          Grafik Pendapatan
         </h2>
 
-        <div class="w-full h-64 bg-slate-900/50 rounded-2xl p-2">
+        <div class="h-64">
           <canvas id="trenChart"></canvas>
         </div>
 
@@ -209,34 +201,34 @@
 
         <h2 class="text-xl font-bold mb-5 flex items-center gap-2">
           <i data-lucide="calculator" class="text-indigo-400"></i>
-          Kalkulator Lembur Pro
+          Kalkulator Lembur
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <div>
-            <label class="block text-slate-400 text-sm mb-2">
-              Tanggal Kerja
+            <label class="block text-sm text-slate-400 mb-2">
+              Tanggal
             </label>
 
             <input
               type="date"
               id="tanggal"
-              class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none"
+              class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none"
             >
           </div>
 
           <div>
-            <label class="block text-slate-400 text-sm mb-2">
-              Jenis Hari Operasional
+            <label class="block text-sm text-slate-400 mb-2">
+              Jenis Hari
             </label>
 
             <select
               id="jenisHari"
-              class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none"
+              class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none"
             >
-              <option value="kerja">Hari Kerja Biasa</option>
-              <option value="libur_istirahat">Hari Istirahat Mingguan</option>
+              <option value="kerja">Hari Kerja</option>
+              <option value="libur_istirahat">Hari Libur Mingguan</option>
               <option value="libur_nasional">Hari Libur Nasional</option>
             </select>
           </div>
@@ -246,20 +238,20 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 
           <div>
-            <label class="block text-slate-400 text-sm mb-2">
-              Gaji Pokok Bulanan
+            <label class="block text-sm text-slate-400 mb-2">
+              Gaji Pokok
             </label>
 
             <input
               type="number"
               id="gajiPokok"
               value="5000000"
-              class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none"
+              class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none"
             >
           </div>
 
           <div>
-            <label class="block text-slate-400 text-sm mb-2">
+            <label class="block text-sm text-slate-400 mb-2">
               Tunjangan Tetap
             </label>
 
@@ -267,7 +259,7 @@
               type="number"
               id="tunjanganTetap"
               value="0"
-              class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white outline-none"
+              class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none"
             >
           </div>
 
@@ -276,9 +268,9 @@
         <!-- SLIDER -->
         <div class="mt-5 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
 
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-slate-300 font-medium">Durasi Jam Lembur</span>
-            <span id="jamText" class="text-xl font-bold text-indigo-400">
+          <div class="flex justify-between mb-2">
+            <span>Durasi Lembur</span>
+            <span id="jamText" class="font-bold text-indigo-400">
               1 Jam
             </span>
           </div>
@@ -289,35 +281,26 @@
             min="1"
             max="24"
             value="1"
-            class="w-full cursor-pointer"
+            class="w-full"
           >
+
         </div>
 
         <!-- BUTTON -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
 
           <button
             onclick="simpanLembur()"
-            class="gradient py-4 rounded-2xl font-bold text-white flex justify-center items-center gap-2"
+            class="gradient py-4 rounded-2xl font-bold"
           >
-            <i data-lucide="save"></i>
             Simpan Data
           </button>
 
           <button
-            onclick="downloadPDF()"
-            class="bg-red-600 py-4 rounded-2xl font-bold text-white flex justify-center items-center gap-2"
+            onclick="hapusData()"
+            class="bg-red-600 py-4 rounded-2xl font-bold"
           >
-            <i data-lucide="file-text"></i>
-            Cetak PDF
-          </button>
-
-          <button
-            onclick="downloadExcel()"
-            class="bg-emerald-600 py-4 rounded-2xl font-bold text-white flex justify-center items-center gap-2"
-          >
-            <i data-lucide="file-spreadsheet"></i>
-            Ekspor Excel
+            Hapus Semua
           </button>
 
         </div>
@@ -327,30 +310,16 @@
     </div>
 
     <!-- RIGHT -->
-    <div class="space-y-6">
+    <div>
 
-      <section class="glass rounded-3xl p-5 max-h-[810px] flex flex-col">
+      <section class="glass rounded-3xl p-5">
 
-        <div class="flex justify-between items-center mb-5 pb-2 border-b border-slate-800">
+        <h2 class="text-xl font-bold mb-5 flex items-center gap-2">
+          <i data-lucide="history" class="text-indigo-400"></i>
+          Riwayat Lembur
+        </h2>
 
-          <h2 class="text-xl font-bold flex items-center gap-2">
-            <i data-lucide="history" class="text-indigo-400"></i>
-            Log Rekapitulasi
-          </h2>
-
-          <button
-            onclick="hapusData()"
-            class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold"
-          >
-            Hapus Semua
-          </button>
-
-        </div>
-
-        <div
-          id="listData"
-          class="space-y-3 overflow-y-auto pr-1 flex-1"
-        ></div>
+        <div id="listData" class="space-y-3 max-h-[700px] overflow-y-auto"></div>
 
       </section>
 
@@ -358,58 +327,6 @@
 
   </main>
 
-</div>
-
-<!-- MODAL -->
-<div
-  id="backupModal"
-  class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-5 z-50"
->
-  <div class="glass rounded-3xl p-6 w-full max-w-md">
-
-    <div class="flex justify-between items-center mb-4">
-
-      <h3 class="text-xl font-bold flex items-center gap-2">
-        <i data-lucide="database"></i>
-        Sinkronisasi Data
-      </h3>
-
-      <button onclick="tutupModalBackup()">
-        <i data-lucide="x"></i>
-      </button>
-
-    </div>
-
-    <div class="space-y-4">
-
-      <button
-        onclick="exportJSON()"
-        class="w-full bg-slate-800 p-4 rounded-2xl font-bold text-white"
-      >
-        Download Backup JSON
-      </button>
-
-      <div class="border-t border-slate-800 pt-4">
-
-        <input
-          type="file"
-          id="importFile"
-          accept=".json"
-          class="w-full"
-        >
-
-        <button
-          onclick="importJSON()"
-          class="w-full mt-3 gradient py-3 rounded-xl font-bold text-white"
-        >
-          Import Backup
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
 </div>
 
 <script>
@@ -431,171 +348,245 @@ function rupiah(angka){
 
 function register(){
 
-  const username = document.getElementById("username").value.trim();
-  const pin = document.getElementById("pin").value;
+  const username =
+    document.getElementById("username").value.trim();
+
+  const pin =
+    document.getElementById("pin").value;
 
   if(!username || pin.length !== 6){
     alert("Isi username dan PIN 6 digit");
     return;
   }
 
-  let users = JSON.parse(localStorage.getItem("users")) || [];
+  let users =
+    JSON.parse(localStorage.getItem("users")) || [];
 
-  if(users.find(u => u.username.toLowerCase() === username.toLowerCase())){
-    alert("Username sudah terdaftar");
+  const cek =
+    users.find(
+      u => u.username.toLowerCase() === username.toLowerCase()
+    );
+
+  if(cek){
+    alert("Username sudah digunakan");
     return;
   }
 
-  users.push({ username, pin });
+  users.push({
+    username,
+    pin
+  });
 
-  localStorage.setItem("users", JSON.stringify(users"));
+  localStorage.setItem(
+    "users",
+    JSON.stringify(users)
+  );
 
-  alert("Pendaftaran berhasil!");
+  alert("Pendaftaran berhasil");
 }
 
 function login(){
 
-  const username = document.getElementById("username").value.trim();
-  const pin = document.getElementById("pin").value;
+  const username =
+    document.getElementById("username").value.trim();
 
-  let users = JSON.parse(localStorage.getItem("users")) || [];
+  const pin =
+    document.getElementById("pin").value;
 
-  const user = users.find(
-    u => u.username.toLowerCase() === username.toLowerCase() && u.pin === pin
-  );
+  let users =
+    JSON.parse(localStorage.getItem("users")) || [];
+
+  const user =
+    users.find(
+      u =>
+      u.username.toLowerCase() === username.toLowerCase()
+      &&
+      u.pin === pin
+    );
 
   if(!user){
     alert("Username atau PIN salah");
     return;
   }
 
-  localStorage.setItem("activeUser", user.username);
+  localStorage.setItem(
+    "activeUser",
+    user.username
+  );
 
   tampilDashboard();
 }
 
 function logout(){
+
   localStorage.removeItem("activeUser");
+
   location.reload();
 }
 
 function tampilDashboard(){
 
-  const user = localStorage.getItem("activeUser");
+  const user =
+    localStorage.getItem("activeUser");
 
   if(!user) return;
 
-  document.getElementById("loginPage").classList.add("hidden");
-  document.getElementById("dashboardPage").classList.remove("hidden");
+  document
+    .getElementById("loginPage")
+    .classList.add("hidden");
 
-  document.getElementById("welcomeUser").innerText =
+  document
+    .getElementById("dashboardPage")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("welcomeUser")
+    .innerText =
     "Selamat datang, " + user;
 
   tampilkanData();
 }
 
 window.onload = () => {
+
   tampilDashboard();
-  document.getElementById("tanggal").valueAsDate = new Date();
+
+  const tanggal =
+    document.getElementById("tanggal");
+
+  if(tanggal){
+    tanggal.valueAsDate = new Date();
+  }
 };
 
-function kalkulasiLemburPro(gajiPokok, tunjanganTetap, jenisHari, jam){
+function kalkulasiLembur(gapok, tunjangan, jenisHari, jam){
 
-  const upahSebulan = gajiPokok + tunjanganTetap;
-  const upahPerJam = upahSebulan / 173;
+  const upahSebulan =
+    gapok + tunjangan;
 
-  let konversiJam = 0;
+  const upahPerJam =
+    upahSebulan / 173;
+
+  let konversi = 0;
 
   if(jenisHari === "kerja"){
 
-    konversiJam += 1.5;
+    konversi += 1.5;
 
     if(jam > 1){
-      konversiJam += (jam - 1) * 2;
+      konversi += (jam - 1) * 2;
     }
 
-  } else if(jenisHari === "libur_istirahat"){
+  }else{
 
     for(let i=1;i<=jam;i++){
 
-      if(i <= 8) konversiJam += 2;
-      else if(i === 9) konversiJam += 3;
-      else konversiJam += 4;
-    }
-
-  } else {
-
-    for(let i=1;i<=jam;i++){
-
-      if(i <= 7) konversiJam += 2;
-      else if(i === 8) konversiJam += 3;
-      else konversiJam += 4;
+      if(i <= 7){
+        konversi += 2;
+      }
+      else if(i === 8){
+        konversi += 3;
+      }
+      else{
+        konversi += 4;
+      }
     }
   }
 
-  const bruto = upahPerJam * konversiJam;
-  const bpjs = bruto * 0.01;
-  const pph = bruto * 0.05;
-  const netto = bruto - (bpjs + pph);
+  const bruto =
+    upahPerJam * konversi;
 
-  return { bruto, bpjs, pph, netto };
+  const bpjs =
+    bruto * 0.01;
+
+  const pph =
+    bruto * 0.05;
+
+  const netto =
+    bruto - bpjs - pph;
+
+  return {
+    bruto,
+    bpjs,
+    pph,
+    netto
+  };
 }
 
 function simpanLembur(){
 
-  const tanggal = document.getElementById("tanggal").value;
-  const gapok = parseFloat(document.getElementById("gajiPokok").value) || 0;
-  const tunjangan = parseFloat(document.getElementById("tunjanganTetap").value) || 0;
-  const jenisHari = document.getElementById("jenisHari").value;
-  const jam = parseInt(slider.value);
+  const tanggal =
+    document.getElementById("tanggal").value;
+
+  const gapok =
+    parseFloat(document.getElementById("gajiPokok").value) || 0;
+
+  const tunjangan =
+    parseFloat(document.getElementById("tunjanganTetap").value) || 0;
+
+  const jenisHari =
+    document.getElementById("jenisHari").value;
+
+  const jam =
+    parseInt(slider.value);
 
   if(!tanggal || gapok <= 0){
-    alert("Lengkapi data!");
+    alert("Lengkapi data");
     return;
   }
 
-  const hasil = kalkulasiLemburPro(
-    gapok,
-    tunjangan,
-    jenisHari,
-    jam
-  );
+  const hasil =
+    kalkulasiLembur(
+      gapok,
+      tunjangan,
+      jenisHari,
+      jam
+    );
 
-  const user = localStorage.getItem("activeUser");
+  const user =
+    localStorage.getItem("activeUser");
 
-  const payload = {
+  const key =
+    "lembur_" + user;
+
+  let data =
+    JSON.parse(localStorage.getItem(key)) || [];
+
+  data.push({
     tanggal,
     gapok,
     tunjangan,
     jenisHari,
     jam,
-    bruto: hasil.bruto,
-    bpjs: hasil.bpjs,
-    pph: hasil.pph,
-    netto: hasil.netto
-  };
+    bruto:hasil.bruto,
+    bpjs:hasil.bpjs,
+    pph:hasil.pph,
+    netto:hasil.netto
+  });
 
-  const key = "lembur_" + user;
-
-  let daftar = JSON.parse(localStorage.getItem(key)) || [];
-
-  daftar.push(payload);
-
-  localStorage.setItem(key, JSON.stringify(daftar));
+  localStorage.setItem(
+    key,
+    JSON.stringify(data)
+  );
 
   tampilkanData();
 
-  alert("Data berhasil disimpan!");
+  alert("Data berhasil disimpan");
 }
 
 function tampilkanData(){
 
-  const user = localStorage.getItem("activeUser");
-  const key = "lembur_" + user;
+  const user =
+    localStorage.getItem("activeUser");
 
-  let daftar = JSON.parse(localStorage.getItem(key)) || [];
+  const key =
+    "lembur_" + user;
 
-  const list = document.getElementById("listData");
+  let data =
+    JSON.parse(localStorage.getItem(key)) || [];
+
+  const list =
+    document.getElementById("listData");
 
   list.innerHTML = "";
 
@@ -605,9 +596,9 @@ function tampilkanData(){
   let totalPph = 0;
   let totalJam = 0;
 
-  let bulananMap = {};
+  let grafik = {};
 
-  daftar.forEach(item => {
+  data.forEach(item => {
 
     totalNetto += item.netto;
     totalBruto += item.bruto;
@@ -615,13 +606,14 @@ function tampilkanData(){
     totalPph += item.pph;
     totalJam += item.jam;
 
-    const bulan = item.tanggal.substring(0,7);
+    const bulan =
+      item.tanggal.substring(0,7);
 
-    bulananMap[bulan] =
-      (bulananMap[bulan] || 0) + item.netto;
+    grafik[bulan] =
+      (grafik[bulan] || 0) + item.netto;
   });
 
-  [...daftar].reverse().forEach(item => {
+  [...data].reverse().forEach(item => {
 
     list.innerHTML += `
       <div class="bg-slate-900 rounded-2xl p-4 border border-slate-800">
@@ -629,7 +621,9 @@ function tampilkanData(){
         <div class="flex justify-between items-center">
 
           <div>
-            <h3 class="font-bold text-sm">${item.tanggal}</h3>
+            <h3 class="font-bold text-sm">
+              ${item.tanggal}
+            </h3>
 
             <p class="text-slate-400 text-xs mt-1">
               ${item.jam} Jam
@@ -648,27 +642,41 @@ function tampilkanData(){
     `;
   });
 
-  document.getElementById("totalUpah").innerText = rupiah(totalNetto);
-  document.getElementById("totalJam").innerText = totalJam + " Jam";
-  document.getElementById("totalBruto").innerText = rupiah(totalBruto);
-  document.getElementById("totalBpjs").innerText = rupiah(totalBpjs);
-  document.getElementById("totalPph").innerText = rupiah(totalPph);
-  document.getElementById("jumlahData").innerText = daftar.length;
+  document.getElementById("totalUpah").innerText =
+    rupiah(totalNetto);
 
-  updateGrafik(bulananMap);
+  document.getElementById("totalJam").innerText =
+    totalJam + " Jam";
+
+  document.getElementById("totalBruto").innerText =
+    rupiah(totalBruto);
+
+  document.getElementById("totalBpjs").innerText =
+    rupiah(totalBpjs);
+
+  document.getElementById("totalPph").innerText =
+    rupiah(totalPph);
+
+  document.getElementById("jumlahData").innerText =
+    data.length;
+
+  updateGrafik(grafik);
 
   lucide.createIcons();
 }
 
 function updateGrafik(dataMap){
 
-  const ctx = document
+  const ctx =
+    document
     .getElementById("trenChart")
     .getContext("2d");
 
-  const labels = Object.keys(dataMap).sort();
+  const labels =
+    Object.keys(dataMap).sort();
 
-  const values = labels.map(label => dataMap[label]);
+  const values =
+    labels.map(label => dataMap[label]);
 
   if(trenChartInstance){
     trenChartInstance.destroy();
@@ -695,93 +703,28 @@ function updateGrafik(dataMap){
       responsive:true,
       maintainAspectRatio:false,
       plugins:{
-        legend:{ display:false }
+        legend:{
+          display:false
+        }
       }
     }
+
   });
 }
 
 function hapusData(){
 
-  const user = localStorage.getItem("activeUser");
+  const user =
+    localStorage.getItem("activeUser");
 
   if(confirm("Hapus semua data?")){
 
-    localStorage.removeItem("lembur_" + user);
-
-    tampilkanData();
-  }
-}
-
-async function downloadPDF(){
-  alert("Fitur PDF aktif.");
-}
-
-function downloadExcel(){
-  alert("Fitur Excel aktif.");
-}
-
-function bukaModalBackup(){
-  document.getElementById("backupModal").classList.remove("hidden");
-}
-
-function tutupModalBackup(){
-  document.getElementById("backupModal").classList.add("hidden");
-}
-
-function exportJSON(){
-
-  const user = localStorage.getItem("activeUser");
-  const key = "lembur_" + user;
-
-  const data = localStorage.getItem(key);
-
-  if(!data){
-    alert("Tidak ada data");
-    return;
-  }
-
-  const blob = new Blob([data], {
-    type:"application/json"
-  });
-
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-
-  a.href = url;
-  a.download = "backup.json";
-  a.click();
-}
-
-function importJSON(){
-
-  const fileInput = document.getElementById("importFile");
-
-  if(!fileInput.files[0]){
-    alert("Pilih file!");
-    return;
-  }
-
-  const reader = new FileReader();
-
-  reader.onload = function(e){
-
-    const data = JSON.parse(e.target.result);
-
-    const user = localStorage.getItem("activeUser");
-
-    localStorage.setItem(
-      "lembur_" + user,
-      JSON.stringify(data)
+    localStorage.removeItem(
+      "lembur_" + user
     );
 
     tampilkanData();
-
-    alert("Import berhasil!");
-  };
-
-  reader.readAsText(fileInput.files[0]);
+  }
 }
 
 if("serviceWorker" in navigator){
