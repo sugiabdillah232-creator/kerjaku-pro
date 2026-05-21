@@ -36,7 +36,6 @@
       box-shadow: 0 0 25px rgba(99, 102, 241, .25);
     }
     
-    /* Mencegah pergeseran layout pada mobile */
     .screen {
       display: none;
       animation: fadeIn 0.2s ease-in-out;
@@ -179,13 +178,18 @@
         <button onclick="hapusData()" class="bg-red-900/30 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-xs font-bold transition active:scale-95">Reset Log</button>
       </div>
 
-      <div class="flex gap-2">
-        <div class="relative flex-1">
+      <div class="flex flex-col gap-3">
+        <div>
           <input type="month" id="filterBulan" onchange="tampilkanData()" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white outline-none">
         </div>
-        <button onclick="downloadPDF()" class="bg-indigo-600 px-4 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition active:scale-95">
-          <i data-lucide="file-text" class="w-4 h-4"></i> <span>PDF</span>
-        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="downloadPDF()" class="bg-indigo-600 py-3 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="file-text" class="w-4 h-4"></i> <span>REKAP TABEL</span>
+          </button>
+          <button onclick="downloadSlipGaji()" class="bg-emerald-600 py-3 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="wallet" class="w-4 h-4"></i> <span>SLIP GAJI</span>
+          </button>
+        </div>
       </div>
 
       <div id="listData" class="space-y-3 pt-2"></div>
@@ -254,7 +258,6 @@
 <script>
 let clockInterval = null;
 
-// Inisialisasi awal ikon Lucide
 lucide.createIcons();
 
 function startLiveClock() {
@@ -269,7 +272,6 @@ function startLiveClock() {
   }, 1000);
 }
 
-// KONTROLLER PERPINDAHAN LAYAR (SCREEN MANAGER)
 function switchScreen(screenName, navId) {
   document.querySelectorAll('.screen').forEach(scr => scr.classList.remove('active'));
   
@@ -288,8 +290,6 @@ function switchScreen(screenName, navId) {
   }
 
   document.getElementById('headerTitle').innerText = screenName;
-  
-  // Render ulang ikon agar tidak pecah/hilang saat ganti screen
   lucide.createIcons();
 }
 
@@ -366,7 +366,7 @@ function tampilDashboard(){
 
   refreshStatusAbsen();
   tampilkanData();
-  startLiveClock(); // Hidupkan jam digital
+  startLiveClock();
   lucide.createIcons();
 }
 
@@ -376,7 +376,6 @@ function logout(){
   location.reload();
 }
 
-// MANAGEMENT ABSENSI & AUTO-LEMBUR
 function refreshStatusAbsen() {
   const user = localStorage.getItem("activeUser");
   const tglHariIni = formatTanggal(new Date());
@@ -665,6 +664,119 @@ function importData(event) {
 }
 
 window.onload = tampilDashboard;
+
+// PERBAIKAN: EKSPOR SLIP GAJI BULANAN PREMIUM (IDE NOMOR 6)
+async function downloadSlipGaji() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a5'); // Format A5 elegan agar seperti slip asli
+  
+  const user = localStorage.getItem("activeUser");
+  const key = "lembur_" + user;
+  let daftar = JSON.parse(localStorage.getItem(key)) || [];
+  
+  const filterBulan = document.getElementById("filterBulan").value;
+  const gajiPokok = parseFloat(document.getElementById("gaji").value) || 0;
+  const metode = document.getElementById("metodeHitung").value;
+
+  if(!filterBulan) {
+    alert("Silakan pilih Filter Bulan terlebih dahulu untuk mencetak Slip Gaji.");
+    return;
+  }
+
+  let dataBulanIni = daftar.filter(item => item.tanggal.startsWith(filterBulan));
+  let totalUangLembur = 0;
+  let totalJamLembur = 0;
+
+  dataBulanIni.forEach(item => {
+    totalUangLembur += item.total;
+    totalJamLembur += item.jam;
+  });
+
+  // Header Slip Gaji
+  doc.setDrawColor(79, 70, 229);
+  doc.setLineWidth(1);
+  doc.line(10, 8, 138, 8);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(15, 23, 42);
+  doc.text("SLIP GAJI KARYAWAN", 10, 16);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(79, 70, 229);
+  doc.text("KERJAKU PRO SYSTEM", 10, 21);
+
+  // Informasi Karyawan & Periode
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.2);
+  doc.line(10, 25, 138, 25);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text("Nama Karyawan:", 10, 31);
+  doc.text("Periode Gaji:", 10, 36);
+  doc.text("Metode Hitung:", 10, 41);
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(15, 23, 42);
+  doc.text(user.toUpperCase(), 38, 31);
+  doc.text(filterBulan, 38, 36);
+  doc.text(metode === 'flat' ? 'Tarif Flat Tetap' : 'Peraturan Pemerintah (1/173)', 38, 41);
+
+  // Bagian Rincian Pendapatan
+  doc.setFillColor(248, 250, 252);
+  doc.rect(10, 47, 128, 6, 'F');
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("DESKRIPSI PENERIMAAN", 12, 51);
+  doc.text("JUMLAH", 110, 51);
+
+  // Isi Penerimaan
+  let currentY = 59;
+  doc.setFont("helvetica", "normal");
+  doc.text("Gaji Pokok Bulanan", 12, currentY);
+  doc.text(rupiah(metode === 'flat' ? 0 : gajiPokok), 105, currentY); // Jika flat, gaji pokok diasumsikan 0 karena hitung per jam murni
+
+  currentY += 6;
+  doc.text(`Uang Lembur Aktif (${totalJamLembur.toFixed(1)} Jam)`, 12, currentY);
+  doc.text(rupiah(totalUangLembur), 105, currentY);
+
+  // Garis Pembatas Total
+  currentY += 4;
+  doc.line(10, currentY, 138, currentY);
+
+  // Take Home Pay / Total Diterima
+  currentY += 6;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("TOTAL DITERIMA (TAKE HOME PAY)", 12, currentY);
+  
+  const takeHomePay = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
+  doc.setTextColor(16, 185, 129); // Hijau Emerald Sukses
+  doc.text(rupiah(takeHomePay), 105, currentY);
+
+  // Catatan kaki
+  currentY += 12;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(7.5);
+  doc.setTextColor(148, 163, 184);
+  doc.text("*Slip gaji ini sah dibuat dan dihitung otomatis oleh sistem KerjaKu Pro V5.", 10, currentY);
+
+  // Area Tanda Tangan Elegan
+  currentY += 12;
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(51, 65, 85);
+  doc.text("Penerima,", 20, currentY);
+  doc.text("Manajemen KerjaKu,", 95, currentY);
+
+  currentY += 16;
+  doc.setFont("helvetica", "bold");
+  doc.text(`( ${user.substring(0, 10).toUpperCase()} )`, 15, currentY);
+  doc.text("( HRD MANAGER )", 92, currentY);
+
+  doc.save(`Slip_Gaji_${user}_${filterBulan}.pdf`);
+}
 
 async function downloadPDF(){
   const { jsPDF } = window.jspdf;
