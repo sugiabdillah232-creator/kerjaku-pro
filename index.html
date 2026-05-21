@@ -98,8 +98,8 @@ z-index:999;
 🌙
 </button>
 
-<button onclick="logout()" class="glass p-3 rounded-2xl">
-🚪
+<button onclick="logout(Logout)" class="glass p-3 rounded-2xl">
+🔴
 </button>
 </div>
 </header>
@@ -185,9 +185,12 @@ lucide.createIcons();
 const slider=document.getElementById('jam');
 const jamText=document.getElementById('jamText');
 
-slider.oninput=()=>{
-jamText.innerText=slider.value;
-}
+const slider = document.getElementById("jam");
+const jamText = document.getElementById("jamText");
+
+slider.addEventListener("input", function () {
+  jamText.textContent = this.value;
+});
 
 function toast(msg){
 const div=document.createElement('div');
