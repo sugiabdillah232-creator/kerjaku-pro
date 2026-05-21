@@ -6,8 +6,8 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KerjaKu Pro V5 - Attendance Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>KerjaKu Pro V5 - Multi Screen</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -15,24 +15,39 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
   <style>
-    body{
+    body {
       font-family: Arial, sans-serif;
-      background:#020617;
-      color:white;
+      background: #020617;
+      color: white;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .glass{
-      background: rgba(255,255,255,0.05);
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(12px);
-      border:1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .gradient{
-      background:linear-gradient(135deg, #4f46e5, #7c3aed);
+    .gradient {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
     }
 
-    .glow{
-      box-shadow: 0 0 25px rgba(99,102,241,.25);
+    .glow {
+      box-shadow: 0 0 25px rgba(99, 102, 241, .25);
+    }
+    
+    /* Mencegah pergeseran layout pada mobile */
+    .screen {
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -43,123 +58,223 @@
   <div class="glass rounded-3xl p-8 w-full max-w-md">
     <div class="text-center mb-8">
       <div class="w-20 h-20 rounded-3xl gradient glow mx-auto flex items-center justify-center mb-5">
-        <i data-lucide="briefcase-business"></i>
+        <i data-lucide="briefcase-business" class="w-10 h-10"></i>
       </div>
       <h1 class="text-3xl font-bold">KerjaKu Pro</h1>
       <p class="text-slate-400 mt-2">Sistem Absensi & Lembur Otomatis</p>
     </div>
 
     <div class="space-y-4">
-      <input type="text" id="username" placeholder="Username" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none">
-      <input type="password" id="pin" maxlength="6" placeholder="PIN 6 Digit" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none">
-      <button onclick="login()" class="w-full gradient py-4 rounded-2xl font-bold text-white">Masuk Aplikasi</button>
-      <button onclick="register()" class="w-full bg-slate-800 py-4 rounded-2xl font-bold text-white">Daftar Akun Baru</button>
+      <input type="text" id="username" placeholder="Username" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none text-white">
+      <input type="password" id="pin" maxlength="6" placeholder="PIN 6 Digit" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none text-white">
+      <button onclick="login()" class="w-full gradient py-4 rounded-2xl font-bold text-white transition active:scale-95">Masuk Aplikasi</button>
+      <button onclick="register()" class="w-full bg-slate-800 py-4 rounded-2xl font-bold text-white transition active:scale-95">Daftar Akun Baru</button>
     </div>
   </div>
 </div>
 
-<div id="dashboardPage" class="hidden pb-32">
-  <header class="p-5 flex justify-between items-center">
+<div id="dashboardPage" class="hidden min-h-screen pb-28">
+  
+  <header class="p-5 flex justify-between items-center border-b border-slate-800/60 bg-slate-950/40 sticky top-0 z-40 backdrop-blur-md">
     <div>
-      <h1 class="text-3xl font-bold">KerjaKu 👋</h1>
-      <p id="welcomeUser" class="text-slate-400 mt-1"></p>
+      <h1 class="text-2xl font-bold flex items-center gap-2">KerjaKu <span class="text-sm px-2 py-0.5 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-full font-normal">Pro V5</span></h1>
+      <p id="welcomeUser" class="text-slate-400 text-xs mt-0.5"></p>
     </div>
-    <button onclick="logout()" class="glass p-3 rounded-2xl">
-      <i data-lucide="log-out"></i>
-    </button>
+    <div id="headerTitle" class="text-right font-bold text-indigo-400 text-sm tracking-wide uppercase">Beranda</div>
   </header>
 
-  <section class="px-5">
+  <main id="screenBeranda" class="screen active p-5 space-y-6">
     <div class="glass rounded-3xl p-6 glow">
-      <p class="text-slate-400">Estimasi Upah Lembur Bulan Ini</p>
-      <h2 id="totalUpah" class="text-4xl font-bold mt-3">Rp 0</h2>
+      <p class="text-slate-400 text-sm">Estimasi Upah Lembur Periode Ini</p>
+      <h2 id="totalUpah" class="text-4xl font-bold mt-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300">Rp 0</h2>
+      
       <div class="grid grid-cols-2 gap-4 mt-6">
-        <div class="bg-slate-900 rounded-2xl p-4">
-          <p class="text-slate-400 text-sm">Total Jam Lembur</p>
-          <h3 id="totalJam" class="text-2xl font-bold mt-2">0 Jam</h3>
+        <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800">
+          <p class="text-slate-400 text-xs">Total Jam Lembur</p>
+          <h3 id="totalJam" class="text-xl font-bold mt-1 text-indigo-400">0 Jam</h3>
         </div>
-        <div class="bg-slate-900 rounded-2xl p-4">
-          <p class="text-slate-400 text-sm">Hari Kerja Terpilih</p>
-          <h3 id="jumlahData" class="text-2xl font-bold mt-2">0</h3>
+        <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800">
+          <p class="text-slate-400 text-xs">Hari Terpilih</p>
+          <h3 id="jumlahData" class="text-xl font-bold mt-1 text-emerald-400">0 Hari</h3>
         </div>
       </div>
     </div>
-  </section>
 
-  <section class="px-5 mt-6">
-    <div class="glass rounded-3xl p-5">
-      <h2 class="text-2xl font-bold mb-2">Presensi Kerja</h2>
-      <p class="text-slate-400 text-sm mb-5">Gunakan panel ini untuk mencatat kehadiran dan kalkulasi lembur otomatis.</p>
+    <div class="glass rounded-3xl p-5 space-y-3">
+      <h3 class="font-bold text-sm text-slate-400 tracking-wide uppercase">Aktivitas Hari Ini</h3>
+      <div id="miniStatusBox" class="p-4 bg-slate-900 rounded-xl text-center text-sm font-medium border border-slate-800">
+        Menghubungkan sistem...
+      </div>
+      <button onclick="switchScreen('absen', 'nav-absen')" class="w-full bg-slate-800 py-3 rounded-xl font-semibold text-sm text-center text-slate-200 hover:bg-slate-700 transition">
+        Buka Menu Presensi →
+      </button>
+    </div>
+  </main>
+
+  <main id="screenAbsen" class="screen p-5 space-y-6">
+    <div class="glass rounded-3xl p-5 space-y-4">
+      <div>
+        <h2 class="text-xl font-bold">Presensi & Hitung Otomatis</h2>
+        <p class="text-slate-400 text-xs mt-1">Sistem akan menghitung lembur secara otomatis jika jam kerja melebihi 8 jam pada Hari Kerja.</p>
+      </div>
       
-      <div id="statusAbsenBox" class="bg-slate-900 rounded-2xl p-4 mb-4 border border-slate-800 text-center text-sm text-amber-400 font-medium">
-        Status: Belum Absen Masuk Hari Ini
+      <div id="statusAbsenBox" class="bg-slate-900 rounded-2xl p-4 text-center text-sm font-medium border border-slate-800">
+        --
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-5">
-        <button id="btnMasuk" onclick="absenMasuk()" class="bg-emerald-600 py-4 rounded-2xl font-bold text-white flex flex-col items-center justify-center gap-1">
+      <div class="grid grid-cols-2 gap-4">
+        <button id="btnMasuk" onclick="absenMasuk()" class="bg-emerald-600 py-4 rounded-2xl font-bold text-white flex flex-col items-center justify-center gap-1 transition active:scale-95">
           <i data-lucide="log-in" class="w-6 h-6"></i>
           <span>Absen Masuk</span>
           <span id="waktuMasukText" class="text-xs font-normal opacity-80">--:--</span>
         </button>
-        <button id="btnPulang" onclick="absenPulang()" disabled class="bg-red-600/40 py-4 rounded-2xl font-bold text-white flex flex-col items-center justify-center gap-1 cursor-not-allowed">
+        <button id="btnPulang" onclick="absenPulang()" disabled class="bg-slate-800 text-slate-600 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-700">
           <i data-lucide="log-out" class="w-6 h-6"></i>
           <span>Absen Pulang</span>
           <span id="waktuPulangText" class="text-xs font-normal opacity-80">--:--</span>
         </button>
       </div>
+    </div>
 
-      <div class="space-y-4 border-t border-slate-800/60 pt-4">
+    <div class="glass rounded-3xl p-5 space-y-4">
+      <h3 class="font-bold text-sm text-slate-400 tracking-wide uppercase">Konfigurasi Upah & Hari</h3>
+      
+      <div class="space-y-3">
         <div>
-          <label class="text-sm text-slate-400 block mb-1">Pengaturan Dasar Gaji/Tarif untuk Lembur:</label>
-          <select id="metodeHitung" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm" onchange="cekMetode()">
-            <option value="pemerintah">Sesuai Pemerintah (Gaji / 173)</option>
-            <option value="flat">Tarif Flat (Per Jam)</option>
+          <label class="text-xs text-slate-400 block mb-1">Skema Hitung Lembur</label>
+          <select id="metodeHitung" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none" onchange="cekMetode()">
+            <option value="pemerintah">Sesuai Peraturan Pemerintah (Gaji / 173)</option>
+            <option value="flat">Tarif Flat Tetap (Per Jam)</option>
           </select>
         </div>
 
-        <input type="number" id="gaji" placeholder="Gaji Bulanan" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm">
+        <div>
+          <label id="labelGaji" class="text-xs text-slate-400 block mb-1">Gaji Pokok Bulanan</label>
+          <input type="number" id="gaji" placeholder="Gaji Bulanan" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+        </div>
         
         <div>
-          <label class="text-sm text-slate-400 block mb-1">Kategori Hari:</label>
-          <select id="jenisHari" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm">
+          <label class="text-xs text-slate-400 block mb-1">Kategori Hari Absensi</label>
+          <select id="jenisHari" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
             <option value="kerja">Hari Kerja Biasa</option>
-            <option value="libur">Hari Libur / Akhir Pekan</option>
+            <option value="libur">Hari Libur / Weekend / Tanggal Merah</option>
           </select>
         </div>
+      </div>
+    </div>
+  </main>
 
-        <button onclick="downloadPDF()" class="w-full bg-indigo-600 py-4 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2">
-          <i data-lucide="file-text" class="w-4 h-4"></i> Cetak PDF Laporan
+  <main id="screenRiwayat" class="screen p-5 space-y-6">
+    <div class="glass rounded-3xl p-5 space-y-4">
+      <div class="flex items-center justify-between gap-2">
+        <div>
+          <h2 class="text-xl font-bold">Riwayat Log</h2>
+          <p class="text-slate-400 text-xs mt-0.5">Filter dan kelola berkas laporan.</p>
+        </div>
+        <button onclick="hapusData()" class="bg-red-900/30 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-xs font-bold transition active:scale-95">Reset Log</button>
+      </div>
+
+      <div class="flex gap-2">
+        <div class="relative flex-1">
+          <input type="month" id="filterBulan" onchange="tampilkanData()" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white outline-none">
+        </div>
+        <button onclick="downloadPDF()" class="bg-indigo-600 px-4 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition active:scale-95">
+          <i data-lucide="file-text" class="w-4 h-4"></i> <span>PDF</span>
         </button>
       </div>
-    </div>
-  </section>
 
-  <section class="px-5 mt-6 grid grid-cols-2 gap-4">
-    <button onclick="backupData()" class="bg-slate-800 py-4 rounded-2xl font-bold text-slate-300 flex items-center justify-center gap-2 text-xs border border-slate-700">
-      <i data-lucide="download" class="w-4 h-4"></i> Backup JSON
-    </button>
-    <button onclick="triggerImport()" class="bg-slate-800 py-4 rounded-2xl font-bold text-slate-300 flex items-center justify-center gap-2 text-xs border border-slate-700">
-      <i data-lucide="upload" class="w-4 h-4"></i> Restore JSON
-    </button>
-    <input type="file" id="fileImport" accept=".json" class="hidden" onchange="importData(event)">
-  </section>
-
-  <section class="px-5 mt-6">
-    <div class="glass rounded-3xl p-5">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
-        <h2 class="text-2xl font-bold">Riwayat Absen & Lembur</h2>
-        <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-          <input type="month" id="filterBulan" onchange="tampilkanData()" class="p-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white outline-none">
-          <button onclick="hapusData()" class="bg-red-600/20 text-red-400 border border-red-500/30 px-4 py-2 rounded-xl text-sm font-bold">Reset</button>
+      <div id="listData" class="space-y-3 pt-2">
         </div>
-      </div>
-      <div id="listData" class="space-y-4"></div>
     </div>
-  </section>
+  </main>
+
+  <main id="screenPengaturan" class="screen p-5 space-y-6">
+    <div class="glass rounded-3xl p-5 space-y-4">
+      <h2 class="text-xl font-bold">Manajemen Data & Backup</h2>
+      <p class="text-slate-400 text-xs">Amankan data Anda secara berkala agar tidak hilang saat cache browser dibersihkan.</p>
+      
+      <div class="grid grid-cols-1 gap-3">
+        <button onclick="backupData()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-200 p-4 rounded-2xl font-semibold flex items-center justify-between border border-slate-800 transition active:scale-98">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-blue-500/10 text-blue-400 rounded-xl"><i data-lucide="download" class="w-5 h-5"></i></div>
+            <div class="text-left">
+              <p class="text-sm font-bold">Ekspor Database (.json)</p>
+              <p class="text-slate-400 text-xs mt-0.5">Unduh semua berkas riwayat absen</p>
+            </div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+        </button>
+
+        <button onclick="triggerImport()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-200 p-4 rounded-2xl font-semibold flex items-center justify-between border border-slate-800 transition active:scale-98">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-purple-500/10 text-purple-400 rounded-xl"><i data-lucide="upload" class="w-5 h-5"></i></div>
+            <div class="text-left">
+              <p class="text-sm font-bold">Impor Database (.json)</p>
+              <p class="text-slate-400 text-xs mt-0.5">Pulihkan riwayat dari file cadangan</p>
+            </div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+        </button>
+        <input type="file" id="fileImport" accept=".json" class="hidden" onchange="importData(event)">
+      </div>
+    </div>
+
+    <div class="glass rounded-3xl p-5">
+      <button onclick="logout()" class="w-full bg-red-600/10 border border-red-500/20 text-red-400 py-4 rounded-2xl font-bold text-center text-sm transition active:scale-95 flex items-center justify-center gap-2">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Keluar dari Akun
+      </button>
+    </div>
+  </main>
+
+  <nav class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/60 backdrop-blur-lg border-t border-slate-800/80 z-50 flex justify-around items-center">
+    <button id="nav-beranda" onclick="switchScreen('beranda', this.id)" class="flex flex-col items-center gap-1 text-indigo-400 font-semibold transition">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span class="text-[10px]">Beranda</span>
+    </button>
+    <button id="nav-absen" onclick="switchScreen('absen', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition">
+      <i data-lucide="calendar-check" class="w-5 h-5"></i>
+      <span class="text-[10px]">Absensi</span>
+    </button>
+    <button id="nav-riwayat" onclick="switchScreen('riwayat', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition">
+      <i data-lucide="history" class="w-5 h-5"></i>
+      <span class="text-[10px]">Riwayat</span>
+    </button>
+    <button id="nav-pengaturan" onclick="switchScreen('pengaturan', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition">
+      <i data-lucide="settings" class="w-5 h-5"></i>
+      <span class="text-[10px]">Pengaturan</span>
+    </button>
+  </nav>
+
 </div>
 
 <script>
 lucide.createIcons();
+
+// KONTROLLER PERPINDAHAN LAYAR (SCREEN MANAGER)
+function switchScreen(screenName, navId) {
+  // Sembunyikan semua layar
+  document.querySelectorAll('.screen').forEach(scr => scr.classList.remove('active'));
+  
+  // Tampilkan layar target
+  const targetScreen = document.getElementById('screen' + screenName.charAt(0).toUpperCase() + screenName.slice(1));
+  if(targetScreen) targetScreen.classList.add('active');
+
+  // Reset semua warna ikon navigasi ke default (abu-abu)
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.classList.remove('text-indigo-400', 'font-semibold');
+    btn.classList.add('text-slate-400');
+  });
+
+  // Warnai ikon navigasi aktif (indigo)
+  const activeNav = typeof navId === 'string' ? document.getElementById(navId) : navId;
+  if(activeNav) {
+    activeNav.classList.remove('text-slate-400');
+    activeNav.classList.add('text-indigo-400', 'font-semibold');
+  }
+
+  // Ganti Judul Header Atas
+  document.getElementById('headerTitle').innerText = screenName;
+}
 
 function rupiah(angka){
   return "Rp " + Math.round(angka).toLocaleString("id-ID");
@@ -175,10 +290,13 @@ function formatTanggal(date) {
 
 function cekMetode() {
   const metode = document.getElementById("metodeHitung").value;
+  const labelGaji = document.getElementById("labelGaji");
   const gajiInput = document.getElementById("gaji");
   if (metode === "flat") {
-    gajiInput.placeholder = "Tarif Per Jam (Misal: 25000)";
+    labelGaji.innerText = "Tarif Lembur Tetap Per Jam (Rp)";
+    gajiInput.placeholder = "Misal: 25000";
   } else {
+    labelGaji.innerText = "Gaji Pokok Bulanan (Rp)";
     gajiInput.placeholder = "Gaji Bulanan";
   }
 }
@@ -233,14 +351,12 @@ function tampilDashboard(){
   tampilkanData();
 }
 
-window.onload = tampilDashboard;
-
 function logout(){
   localStorage.removeItem("activeUser");
   location.reload();
 }
 
-// LOGIKA PRESENSI & AUTO-LEMBUR
+// MANAGEMENT ABSENSI & AUTO-LEMBUR
 function refreshStatusAbsen() {
   const user = localStorage.getItem("activeUser");
   const tglHariIni = formatTanggal(new Date());
@@ -250,43 +366,50 @@ function refreshStatusAbsen() {
   const btnMasuk = document.getElementById("btnMasuk");
   const btnPulang = document.getElementById("btnPulang");
   const statusBox = document.getElementById("statusAbsenBox");
+  const miniStatusBox = document.getElementById("miniStatusBox");
 
   if (!statusData) {
-    // Belum absen sama sekali hari ini
     btnMasuk.disabled = false;
-    btnMasuk.className = "bg-emerald-600 py-4 rounded-2xl font-bold text-white flex flex-col items-center justify-center gap-1";
+    btnMasuk.className = "bg-emerald-600 py-4 rounded-2xl font-bold text-white flex flex-col items-center justify-center gap-1 transition active:scale-95";
     document.getElementById("waktuMasukText").innerText = "--:--";
     
     btnPulang.disabled = true;
-    btnPulang.className = "bg-red-600/20 text-red-500/40 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-800";
+    btnPulang.className = "bg-slate-800 text-slate-600 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-700";
     document.getElementById("waktuPulangText").innerText = "--:--";
     
-    statusBox.innerText = "Status: Belum Absen Masuk Hari Ini";
-    statusBox.className = "bg-slate-900 rounded-2xl p-4 mb-4 border border-slate-800 text-center text-sm text-amber-400 font-medium";
+    const textBelum = "Belum Absen Masuk Hari Ini";
+    statusBox.innerText = textBelum;
+    statusBox.className = "bg-slate-900 rounded-2xl p-4 text-center text-sm text-amber-500 font-medium border border-slate-800";
+    miniStatusBox.innerText = textBelum;
+    miniStatusBox.className = "p-4 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl text-center text-sm font-medium";
   } else if (statusData.step === "masuk") {
-    // Sudah absen masuk, belum absen pulang
     btnMasuk.disabled = true;
-    btnMasuk.className = "bg-emerald-600/30 text-emerald-500/40 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-800";
+    btnMasuk.className = "bg-slate-800 text-slate-600 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-700";
     document.getElementById("waktuMasukText").innerText = statusData.jamMasuk;
 
     btnPulang.disabled = false;
-    btnPulang.className = "bg-red-600 py-4 rounded-2xl font-bold text-white flex flex-col items-center justify-center gap-1 glow";
+    btnPulang.className = "bg-red-600 py-4 rounded-2xl font-bold text-white flex flex-col items-center justify-center gap-1 glow transition active:scale-95";
     document.getElementById("waktuPulangText").innerText = "--:--";
 
-    statusBox.innerText = `Sedang Bekerja (Masuk Jam ${statusData.jamMasuk})`;
-    statusBox.className = "bg-slate-900 rounded-2xl p-4 mb-4 border border-slate-800 text-center text-sm text-indigo-400 font-medium animate-pulse";
+    const textKerja = `Sedang Bekerja (Masuk Jam ${statusData.jamMasuk})`;
+    statusBox.innerText = textKerja;
+    statusBox.className = "bg-slate-900 rounded-2xl p-4 text-center text-sm text-indigo-400 font-medium border border-slate-800 animate-pulse";
+    miniStatusBox.innerText = textKerja;
+    miniStatusBox.className = "p-4 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl text-center text-sm font-medium animate-pulse";
   } else if (statusData.step === "selesai") {
-    // Sudah selesai absen hari ini
     btnMasuk.disabled = true;
-    btnMasuk.className = "bg-slate-800 text-slate-500 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-700";
+    btnMasuk.className = "bg-slate-800 text-slate-600 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-700";
     document.getElementById("waktuMasukText").innerText = statusData.jamMasuk;
 
     btnPulang.disabled = true;
-    btnPulang.className = "bg-slate-800 text-slate-500 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-700";
+    btnPulang.className = "bg-slate-800 text-slate-600 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-700";
     document.getElementById("waktuPulangText").innerText = statusData.jamPulang;
 
+    const textSelesai = `Selesai Absen (${statusData.jamMasuk} - ${statusData.jamPulang})`;
     statusBox.innerText = "Status: Absensi Hari Ini Selesai";
-    statusBox.className = "bg-slate-900 rounded-2xl p-4 mb-4 border border-slate-800 text-center text-sm text-emerald-400 font-medium";
+    statusBox.className = "bg-slate-900 rounded-2xl p-4 text-center text-sm text-emerald-400 font-medium border border-slate-800";
+    miniStatusBox.innerText = textSelesai;
+    miniStatusBox.className = "p-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-center text-sm font-medium";
   }
 }
 
@@ -313,8 +436,7 @@ function absenPulang() {
   const metode = document.getElementById("metodeHitung").value;
 
   if(!gajiInput || isNaN(gaji) || gaji <= 0){
-    const pesanAlert = metode === "flat" ? "Masukkan Tarif per jam terlebih dahulu" : "Masukkan Gaji Bulanan terlebih dahulu";
-    alert("Mohon isi konfigurasi keuangan: " + pesanAlert);
+    alert(metode === "flat" ? "Mohon isi tarif lembur per jam di tab Absensi." : "Mohon isi Gaji Pokok Bulanan di tab Absensi.");
     return;
   }
 
@@ -327,32 +449,22 @@ function absenPulang() {
   if(!statusData) return;
 
   statusData.step = "selesai";
-  statusData.waktuPulangRaw = sekarang.getTime();
+  statusData.waktuPulangRaw = grandma = sekarang.getTime();
   statusData.jamPulang = formatWaktu(sekarang);
 
-  // Kalkulasi durasi kerja aktual (dalam jam desimal)
   const selisihMs = statusData.waktuPulangRaw - statusData.waktuMasukRaw;
   const totalJamKerja = parseFloat((selisihMs / (1000 * 60 * 60)).toFixed(2));
-
-  // Ambil data konfigurasi form
   const jenisHari = document.getElementById("jenisHari").value;
 
-  // Rule Jam Lembur Otomatis
   let jamLembur = 0;
   if (jenisHari === "kerja") {
-    // Di hari kerja standar, lembur dihitung jika kerja > 8 jam
-    if (totalJamKerja > 8) {
-      jamLembur = parseFloat((totalJamKerja - 8).toFixed(2));
-    }
+    if (totalJamKerja > 8) jamLembur = parseFloat((totalJamKerja - 8).toFixed(2));
   } else {
-    // Di hari libur, semua jam kerja terhitung lembur penuh
     jamLembur = totalJamKerja;
   }
 
-  // Hitung Nilai Rupiah Lembur
   const totalUpahLembur = hitungLembur(gaji, jenisHari, jamLembur, metode);
 
-  // Simpan record ke database riwayat lembur utama
   const logKey = "lembur_" + user;
   let daftar = JSON.parse(localStorage.getItem(logKey)) || [];
   
@@ -361,7 +473,7 @@ function absenPulang() {
     jamMasuk: statusData.jamMasuk,
     jamPulang: statusData.jamPulang,
     totalDurasi: totalJamKerja,
-    jam: jamLembur, // nilai jam lembur
+    jam: jamLembur,
     jenisHari,
     metode,
     total: totalUpahLembur
@@ -374,9 +486,9 @@ function absenPulang() {
   tampilkanData();
 
   if(jamLembur > 0) {
-    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nAnda lembur ${jamLembur} Jam, upah otomatis masuk rekap!`);
+    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nAnda otomatis lembur ${jamLembur} Jam!`);
   } else {
-    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nTidak ada jam lembur terdeteksi hari ini.`);
+    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nTidak ada lembur di hari kerja standar.`);
   }
 }
 
@@ -393,7 +505,6 @@ function hitungLembur(gaji, jenisHari, jam, metode){
       if(jam >= 1) konversions += 1.5;
       if(jam > 1)  konversions += (jam - 1) * 2;
     } else {
-      // Loop jam untuk pecahan desimal/bulat hari libur
       let sisaJam = jam;
       let counter = 1;
       while(sisaJam > 0) {
@@ -434,7 +545,7 @@ function tampilkanData(){
   const dataTampil = [...dataTersaring].reverse();
 
   if(dataTampil.length === 0) {
-    list.innerHTML = `<p class="text-center text-slate-500 text-sm py-4">Belum ada riwayat absensi atau lembur.</p>`;
+    list.innerHTML = `<p class="text-center text-slate-500 text-xs py-6">Belum ada riwayat absensi atau lembur.</p>`;
   }
 
   dataTampil.forEach(item => {
@@ -443,15 +554,15 @@ function tampilkanData(){
     const infoJamLog = (item.jamMasuk && item.jamPulang) ? ` (${item.jamMasuk} - ${item.jamPulang})` : '';
     
     list.innerHTML += `
-    <div class="bg-slate-900 rounded-2xl p-4 flex justify-between items-center border border-slate-800/60">
+    <div class="bg-slate-900/90 rounded-2xl p-4 flex justify-between items-center border border-slate-800/80">
       <div>
-        <h3 class="font-bold text-sm sm:text-base">${item.tanggal}${infoJamLog}</h3>
-        <p class="text-slate-400 text-xs sm:text-sm mt-1">
-          Durasi Kerja: ${item.totalDurasi || item.jam}j • <span class="text-amber-400 font-medium">Lembur: ${item.jam}j</span> • ${labelHari}${labelMetode}
+        <h3 class="font-bold text-sm">${item.tanggal}${infoJamLog}</h3>
+        <p class="text-slate-400 text-xs mt-1">
+          Kerja: ${item.totalDurasi || item.jam}j • <span class="text-amber-400 font-medium">Lembur: ${item.jam}j</span> • ${labelHari}${labelMetode}
         </p>
       </div>
       <div class="text-right">
-        <h3 class="font-bold text-base sm:text-xl text-indigo-400">${rupiah(item.total)}</h3>
+        <h3 class="font-bold text-base text-indigo-400">${rupiah(item.total)}</h3>
       </div>
     </div>
     `;
@@ -459,7 +570,7 @@ function tampilkanData(){
 
   document.getElementById("totalUpah").innerText = rupiah(grandTotal);
   document.getElementById("totalJam").innerText = totalJamLembur.toFixed(1) + " Jam";
-  document.getElementById("jumlahData").innerText = dataTersaring.length;
+  document.getElementById("jumlahData").innerText = dataTersaring.length + " Hari";
 }
 
 function hapusData(){
@@ -472,13 +583,13 @@ function hapusData(){
     return;
   }
 
-  if(confirm("Apakah Anda yakin ingin menghapus seluruh log riwayat presensi dan lembur Anda?")){
+  if(confirm("Apakah Anda yakin ingin menghapus seluruh log riwayat presensi dan lembur?")){
     localStorage.removeItem(key);
     tampilkanData();
   }
 }
 
-// BACKUP & RESTORE DATA
+// BACKUP & RESTORE DATA JSON
 function backupData() {
   const user = localStorage.getItem("activeUser");
   const key = "lembur_" + user;
@@ -493,7 +604,7 @@ function backupData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `Backup_Presensi_Lembur_${user}.json`;
+  a.download = `Backup_KerjaKu_${user}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -517,7 +628,7 @@ function importData(event) {
       const user = localStorage.getItem("activeUser");
       const key = "lembur_" + user;
       
-      if (confirm("Gabungkan data cadangan dengan data saat ini? (Pilih 'Cancel' untuk menimpa penuh)")) {
+      if (confirm("Gabungkan data cadangan dengan data lokal?\n\n(Pilih 'Cancel' untuk menimpa penuh data saat ini)")) {
         let daftarLokal = JSON.parse(localStorage.getItem(key)) || [];
         localStorage.setItem(key, JSON.stringify([...daftarLokal, ...dataImported]));
       } else {
@@ -525,16 +636,16 @@ function importData(event) {
       }
 
       tampilkanData();
-      alert("Data presensi berhasil dipulihkan!");
+      alert("Data database berhasil dipulihkan!");
     } catch (err) {
-      alert("Gagal memproses file. Pastikan struktur JSON backup valid.");
+      alert("Gagal memproses file. Pastikan struktur JSON cadangan valid.");
     }
   };
   reader.readAsText(file);
   event.target.value = '';
 }
 
-// CETAK LAPORAN PDF ADAPTIF
+// EKSPOR PDF REKAP
 async function downloadPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -550,11 +661,10 @@ async function downloadPDF(){
   });
 
   if(dataCetak.length === 0){
-    alert("Tidak ada data presensi/lembur untuk dicetak pada periode ini.");
+    alert("Tidak ada data presensi/lembur untuk dicetak.");
     return;
   }
 
-  // Banner Atas Premium
   doc.setFillColor(79, 70, 229);
   doc.rect(0, 0, 210, 40, 'F');
 
@@ -568,7 +678,6 @@ async function downloadPDF(){
   doc.setTextColor(218, 211, 249);
   doc.text("Laporan Resmi Kehadiran & Kalkulasi Lembur Karyawan", 15, 28);
 
-  // Informasi Karyawan
   let y = 55;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
@@ -583,9 +692,8 @@ async function downloadPDF(){
   doc.text("PERIODE LAPORAN:", 15, y + 6);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(15, 23, 42);
-  doc.text(filterBulan ? filterBulan : "Semua Bulan", 58, y + 6);
+  doc.text(filterBulan ? filterBulan : "Semua Periode", 58, y + 6);
 
-  // Struktur Tabel
   let grandTotal = 0;
   let totalJamLembur = 0;
   const barisTabel = [];
@@ -624,7 +732,6 @@ async function downloadPDF(){
     styles: { font: 'helvetica', fontSize: 9, cellPadding: 4 }
   });
 
-  // Box Rangkuman
   let finalY = doc.lastAutoTable.finalY + 10;
   if (finalY > 240) { doc.addPage(); finalY = 20; }
 
@@ -646,7 +753,7 @@ async function downloadPDF(){
   doc.setTextColor(79, 70, 229); 
   doc.text(rupiah(grandTotal), 115, finalY + 25);
 
-  doc.save(`Laporan_Presensi_Lembur_${user}.pdf`);
+  doc.save(`Laporan_Presensi_KerjaKu_${user}.pdf`);
 }
 </script>
 
@@ -658,4 +765,3 @@ if ("serviceWorker" in navigator) {
   
 </body>
 </html>
-
