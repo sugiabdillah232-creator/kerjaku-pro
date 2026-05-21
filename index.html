@@ -866,4 +866,193 @@ async function downloadSlipGaji() {
   doc.text("SLIP GAJI KARYAWAN", 10, 16);
   
   doc.setFontSize(10);
+  doc.setTextColor(79, 70, 229);
+  doc.text("KERJAKU PRO SYSTEM", 10, 21);
+
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.2);
+  doc.line(10, 25, 138, 25);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text("Nama Karyawan:", 10, 31);
+  doc.text("Periode Gaji:", 10, 36);
+  doc.text("Metode Hitung:", 10, 41);
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(15, 23, 42);
+  doc.text(user.toUpperCase(), 38, 31);
+  doc.text(filterBulan, 38, 36);
+  doc.text(metode === 'flat' ? 'Tarif Flat Tetap' : 'Peraturan Pemerintah (1/173)', 38, 41);
+
+  doc.setFillColor(248, 250, 252);
+  doc.rect(10, 47, 128, 6, 'F');
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("DESKRIPSI PENERIMAAN", 12, 51);
+  doc.text("JUMLAH", 110, 51);
+
+  let currentY = 59;
+  doc.setFont("helvetica", "normal");
+  doc.text("Gaji Pokok Bulanan", 12, currentY);
+  doc.text(rupiah(metode === 'flat' ? 0 : gajiPokok), 105, currentY);
+
+  currentY += 6;
+  doc.text(`Uang Lembur Aktif (${totalJamLembur.toFixed(1)} Jam)`, 12, currentY);
+  doc.text(rupiah(totalUangLembur), 105, currentY);
+
+  currentY += 4;
+  doc.line(10, currentY, 138, currentY);
+
+  currentY += 6;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("TOTAL DITERIMA (TAKE HOME PAY)", 12, currentY);
+  
+  const takeHomePay = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
+  doc.setTextColor(16, 185, 129);
+  doc.text(rupiah(takeHomePay), 105, currentY);
+
+  currentY += 12;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(7.5);
+  doc.setTextColor(148, 163, 184);
+  doc.text("*Slip gaji ini sah dibuat dan dihitung otomatis oleh sistem KerjaKu Pro V5.", 10, currentY);
+
+  currentY += 12;
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(51, 65, 85);
+  doc.text("Penerima,", 20, currentY);
+  doc.text("Manajemen KerjaKu,", 95, currentY);
+
+  currentY += 16;
+  doc.setFont("helvetica", "bold");
+  doc.text(`( ${user.substring(0, 10).toUpperCase()} )`, 15, currentY);
+  doc.text("( HRD MANAGER )", 92, currentY);
+
+  doc.save(`Slip_Gaji_${user}_${filterBulan}.pdf`);
+}
+
+async function downloadPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  const user = localStorage.getItem("activeUser");
+  const key = "lembur_" + user;
+  let daftar = JSON.parse(localStorage.getItem(key)) || [];
+  const filterBulan = document.getElementById("filterBulan").value;
+
+  let dataCetak = daftar.filter(item => {
+    if (!filterBulan) return true;
+    return item.tanggal.startsWith(filterBulan);
+  });
+
+  if(dataCetak.length === 0){
+    alert("Tidak ada data presensi/lembur untuk dicetak.");
+    return;
+  }
+
+  doc.setFillColor(79, 70, 229);
+  doc.rect(0, 0, 210, 40, 'F');
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(255, 255, 255);
+  doc.text("KERJAKU PRO", 15, 20);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(218, 211, 249);
+  doc.text("Laporan Resmi Kehadiran & Kalkulasi Lembur Karyawan", 15, 28);
+
+  let y = 55;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(51, 65, 85); 
+  doc.text("NAMA KARYAWAN :", 15, y);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(15, 23, 42); 
+  doc.text(user.toUpperCase(), 58, y);
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(51, 65, 85);
+  doc.text("PERIODE LAPORAN:", 15, y + 6);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(15, 23, 42);
+  doc.text(filterBulan ? filterBulan : "Semua Periode", 58, y + 6);
+
+  let grandTotal = 0;
+  let totalJamLembur = 0;
+  const barisTabel = [];
+
+  dataCetak.forEach((item, index) => {
+    grandTotal += item.total;
+    totalJamLembur += item.jam;
+    let infoHari = item.jenisHari === 'kerja' ? 'Hari Kerja' : 'Hari Libur';
+    if(item.isManual) infoHari += " (Manual)";
+    
+    const jamLog = (item.jamMasuk && item.jamPulang) ? `${item.jamMasuk}-${item.jamPulang}` : '-';
+    
+    barisTabel.push([
+      index + 1,
+      item.tanggal,
+      jamLog,
+      `${item.totalDurasi || item.jam} Jam`,
+      `${item.jam} Jam`,
+      infoHari,
+      rupiah(item.total)
+    ]);
+  });
+
+  doc.autoTable({
+    startY: y + 16,
+    head: [['No', 'Tanggal', 'Jam Log', 'Total Kerja', 'Jam Lembur', 'Kategori', 'Upah Lembur']],
+    body: barisTabel,
+    theme: 'striped',
+    headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+    columnStyles: {
+      0: { halign: 'center', width: 12 },
+      1: { halign: 'center' },
+      2: { halign: 'center' },
+      3: { halign: 'center' },
+      4: { halign: 'center' },
+      6: { halign: 'right', fontStyle: 'bold' }
+    },
+    styles: { font: 'helvetica', fontSize: 9, cellPadding: 4 }
+  });
+
+  let finalY = doc.lastAutoTable.finalY + 10;
+  if (finalY > 240) { doc.addPage(); finalY = 20; }
+
+  doc.setFillColor(241, 245, 249);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(110, finalY, 85, 30, 4, 4, 'FD');
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Akumulasi Lembur: ${totalJamLembur.toFixed(1)} Jam`, 115, finalY + 10);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text("TOTAL LEMBURAN:", 115, finalY + 18);
+  
+  doc.setFontSize(14);
+  doc.setTextColor(79, 70, 229); 
+  doc.text(rupiah(grandTotal), 115, finalY + 25);
+
+  doc.save(`Laporan_Presensi_KerjaKu_${user}.pdf`);
+}
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
+  
+</body>
+</html>
 
