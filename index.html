@@ -10,28 +10,56 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
 
 <style>
-body{background:#020617;color:white;font-family:Arial;transition:.3s;}
-.glass{background:rgba(255,255,255,.05);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);}
-.gradient{background:linear-gradient(135deg,#4f46e5,#7c3aed);}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;padding:14px;background:#0f172a;}
+body{
+background:#020617;
+color:white;
+font-family:Arial;
+}
+
+.glass{
+background:rgba(255,255,255,.05);
+backdrop-filter:blur(12px);
+border:1px solid rgba(255,255,255,.08);
+}
+
+.gradient{
+background:linear-gradient(135deg,#4f46e5,#7c3aed);
+}
+
+.bottom-nav{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+display:flex;
+justify-content:space-around;
+padding:14px;
+background:#0f172a;
+}
+
 .page{display:none;}
 .active-page{display:block;}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#4f46e5;padding:10px 20px;border-radius:12px;}
 
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.fade-in{animation:fadeIn .25s ease;}
+.toast{
+position:fixed;
+bottom:90px;
+left:50%;
+transform:translateX(-50%);
+background:#4f46e5;
+padding:10px 18px;
+border-radius:12px;
+}
 
-.lock-overlay{
-position:fixed;inset:0;
-background:rgba(0,0,0,.75);
-backdrop-filter:blur(10px);
-display:flex;
-align-items:center;
-justify-content:center;
-z-index:9999;
+/* banking animation */
+.fade-in{
+animation:fadeIn .25s ease;
+}
+
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(10px)}
+to{opacity:1;transform:translateY(0)}
 }
 </style>
 </head>
@@ -40,29 +68,26 @@ z-index:9999;
 
 <!-- LOGIN -->
 <div id="loginPage" class="min-h-screen flex items-center justify-center p-5">
-<div class="glass p-6 rounded-3xl w-full max-w-md">
-<h1 class="text-2xl font-bold mb-4">KerjaKu V7 Banking</h1>
+<div class="glass p-6 rounded-2xl w-full max-w-md">
+
+<h1 class="text-2xl font-bold mb-4">KerjaKu Banking</h1>
 
 <input id="username" class="w-full p-3 bg-slate-900 rounded-xl mb-3" placeholder="Username">
-<input id="pin" type="password" maxlength="6" class="w-full p-3 bg-slate-900 rounded-xl mb-3" placeholder="PIN">
+<input id="pin" type="password" class="w-full p-3 bg-slate-900 rounded-xl mb-3" placeholder="PIN">
 
 <button onclick="login()" class="w-full gradient py-3 rounded-xl font-bold">Login</button>
 <button onclick="register()" class="w-full bg-slate-700 py-3 rounded-xl mt-2">Daftar</button>
+
 </div>
 </div>
 
 <!-- APP -->
 <div id="app" class="hidden pb-28">
 
-<header class="p-5 flex justify-between items-center">
+<header class="p-5 flex justify-between">
 <div>
 <h1 class="text-xl font-bold">KerjaKu 👋</h1>
 <p id="welcomeUser"></p>
-</div>
-
-<div class="flex gap-2">
-<button onclick="toggleTheme()" class="glass p-3 rounded-xl">🌙</button>
-<button onclick="openLogout()" class="glass p-3 rounded-xl">🔴</button>
 </div>
 </header>
 
@@ -88,7 +113,7 @@ z-index:9999;
 </div>
 
 <div class="glass p-4 rounded-2xl mt-5">
-<h2 class="font-bold mb-3">Data Lembur</h2>
+<h2 class="font-bold mb-3">Rekap</h2>
 <div id="listData"></div>
 </div>
 
@@ -116,53 +141,50 @@ z-index:9999;
 
 </div>
 
-<!-- SETTING -->
+<!-- TINDAKAN / SETTING -->
 <div id="settingPage" class="page px-5">
+
 <div class="glass p-5 rounded-2xl space-y-3">
 
-<button onclick="downloadPDF()" class="w-full bg-green-600 py-3 rounded-xl">PDF</button>
-<button onclick="exportExcel()" class="w-full bg-blue-600 py-3 rounded-xl">Excel</button>
-<button onclick="hapusSemua()" class="w-full bg-red-600 py-3 rounded-xl">Hapus Semua</button>
+<button onclick="downloadPDF()" class="w-full bg-green-600 py-3 rounded-xl">Export PDF</button>
+<button onclick="exportExcel()" class="w-full bg-blue-600 py-3 rounded-xl">Export Excel</button>
+<button onclick="hapusSemua()" class="w-full bg-red-600 py-3 rounded-xl">Hapus Data</button>
+
+<!-- STATISTIK DIPINDAH KE SINI -->
+<div class="glass p-4 rounded-2xl mt-3">
+<h2 class="font-bold mb-2">Statistik</h2>
+<canvas id="chartBulanan"></canvas>
+</div>
 
 </div>
-</div>
 
 </div>
 
-<!-- LOGOUT V4 -->
-<div id="logoutModal" class="hidden lock-overlay">
-
-<div class="glass p-5 rounded-2xl w-[85%] max-w-sm text-center">
-
-<h2 class="font-bold mb-2">Security Logout</h2>
-<p class="text-sm mb-3">Ketik LOGOUT</p>
-
-<input id="logoutConfirmInput" class="w-full p-2 rounded-xl bg-black/40 text-center mb-3">
-
-<button onclick="verifyLogout()" class="w-full bg-red-600 py-2 rounded-xl">Logout</button>
-
-</div>
+<!-- NAV -->
+<nav class="bottom-nav">
+<button onclick="showPage('homePage')">🏠</button>
+<button onclick="showPage('tambahPage')">➕</button>
+<button onclick="showPage('settingPage')">⚙️</button>
+</nav>
 
 </div>
 
 <script>
-lucide.createIcons();
-
 let idleTimer;
 
-/* AUTO LOCK */
+/* AUTO DARK MODE FIXED (NO TOGGLE) */
+document.body.style.background="#020617";
+
+/* IDLE LOCK */
 function resetIdle(){
 clearTimeout(idleTimer);
-idleTimer=setTimeout(lockApp,120000);
+idleTimer=setTimeout(()=>{
+alert("Session terkunci");
+},120000);
 }
 document.addEventListener("click",resetIdle);
 document.addEventListener("mousemove",resetIdle);
 document.addEventListener("keypress",resetIdle);
-
-/* LOCK */
-function lockApp(){
-alert("Session terkunci, refresh untuk login ulang");
-}
 
 /* AUTH */
 function register(){
@@ -232,7 +254,7 @@ jam+=d.jam;
 totalUpah.innerText=Math.floor(total).toLocaleString("id-ID");
 totalJam.innerText=jam;
 
-data.slice().reverse().forEach((d,i)=>{
+data.slice().reverse().forEach(d=>{
 listData.innerHTML+=`
 <div class="bg-slate-900 p-3 rounded-xl mt-2 flex justify-between">
 <div>${d.tanggal}<br>${d.jam} Jam</div>
@@ -247,9 +269,7 @@ let data=JSON.parse(localStorage.getItem(key)||"[]");
 
 if(window.chartInstance)window.chartInstance.destroy();
 
-let ctx=document.getElementById("chartBulanan");
-
-window.chartInstance=new Chart(ctx,{
+window.chartInstance=new Chart(document.getElementById("chartBulanan"),{
 type:"bar",
 data:{
 labels:data.map(d=>d.tanggal),
@@ -264,29 +284,10 @@ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active-page"))
 document.getElementById(id).classList.add("active-page","fade-in");
 }
 
-/* LOGOUT V7 */
-function openLogout(){
-logoutModal.classList.remove("hidden");
-}
-
-function verifyLogout(){
-if(logoutConfirmInput.value!=="LOGOUT"){
-alert("Kode salah");
-return;
-}
-
-localStorage.removeItem("activeUser");
-location.reload();
-}
-
 /* EXPORT */
-function downloadPDF(){alert("PDF ready");}
-function exportExcel(){alert("Excel ready");}
-function hapusSemua(){alert("hapus data");}
-
-function toggleTheme(){
-document.body.classList.toggle("light");
-}
+function downloadPDF(){alert("PDF");}
+function exportExcel(){alert("Excel");}
+function hapusSemua(){alert("hapus");}
 </script>
 
 </body>
