@@ -3,28 +3,30 @@
  <head>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4f46e5">
-  <link class="w-4 h-4" rel="apple-touch-icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KerjaKu Pro V5 - Multi Screen</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
     body {
-      font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+      font-family: Arial, sans-serif;
       background: #020617;
       color: white;
+      margin: 0;
+      padding: 0;
       -webkit-tap-highlight-color: transparent;
     }
 
     .glass {
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
@@ -36,21 +38,35 @@
       box-shadow: 0 0 25px rgba(99, 102, 241, .25);
     }
     
+    /* PERBAIKAN ANIMASI DAN DISPLAY SCREEN */
     .screen {
-      display: none;
-      animation: fadeIn 0.2s ease-in-out;
+      display: none !important;
     }
     .screen.active {
-      display: block;
+      display: block !important;
+      animation: fadeIn 0.25s ease-in-out forwards;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Proteksi tata letak navigasi bawah jika tailwind tidak termuat */
+    nav {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    nav button {
+      background: none;
+      border: none;
+      cursor: pointer;
     }
   </style>
  </head>
  <body>
+  
   <div id="loginPage" class="min-h-screen flex items-center justify-center p-5">
    <div class="glass rounded-3xl p-8 w-full max-w-md">
     <div class="text-center mb-8">
@@ -105,15 +121,13 @@
      <div class="flex justify-between items-start gap-2">
       <div>
        <h2 id="titlePresensiForm" class="text-xl font-bold">Presensi &amp; Hitung Otomatis</h2>
-       <p class="text-slate-400 text-xs mt-1">Sistem otomatis menghitung lembur jika kerja melebihi 8 jam di Hari Kerja.</p>
+       <p class="text-slate-400 text-xs mt-1">Sistem akan menghitung lembur secara otomatis jika jam kerja melebihi 8 jam pada Hari Kerja.</p>
       </div>
       <button id="btnToggleLupa" onclick="toggleModeLupaAbsen()" class="text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition shrink-0">Lupa Absen?</button>
      </div>
      <div class="flex justify-between items-center px-4 py-2.5 bg-slate-900/80 rounded-xl border border-slate-800">
-      <span class="text-xs text-slate-400 font-medium tracking-wide">WAKTU AKTUAL</span> 
-      <span id="liveClock" class="text-sm font-bold text-indigo-400 tracking-wider">00:00:00</span>
+      <span class="text-xs text-slate-400 font-medium tracking-wide">WAKTU AKTUAL</span> <span id="liveClock" class="text-sm font-bold text-indigo-400 tracking-wider">00:00:00</span>
      </div>
-     
      <div id="wrapperAbsenNormal" class="space-y-4">
       <div id="statusAbsenBox" class="bg-slate-900 rounded-2xl p-4 text-center text-sm font-medium border border-slate-800">--</div>
       <div class="grid grid-cols-2 gap-4">
@@ -121,49 +135,35 @@
        <button id="btnPulang" onclick="absenPulang()" disabled class="bg-slate-800 text-slate-600 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-700"><i data-lucide="log-out" class="w-6 h-6"></i> <span>Absen Pulang</span> <span id="waktuPulangText" class="text-xs font-normal opacity-80">--:--</span></button>
       </div>
      </div>
-
      <div id="wrapperAbsenLupa" class="hidden bg-slate-950/40 p-4 rounded-2xl border border-slate-800/80 space-y-4">
       <div class="text-[11px] text-amber-400 font-medium leading-relaxed">
-       ⚠️ <strong>Ketentuan Pengajuan:</strong> Pembatasan maksimal 3 hari ke belakang &amp; hanya diperbolehkan melakukan revisi 1 kali per tanggal.
+       ⚠️ <strong>Ketentuan Pengajuan:</strong> Pembatasan maksimal 3 days ke belakang &amp; hanya diperbolehkan melakukan revisi 1 kali per tanggal.
       </div>
       <div>
-       <label class="text-xs text-slate-400 block mb-1">Pilih Tanggal yang Lupa Absen</label> 
-       <input type="date" id="tanggalLupa" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+       <label class="text-xs text-slate-400 block mb-1">Pilih Tanggal yang Lupa Absen</label> <input type="date" id="tanggalLupa" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
       </div>
       <div class="grid grid-cols-2 gap-3">
        <div>
-        <label class="text-xs text-slate-400 block mb-1">Jam Masuk Revisi</label> 
-        <input type="time" id="jamMasukManual" value="08:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+        <label class="text-xs text-slate-400 block mb-1">Jam Masuk Revisi</label> <input type="time" id="jamMasukManual" value="08:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
        </div>
        <div>
-        <label class="text-xs text-slate-400 block mb-1">Jam Pulang Revisi</label> 
-        <input type="time" id="jamPulangManual" value="17:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+        <label class="text-xs text-slate-400 block mb-1">Jam Pulang Revisi</label> <input type="time" id="jamPulangManual" value="17:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
        </div>
       </div>
       <button onclick="simpanLupaAbsen()" class="w-full gradient py-3.5 rounded-xl font-bold text-sm text-white transition active:scale-95">Proses Revisi Absen</button>
      </div>
     </div>
-
     <div class="glass rounded-3xl p-5 space-y-4">
      <h3 class="font-bold text-sm text-slate-400 tracking-wide uppercase">Konfigurasi Upah &amp; Hari</h3>
      <div class="space-y-3">
       <div>
-       <label class="text-xs text-slate-400 block mb-1">Skema Hitung Lembur</label> 
-       <select id="metodeHitung" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none" onchange="cekMetode()"> 
-         <option value="pemerintah">Sesuai Peraturan Pemerintah (Gaji / 173)</option> 
-         <option value="flat">Tarif Flat Tetap (Per Jam)</option> 
-       </select>
+       <label class="text-xs text-slate-400 block mb-1">Skema Hitung Lembur</label> <select id="metodeHitung" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none" onchange="cekMetode()"> <option value="pemerintah">Sesuai Peraturan Pemerintah (Gaji / 173)</option> <option value="flat">Tarif Flat Tetap (Per Jam)</option> </select>
       </div>
       <div>
-       <label id="labelGaji" class="text-xs text-slate-400 block mb-1">Gaji Pokok Bulanan</label> 
-       <input type="number" id="gaji" placeholder="Gaji Bulanan" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+       <label id="labelGaji" class="text-xs text-slate-400 block mb-1">Gaji Pokok Bulanan</label> <input type="number" id="gaji" placeholder="Gaji Bulanan" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
       </div>
       <div>
-       <label class="text-xs text-slate-400 block mb-1">Kategori Hari Absensi</label> 
-       <select id="jenisHari" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none"> 
-         <option value="kerja">Hari Kerja Biasa</option> 
-         <option value="libur">Hari Libur / Weekend / Tanggal Merah</option> 
-       </select>
+       <label class="text-xs text-slate-400 block mb-1">Kategori Hari Absensi</label> <select id="jenisHari" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none"> <option value="kerja">Hari Kerja Biasa</option> <option value="libur">Hari Libur / Weekend / Tanggal Merah</option> </select>
       </div>
      </div>
     </div>
@@ -182,10 +182,9 @@
       <div>
        <input type="month" id="filterBulan" onchange="tampilkanData()" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white outline-none">
       </div>
-      <div class="grid grid-cols-3 gap-2">
-       <button onclick="downloadPDF()" class="bg-indigo-600 py-3 rounded-xl font-bold text-[10px] text-white flex flex-col items-center justify-center gap-1 transition active:scale-95"><i data-lucide="file-text" class="w-4 h-4"></i> <span>REKAP TABEL</span></button>
-       <button onclick="downloadSlipGaji()" class="bg-emerald-600 py-3 rounded-xl font-bold text-[10px] text-white flex flex-col items-center justify-center gap-1 transition active:scale-95"><i data-lucide="wallet" class="w-4 h-4"></i> <span>SLIP GAJI</span></button>
-       <button onclick="exportToCSV()" class="bg-amber-600 py-3 rounded-xl font-bold text-[10px] text-white flex flex-col items-center justify-center gap-1 transition active:scale-95"><i data-lucide="sheet" class="w-4 h-4"></i> <span>EKSPOR EXCEL</span></button>
+      <div class="grid grid-cols-2 gap-2">
+       <button onclick="downloadPDF()" class="bg-indigo-600 py-3 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-1.5 transition active:scale-95"><i data-lucide="file-text" class="w-4 h-4"></i> <span>REKAP TABEL</span></button>
+       <button onclick="downloadSlipGaji()" class="bg-emerald-600 py-3 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-1.5 transition active:scale-95"><i data-lucide="wallet" class="w-4 h-4"></i> <span>SLIP GAJI</span></button>
       </div>
      </div>
      <div id="listData" class="space-y-3 pt-2"></div>
@@ -242,7 +241,12 @@ let clockInterval = null;
 let isModeLupaAbsen = false; 
 let tanggalTerakhir = ""; 
 
-lucide.createIcons();
+// Fungsi Pembungkus Amankan Ikon Lucide dari Error Internet
+function renderIconsSafe() {
+  if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+    lucide.createIcons();
+  }
+}
 
 function startLiveClock() {
   if (clockInterval) clearInterval(clockInterval);
@@ -251,7 +255,6 @@ function startLiveClock() {
   clockInterval = setInterval(() => {
     const sekarang = new Date();
     const tanggalSekarang = formatTanggal(sekarang);
-    
     if (tanggalSekarang !== tanggalTerakhir) {
       tanggalTerakhir = tanggalSekarang;
       refreshStatusAbsen(); 
@@ -305,7 +308,7 @@ function switchScreen(screenName, navId) {
   }
 
   document.getElementById('headerTitle').innerText = screenName;
-  lucide.createIcons();
+  renderIconsSafe();
 }
 
 function rupiah(angka){
@@ -412,7 +415,7 @@ function tampilDashboard(){
   refreshStatusAbsen();
   tampilkanData();
   startLiveClock();
-  lucide.createIcons();
+  renderIconsSafe();
 }
 
 function logout(){
@@ -491,7 +494,7 @@ function absenMasuk() {
 
   localStorage.setItem(statusKey, JSON.stringify(data));
   refreshStatusAbsen();
-  alert("Absen Masuk Berhasil!");
+  alert("Absen Masuk Berhasil dicatat! Selamat bekerja.");
 }
 
 function absenPulang() {
@@ -550,9 +553,9 @@ function absenPulang() {
   tampilkanData();
 
   if(jamLembur > 0) {
-    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nLembur otomatis: ${jamLembur} Jam.`);
+    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nAnda otomatis lembur ${jamLembur} Jam!`);
   } else {
-    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.`);
+    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nTidak ada lembur di hari kerja standar.`);
   }
 }
 
@@ -586,17 +589,17 @@ function simpanLupaAbsen() {
   const selisihHari = Math.floor(selisihWaktu / (1000 * 60 * 60 * 24));
 
   if(selisihHari > 3) {
-    alert("❌ Gagal: Batas maksimal 3 hari ke belakang.");
+    alert("❌ Gagal Menyimpan: Anda hanya diizinkan mengisi lupa absen maksimal 3 hari ke belakang dari hari ini.");
     return;
   }
   if(selisihHari < 0) {
-    alert("❌ Gagal: Tidak dapat memilih tanggal masa depan.");
+    alert("❌ Gagal Menyimpan: Tidak dapat memilih tanggal masa depan.");
     return;
   }
 
   const cekDuplikat = daftar.find(item => item.tanggal === tanggalLupa);
   if (cekDuplikat) {
-    alert(`❌ Gagal: Tanggal ${tanggalLupa} sudah ada di riwayat (Kuota revisi 1x).`);
+    alert(`❌ Gagal Menyimpan: Tanggal ${tanggalLupa} sudah terdata di sistem. Batas kuota pengisian manual/revisi hanya 1 kali.`);
     return;
   }
 
@@ -604,7 +607,7 @@ function simpanLupaAbsen() {
   const pulangVal = document.getElementById("jamPulangManual").value;
 
   if(!masukVal || !pulangVal) {
-    alert("Mohon isi jam masuk dan pulang secara lengkap.");
+    alert("Mohon isi jam masuk dan pulang kerja secara lengkap.");
     return;
   }
 
@@ -615,7 +618,9 @@ function simpanLupaAbsen() {
   if (totalMenit < 0) totalMenit += 24 * 60; 
 
   let totalJamKerja = parseFloat((totalMenit / 60).toFixed(2));
-  if(totalJamKerja > 5) totalJamKerja = parseFloat((totalJamKerja - 1).toFixed(2));
+  if(totalJamKerja > 5) {
+    totalJamKerja = parseFloat((totalJamKerja - 1).toFixed(2));
+  }
 
   let jamLembur = 0;
   if (jenisHari === "kerja") {
@@ -645,11 +650,13 @@ function simpanLupaAbsen() {
   toggleModeLupaAbsen(); 
   refreshStatusAbsen();
   tampilkanData();
-  alert("Sukses! Data pengajuan lupa absen berhasil dikunci.");
+
+  alert("Sukses! Data lupa absen berhasil diverifikasi dan dikunci ke database riwayat.");
 }
 
 function hitungLembur(gaji, jenisHari, jam, metode){
   if(jam <= 0) return 0;
+  
   if(metode === "flat") {
     return gaji * jam;
   } else {
@@ -679,6 +686,7 @@ function tampilkanData(){
 
   const filterBulan = document.getElementById("filterBulan").value;
   const list = document.getElementById("listData");
+  if (!list) return;
   list.innerHTML = "";
 
   let grandTotal = 0;
@@ -697,7 +705,7 @@ function tampilkanData(){
   const dataTampil = [...dataTersaring].reverse();
 
   if(dataTampil.length === 0) {
-    list.innerHTML = `<p class="text-center text-slate-500 text-xs py-6">Belum ada riwayat log.</p>`;
+    list.innerHTML = `<p class="text-center text-slate-500 text-xs py-6">Belum ada riwayat absensi atau lembur.</p>`;
   }
 
   dataTampil.forEach(item => {
@@ -736,7 +744,7 @@ function hapusData(){
     return;
   }
 
-  if(confirm("Apakah Anda yakin ingin menghapus seluruh log riwayat presensi?")){
+  if(confirm("Apakah Anda yakin ingin menghapus seluruh log riwayat presensi dan lembur?")){
     localStorage.removeItem(key);
     tampilkanData();
   }
@@ -799,80 +807,11 @@ function importData(event) {
 
 window.onload = tampilDashboard;
 
-// ==========================================
-// ALGORITMA ENKRIPSI ANTI-FRAUD HASH DIGITAL
-// ==========================================
-function generateSimpleHash(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; 
-  }
-  const hex = Math.abs(hash).toString(16).toUpperCase().padStart(8, '0');
-  return `KKP5-${hex.substring(0,4)}-${hex.substring(4,8)}`;
-}
-
-// ==========================================
-// FUNGSIONALITAS BARU: EKSPOR SPREADSHEET CSV
-// ==========================================
-function exportToCSV() {
-  const user = localStorage.getItem("activeUser");
-  const key = "lembur_" + user;
-  let daftar = JSON.parse(localStorage.getItem(key)) || [];
-  const filterBulan = document.getElementById("filterBulan").value;
-
-  let dataCetak = daftar.filter(item => {
-    if (!filterBulan) return true;
-    return item.tanggal.startsWith(filterBulan);
-  });
-
-  if(dataCetak.length === 0){
-    alert("Tidak ada data presensi/lembur untuk diekspor.");
+async function downloadSlipGaji() {
+  if (typeof window.jspdf === 'undefined') {
+    alert("Fungsi cetak PDF gagal dimuat. Pastikan Anda terhubung ke internet.");
     return;
   }
-
-  let csvContent = "data:text/csv;charset=utf-8,";
-  csvContent += "No,Tanggal,Jam Masuk,Jam Pulang,Total Durasi Kerja (Jam),Jam Lembur (Jam),Kategori Hari,Metode Hitung,Upah Lembur,Kode Verifikasi Hash (Anti Fraud)\r\n";
-
-  dataCetak.forEach((item, index) => {
-    const jamLogMasuk = item.jamMasuk || "-";
-    const jamLogPulang = item.jamPulang || "-";
-    const labelHari = item.jenisHari === 'kerja' ? 'Hari Kerja' : 'Hari Libur';
-    const labelMetode = item.metode === 'flat' ? 'Tarif Flat' : 'Peraturan Pemerintah';
-    
-    // Pembuatan string dasar untuk kunci validasi integritas data
-    const rawString = `${user}-${item.tanggal}-${item.total}-${item.jam}`;
-    const hashKeamanan = generateSimpleHash(rawString);
-
-    const row = [
-      index + 1,
-      `"${item.tanggal}"`,
-      `"${jamLogMasuk}"`,
-      `"${jamLogPulang}"`,
-      item.totalDurasi || item.jam,
-      item.jam,
-      `"${labelHari}"`,
-      `"${labelMetode}"`,
-      item.total,
-      `"${hashKeamanan}"`
-    ];
-    csvContent += row.join(",") + "\r\n";
-  });
-
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `Ekspor_KerjaKu_${user}_${filterBulan || 'Semua'}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-// ==========================================
-// INTEGRASI SECURE HASH PADA SLIP GAJI PDF
-// ==========================================
-async function downloadSlipGaji() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a5');
   
@@ -962,16 +901,7 @@ async function downloadSlipGaji() {
   doc.setTextColor(16, 185, 129);
   doc.text(rupiah(takeHomePay), 105, currentY);
 
-  currentY += 10;
-  // SUNTIKAN HASH KEAMANAN ANTIFRAUD PADA SLIP GAJI
-  const rawHashSlip = `${user}-${filterBulan}-${takeHomePay}`;
-  const secureHashSlip = generateSimpleHash(rawHashSlip);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(79, 70, 229);
-  doc.text(`SECURITY VERIFICATION HASH: ${secureHashSlip}`, 10, currentY);
-  currentY += 8;
-
+  currentY += 12;
   doc.setFont("helvetica", "italic");
   doc.setFontSize(7.5);
   doc.setTextColor(148, 163, 184);
@@ -991,10 +921,11 @@ async function downloadSlipGaji() {
   doc.save(`Slip_Gaji_${user}_${filterBulan}.pdf`);
 }
 
-// ==========================================
-// INTEGRASI SECURE HASH PADA REKAP TABEL PDF
-// ==========================================
 async function downloadPDF(){
+  if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+    alert("Fungsi cetak laporan gagal dimuat. Pastikan Anda terhubung ke internet.");
+    return;
+  }
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   
@@ -1087,35 +1018,27 @@ async function downloadPDF(){
 
   doc.setFillColor(241, 245, 249);
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(110, finalY, 85, 34, 4, 4, 'FD');
+  doc.roundedRect(110, finalY, 85, 30, 4, 4, 'FD');
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(100, 116, 139);
-  doc.text(`Akumulasi Lembur: ${totalJamLembur.toFixed(1)} Jam`, 115, finalY + 8);
+  doc.text(`Akumulasi Lembur: ${totalJamLembur.toFixed(1)} Jam`, 115, finalY + 10);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(15, 23, 42);
-  doc.text("TOTAL LEMBURAN:", 115, finalY + 15);
+  doc.text("TOTAL LEMBURAN:", 115, finalY + 18);
   
   doc.setFontSize(14);
   doc.setTextColor(79, 70, 229); 
-  doc.text(rupiah(grandTotal), 115, finalY + 22);
-
-  // SUNTIKAN HASH OTENTIKASI PADA REKAP TABEL LAPORAN PDF
-  const rawHashReport = `${user}-${filterBulan}-${grandTotal}-${totalJamLembur}`;
-  const secureHashReport = generateSimpleHash(rawHashReport);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.setTextColor(148, 163, 184);
-  doc.text(`Sistem Otentikasi Digital: ${secureHashReport}`, 115, finalY + 29);
+  doc.text(rupiah(grandTotal), 115, finalY + 25);
 
   doc.save(`Laporan_Presensi_KerjaKu_${user}.pdf`);
 }
 </script>
 
-  <script>
+<script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
