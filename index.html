@@ -446,7 +446,7 @@ function refreshStatusAbsen() {
     statusBox.innerText = "Status: Absensi Hari Ini Selesai";
     statusBox.className = "bg-slate-900 rounded-2xl p-4 text-center text-sm text-emerald-400 font-medium border border-slate-800";
     miniStatusBox.innerText = textSelesai;
-    miniStatusBox.className = "p-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-center text-sm font-medium";
+    miniStatusBox.className = "p-4 bg-emerald-500/10 text-emerald-400 border border-indigo-500/20 rounded-xl text-center text-sm font-medium";
   }
 }
 
@@ -456,10 +456,16 @@ function absenMasuk() {
   const tglHariIni = formatTanggal(sekarang);
   const statusKey = `status_absen_${user}_${tglHariIni}`;
 
+  // PERBAIKAN: Mengunci kategori hari dan metode hitung pada saat pengguna melakukan absen masuk
+  const jenisHariSaatIni = document.getElementById("jenisHari").value;
+  const metodeSaatIni = document.getElementById("metodeHitung").value;
+
   const data = {
     step: "masuk",
     waktuMasukRaw: sekarang.getTime(),
-    jamMasuk: formatWaktu(sekarang)
+    jamMasuk: formatWaktu(sekarang),
+    jenisHari: jenisHariSaatIni,
+    metode: metodeSaatIni
   };
 
   localStorage.setItem(statusKey, JSON.stringify(data));
@@ -470,10 +476,10 @@ function absenMasuk() {
 function absenPulang() {
   const gajiInput = document.getElementById("gaji").value;
   const gaji = parseFloat(gajiInput);
-  const metode = document.getElementById("metodeHitung").value;
 
   if(!gajiInput || isNaN(gaji) || gaji <= 0){
-    alert(metode === "flat" ? "Mohon isi tarif lembur per jam di tab Absensi." : "Mohon isi Gaji Pokok Bulanan di tab Absensi.");
+    const metodeCek = document.getElementById("metodeHitung").value;
+    alert(metodeCek === "flat" ? "Mohon isi tarif lembur per jam di tab Absensi." : "Mohon isi Gaji Pokok Bulanan di tab Absensi.");
     return;
   }
 
@@ -490,13 +496,11 @@ function absenPulang() {
   statusData.jamPulang = formatWaktu(sekarang);
 
   const selisihMs = statusData.waktuPulangRaw - statusData.waktuMasukRaw;
-  let totalJamKerja = parseFloat((selisihMs / (1000 * 60 * 60)).toFixed(2));
-  const jenisHari = document.getElementById("jenisHari").value;
-
-  // FIX BUG: Pengurangan istirahat dilakukan proporsional
-  if (totalJamKerja > 5) {
-    totalJamKerja = parseFloat((totalJamKerja - 1).toFixed(2));
-  }
+  const totalJamKerja = parseFloat((selisihMs / (1000 * 60 * 60)).toFixed(2));
+  
+  // PERBAIKAN: Membaca status jenisHari dan metode yang valid/terkunci dari data absen masuk (fallback jika lama)
+  const jenisHari = statusData.jenisHari || document.getElementById("jenisHari").value;
+  const metode = statusData.metode || document.getElementById("metodeHitung").value;
 
   let jamLembur = 0;
   if (jenisHari === "kerja") {
@@ -529,9 +533,9 @@ function absenPulang() {
   tampilkanData();
 
   if(jamLembur > 0) {
-    alert(`Absen Pulang Berhasil!\nTotal Kerja Bersih: ${totalJamKerja} Jam.\nAnda otomatis lembur ${jamLembur} Jam!`);
+    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nAnda otomatis lembur ${jamLembur} Jam!`);
   } else {
-    alert(`Absen Pulang Berhasil!\nTotal Kerja Bersih: ${totalJamKerja} Jam.\nTidak ada lembur di hari kerja standar.`);
+    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nTidak ada lembur di hari kerja standar.`);
   }
 }
 
@@ -596,7 +600,6 @@ function simpanLupaAbsen() {
 
   let totalJamKerja = parseFloat((totalMenit / 60).toFixed(2));
   
-  // FIX BUG: Jam Kerja dikurangi dulu untuk istirahat secara akurat sebelum evaluasi lembur
   if(totalJamKerja > 5) {
     totalJamKerja = parseFloat((totalJamKerja - 1).toFixed(2));
   }
@@ -623,7 +626,7 @@ function simpanLupaAbsen() {
   });
 
   const statusDayKey = `status_absen_${user}_${tanggalLupa}`;
-  localStorage.setItem(statusDayKey, JSON.stringify({ step: "selesai", jamMasuk: masukVal, jamPulang: pulangVal }));
+  localStorage.setItem(statusDayKey, JSON.stringify({ step: "selesai", jamMasuk: masukVal, jamPulang: pulangVal, jenisHari, metode }));
 
   localStorage.setItem(logKey, JSON.stringify(daftar));
   
@@ -872,7 +875,6 @@ async function downloadSlipGaji() {
   doc.setFontSize(10);
   doc.text("TOTAL DITERIMA (TAKE HOME PAY)", 12, currentY);
   
-  // FIX BUG: Supaya THP skema flat tetap logis menampilkan hasil penambahan akurat
   const takeHomePay = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
   doc.setTextColor(16, 185, 129);
   doc.text(rupiah(takeHomePay), 105, currentY);
