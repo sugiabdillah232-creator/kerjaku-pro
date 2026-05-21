@@ -16,58 +16,14 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <style>
-body{
-background:#020617;
-color:white;
-font-family:Arial;
-transition:.3s;
-}
-
-.light{
-background:#f8fafc;
-color:#0f172a;
-}
-
-.glass{
-background:rgba(255,255,255,.05);
-backdrop-filter:blur(12px);
-border:1px solid rgba(255,255,255,.08);
-}
-
-.gradient{
-background:linear-gradient(135deg,#4f46e5,#7c3aed);
-}
-
-.bottom-nav{
-position:fixed;
-bottom:0;
-left:0;
-right:0;
-display:flex;
-justify-content:space-around;
-padding:14px;
-background:#0f172a;
-border-top:1px solid #1e293b;
-}
-
-.page{
-display:none;
-}
-
-.active-page{
-display:block;
-}
-
-.toast{
-position:fixed;
-bottom:90px;
-left:50%;
-transform:translateX(-50%);
-background:#4f46e5;
-padding:12px 20px;
-border-radius:16px;
-z-index:999;
-}
+body{background:#020617;color:white;font-family:Arial;transition:.3s;}
+.light{background:#f8fafc;color:#0f172a;}
+.glass{background:rgba(255,255,255,.05);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);}
+.gradient{background:linear-gradient(135deg,#4f46e5,#7c3aed);}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;padding:14px;background:#0f172a;border-top:1px solid #1e293b;}
+.page{display:none;}
+.active-page{display:block;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#4f46e5;padding:12px 20px;border-radius:16px;z-index:999;}
 </style>
 </head>
 
@@ -94,13 +50,8 @@ z-index:999;
 </div>
 
 <div class="flex gap-2">
-<button onclick="toggleTheme()" class="glass p-3 rounded-2xl">
-🌙
-</button>
-
-<button onclick="logout()" class="glass p-3 rounded-2xl">
-🔴
-</button>
+<button onclick="toggleTheme()" class="glass p-3 rounded-2xl">🌙</button>
+<button onclick="logout()" class="glass p-3 rounded-2xl">🔴</button>
 </div>
 </header>
 
@@ -157,15 +108,12 @@ z-index:999;
 <div id="settingPage" class="page px-5">
 <div class="glass rounded-3xl p-5 space-y-4">
 <button onclick="downloadPDF()" class="w-full bg-emerald-600 py-4 rounded-2xl font-bold">Export PDF</button>
-
 <button onclick="exportExcel()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold">Export Excel</button>
-
 <button onclick="backupData()" class="w-full bg-indigo-600 py-4 rounded-2xl font-bold">Backup JSON</button>
 
 <input type="file" id="restoreFile" class="w-full p-4 rounded-2xl bg-slate-900">
 
 <button onclick="restoreData()" class="w-full bg-orange-600 py-4 rounded-2xl font-bold">Restore Data</button>
-
 <button onclick="hapusSemua()" class="w-full bg-red-600 py-4 rounded-2xl font-bold">Hapus Semua</button>
 </div>
 </div>
@@ -181,6 +129,9 @@ z-index:999;
 
 <script>
 lucide.createIcons();
+
+// FIX: slider element
+const slider = document.getElementById('jam');
 
 slider.addEventListener("input", function () {
   document.getElementById("jamText").innerText = this.value;
@@ -219,7 +170,6 @@ const username=document.getElementById('username').value;
 const pin=document.getElementById('pin').value;
 
 let users=JSON.parse(localStorage.getItem('users'))||[];
-
 const user=users.find(u=>u.username===username&&u.pin===pin);
 
 if(!user){
@@ -270,9 +220,11 @@ return upah*hasil;
 }
 
 function simpanLembur(){
-const tanggal=tanggal.value;
+
+// FIX: ambil value dengan benar
+const tanggal=document.getElementById('tanggal').value;
 const gaji=parseFloat(document.getElementById('gaji').value);
-const jenis=jenisHari.value;
+const jenis=document.getElementById('jenisHari').value;
 const jam=parseInt(slider.value);
 
 const total=hitungLembur(gaji,jenis,jam);
@@ -288,7 +240,6 @@ localStorage.setItem(key,JSON.stringify(arr));
 
 renderData();
 renderChart();
-
 toast('Data disimpan');
 }
 
@@ -302,7 +253,6 @@ let total=0;
 let jam=0;
 
 [...data].reverse().forEach((item,index)=>{
-
 total+=item.total;
 jam+=item.jam;
 
@@ -321,13 +271,8 @@ listData.innerHTML+=`
 `;
 });
 
-if(document.getElementById('totalUpah')){
-document.getElementById('totalUpah').innerText=rupiah(total);
-}
-
-if(document.getElementById('totalJam')){
-document.getElementById('totalJam').innerText=jam+' Jam';
-}
+totalUpah.innerText=rupiah(total);
+totalJam.innerText=jam+' Jam';
 }
 
 function hapusItem(i){
@@ -349,10 +294,7 @@ renderChart();
 }
 
 function showPage(id){
-document.querySelectorAll('.page').forEach(p=>{
-p.classList.remove('active-page');
-});
-
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active-page'));
 document.getElementById(id).classList.add('active-page');
 }
 
@@ -371,13 +313,7 @@ window.chartInstance.destroy();
 
 window.chartInstance=new Chart(ctx,{
 type:'bar',
-data:{
-labels:labels,
-datasets:[{
-label:'Upah Lembur',
-data:values
-}]
-}
+data:{labels,datasets:[{label:'Upah Lembur',data:values}]}
 });
 }
 
@@ -389,21 +325,14 @@ const key='lembur_'+localStorage.getItem('activeUser');
 let data=JSON.parse(localStorage.getItem(key))||[];
 
 let body=[];
-
 let grand=0;
 
 data.forEach((d,i)=>{
 grand+=d.total;
-body.push([
-i+1,
-d.tanggal,
-d.jam+' Jam',
-rupiah(d.total)
-]);
+body.push([i+1,d.tanggal,d.jam+' Jam',rupiah(d.total)]);
 });
 
 doc.text('Laporan Lembur',14,15);
-
 
 doc.autoTable({
 head:[['No','Tanggal','Jam','Upah']],
@@ -461,8 +390,7 @@ document.body.classList.toggle('light');
 if('serviceWorker' in navigator){
 navigator.serviceWorker.register('sw.js');
 }
-
 </script>
 
 </body>
-  </html>
+</html>
