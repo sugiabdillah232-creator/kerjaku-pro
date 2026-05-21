@@ -455,7 +455,7 @@ function tampilDashboard(){
 
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("dashboardPage").classList.remove("hidden");
-  document.getElementById("welcomeUser").innerText = "SELAMAT DATANG" + user.toUpperCase();
+  document.getElementById("welcomeUser").innerText = "SELAMAT DATANG " + user.toUpperCase();
 
   const savedConfig = JSON.parse(localStorage.getItem(`config_${user}`));
   if (savedConfig) {
