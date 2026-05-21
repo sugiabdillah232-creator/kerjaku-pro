@@ -1,19 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
+ <head>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4f46e5">
   <link rel="apple-touch-icon" href="icon-192.png">
-  
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KerjaKu Pro V5 - Multi Screen</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -49,248 +46,172 @@
       to { opacity: 1; transform: translateY(0); }
     }
   </style>
-</head>
-
-<body>
-
-<div id="loginPage" class="min-h-screen flex items-center justify-center p-5">
-  <div class="glass rounded-3xl p-8 w-full max-w-md">
+ </head>
+ <body>
+  <div id="loginPage" class="min-h-screen flex items-center justify-center p-5">
+   <div class="glass rounded-3xl p-8 w-full max-w-md">
     <div class="text-center mb-8">
-      <div class="w-20 h-20 rounded-3xl gradient glow mx-auto flex items-center justify-center mb-5">
-        <i data-lucide="briefcase-business" class="w-10 h-10 text-white"></i>
-      </div>
-      <h1 class="text-3xl font-bold">KerjaKu Pro</h1>
-      <p class="text-slate-400 mt-2">Sistem Absensi & Lembur Otomatis</p>
+     <div class="w-20 h-20 rounded-3xl gradient glow mx-auto flex items-center justify-center mb-5">
+      <i data-lucide="briefcase-business" class="w-10 h-10 text-white"></i>
+     </div>
+     <h1 class="text-3xl font-bold">KerjaKu Pro</h1>
+     <p class="text-slate-400 mt-2">Sistem Absensi &amp; Lembur Otomatis</p>
     </div>
-
     <div class="space-y-4">
-      <input type="text" id="username" placeholder="Username" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none text-white">
-      <input type="password" id="pin" maxlength="6" placeholder="PIN 6 Digit" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none text-white">
-      <button onclick="login()" class="w-full gradient py-4 rounded-2xl font-bold text-white transition active:scale-95">Masuk Aplikasi</button>
-      <button onclick="register()" class="w-full bg-slate-800 py-4 rounded-2xl font-bold text-white transition active:scale-95">Daftar Akun Baru</button>
+     <input type="text" id="username" placeholder="Username" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none text-white"> <input type="password" id="pin" maxlength="6" placeholder="PIN 6 Digit" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none text-white">
+     <button onclick="login()" class="w-full gradient py-4 rounded-2xl font-bold text-white transition active:scale-95">Masuk Aplikasi</button>
+     <button onclick="register()" class="w-full bg-slate-800 py-4 rounded-2xl font-bold text-white transition active:scale-95">Daftar Akun Baru</button>
     </div>
+   </div>
   </div>
-</div>
-
-<div id="dashboardPage" class="hidden min-h-screen pb-28">
-  
-  <header class="p-5 flex justify-between items-center border-b border-slate-800/60 bg-slate-950/40 sticky top-0 z-40 backdrop-blur-md">
+  <div id="dashboardPage" class="hidden min-h-screen pb-28">
+   <header class="p-5 flex justify-between items-center border-b border-slate-800/60 bg-slate-950/40 sticky top-0 z-40 backdrop-blur-md">
     <div>
-      <h1 class="text-2xl font-bold flex items-center gap-2">KerjaKu <span class="text-sm px-2 py-0.5 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-full font-normal">Pro V5</span></h1>
-      <p id="welcomeUser" class="text-slate-400 text-xs mt-0.5"></p>
+     <h1 class="text-2xl font-bold flex items-center gap-2">KerjaKu <span class="text-sm px-2 py-0.5 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-full font-normal">Pro V5</span></h1>
+     <p id="welcomeUser" class="text-slate-400 text-xs mt-0.5"></p>
     </div>
     <div id="headerTitle" class="text-right font-bold text-indigo-400 text-sm tracking-wide uppercase">Beranda</div>
-  </header>
-
-  <main id="screenBeranda" class="screen active p-5 space-y-6">
+   </header>
+   <main id="screenBeranda" class="screen active p-5 space-y-6">
     <div class="glass rounded-3xl p-6 glow">
-      <p class="text-slate-400 text-sm">Estimasi Upah Lembur Periode Ini</p>
-      <h2 id="totalUpah" class="text-4xl font-bold mt-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300">Rp 0</h2>
-      
-      <div class="grid grid-cols-2 gap-4 mt-6">
-        <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800">
-          <p class="text-slate-400 text-xs">Total Jam Lembur</p>
-          <h3 id="totalJam" class="text-xl font-bold mt-1 text-indigo-400">0 Jam</h3>
-        </div>
-        <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800">
-          <p class="text-slate-400 text-xs">Hari Terpilih</p>
-          <h3 id="jumlahData" class="text-xl font-bold mt-1 text-emerald-400">0 Hari</h3>
-        </div>
+     <p class="text-slate-400 text-sm">Estimasi Upah Lembur Periode Ini</p>
+     <h2 id="totalUpah" class="text-4xl font-bold mt-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300">Rp 0</h2>
+     <div class="grid grid-cols-2 gap-4 mt-6">
+      <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800">
+       <p class="text-slate-400 text-xs">Total Jam Lembur</p>
+       <h3 id="totalJam" class="text-xl font-bold mt-1 text-indigo-400">0 Jam</h3>
       </div>
+      <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800">
+       <p class="text-slate-400 text-xs">Hari Terpilih</p>
+       <h3 id="jumlahData" class="text-xl font-bold mt-1 text-emerald-400">0 Hari</h3>
+      </div>
+     </div>
     </div>
-
     <div class="glass rounded-3xl p-5 space-y-3">
-      <h3 class="font-bold text-sm text-slate-400 tracking-wide uppercase">Aktivitas Hari Ini</h3>
-      <div id="miniStatusBox" class="p-4 bg-slate-900 rounded-xl text-center text-sm font-medium border border-slate-800">
-        Menghubungkan sistem...
+     <h3 class="font-bold text-sm text-slate-400 tracking-wide uppercase">Aktivitas Hari Ini</h3>
+     <div id="miniStatusBox" class="p-4 bg-slate-900 rounded-xl text-center text-sm font-medium border border-slate-800">Menghubungkan sistem...</div>
+     <button onclick="switchScreen('absen', 'nav-absen')" class="w-full bg-slate-800 py-3 rounded-xl font-semibold text-sm text-center text-slate-200 hover:bg-slate-700 transition">Buka Menu Presensi →</button>
+    </div>
+   </main>
+   <main id="screenAbsen" class="screen p-5 space-y-6">
+    <div class="glass rounded-3xl p-5 space-y-4">
+     <div class="flex justify-between items-start gap-2">
+      <div>
+       <h2 id="titlePresensiForm" class="text-xl font-bold">Presensi &amp; Hitung Otomatis</h2>
+       <p class="text-slate-400 text-xs mt-1">Sistem akan menghitung lembur secara otomatis jika jam kerja melebihi 8 jam pada Hari Kerja.</p>
       </div>
-      <button onclick="switchScreen('absen', 'nav-absen')" class="w-full bg-slate-800 py-3 rounded-xl font-semibold text-sm text-center text-slate-200 hover:bg-slate-700 transition">
-        Buka Menu Presensi →
+      <button id="btnToggleLupa" onclick="toggleModeLupaAbsen()" class="text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition shrink-0">Lupa Absen?</button>
+     </div>
+     <div class="flex justify-between items-center px-4 py-2.5 bg-slate-900/80 rounded-xl border border-slate-800">
+      <span class="text-xs text-slate-400 font-medium tracking-wide">WAKTU AKTUAL</span> <span id="liveClock" class="text-sm font-bold text-indigo-400 tracking-wider">00:00:00</span>
+     </div>
+     <div id="wrapperAbsenNormal" class="space-y-4">
+      <div id="statusAbsenBox" class="bg-slate-900 rounded-2xl p-4 text-center text-sm font-medium border border-slate-800">--</div>
+      <div class="grid grid-cols-2 gap-4">
+       <button id="btnMasuk" onclick="absenMasuk()" class="bg-emerald-600 py-4 rounded-2xl font-bold text-white flex flex-col items-center justify-center gap-1 transition active:scale-95"><i data-lucide="log-in" class="w-6 h-6"></i> <span>Absen Masuk</span> <span id="waktuMasukText" class="text-xs font-normal opacity-80">--:--</span></button>
+       <button id="btnPulang" onclick="absenPulang()" disabled class="bg-slate-800 text-slate-600 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-700"><i data-lucide="log-out" class="w-6 h-6"></i> <span>Absen Pulang</span> <span id="waktuPulangText" class="text-xs font-normal opacity-80">--:--</span></button>
+      </div>
+     </div>
+     <div id="wrapperAbsenLupa" class="hidden bg-slate-950/40 p-4 rounded-2xl border border-slate-800/80 space-y-4">
+      <div class="text-[11px] text-amber-400 font-medium leading-relaxed">
+       ⚠️ <strong>Ketentuan Pengajuan:</strong> Pembatasan maksimal 3 hari ke belakang &amp; hanya diperbolehkan melakukan revisi 1 kali per tanggal.
+      </div>
+      <div>
+       <label class="text-xs text-slate-400 block mb-1">Pilih Tanggal yang Lupa Absen</label> <input type="date" id="tanggalLupa" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+       <div>
+        <label class="text-xs text-slate-400 block mb-1">Estimasi Jam Masuk</label> <input type="time" id="jamMasukManual" value="08:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+       </div>
+       <div>
+        <label class="text-xs text-slate-400 block mb-1">Estimasi Jam Pulang</label> <input type="time" id="jamPulangManual" value="17:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+       </div>
+      </div>
+      <button onclick="simpanLupaAbsen()" class="w-full gradient py-3.5 rounded-xl font-bold text-sm text-white transition active:scale-95">Proses Revisi Absen</button>
+     </div>
+    </div>
+    <div class="glass rounded-3xl p-5 space-y-4">
+     <h3 class="font-bold text-sm text-slate-400 tracking-wide uppercase">Konfigurasi Upah &amp; Hari</h3>
+     <div class="space-y-3">
+      <div>
+       <label class="text-xs text-slate-400 block mb-1">Skema Hitung Lembur</label> <select id="metodeHitung" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none" onchange="cekMetode()"> <option value="pemerintah">Sesuai Peraturan Pemerintah (Gaji / 173)</option> <option value="flat">Tarif Flat Tetap (Per Jam)</option> </select>
+      </div>
+      <div>
+       <label id="labelGaji" class="text-xs text-slate-400 block mb-1">Gaji Pokok Bulanan</label> <input type="number" id="gaji" placeholder="Gaji Bulanan" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+      </div>
+      <div>
+       <label class="text-xs text-slate-400 block mb-1">Kategori Hari Absensi</label> <select id="jenisHari" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none"> <option value="kerja">Hari Kerja Biasa</option> <option value="libur">Hari Libur / Weekend / Tanggal Merah</option> </select>
+      </div>
+     </div>
+    </div>
+   </main>
+   <main id="screenRiwayat" class="screen p-5 space-y-6">
+    <div class="glass rounded-3xl p-5 space-y-4">
+     <div class="flex items-center justify-between gap-2">
+      <div>
+       <h2 class="text-xl font-bold">Riwayat Log</h2>
+       <p class="text-slate-400 text-xs mt-0.5">Filter dan kelola berkas laporan.</p>
+      </div>
+      <button onclick="hapusData()" class="bg-red-900/30 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-xs font-bold transition active:scale-95">Reset Log</button>
+     </div>
+     <div class="flex flex-col gap-3">
+      <div>
+       <input type="month" id="filterBulan" onchange="tampilkanData()" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white outline-none">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+       <button onclick="downloadPDF()" class="bg-indigo-600 py-3 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-1.5 transition active:scale-95"><i data-lucide="file-text" class="w-4 h-4"></i> <span>REKAP TABEL</span></button>
+       <button onclick="downloadSlipGaji()" class="bg-emerald-600 py-3 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-1.5 transition active:scale-95"><i data-lucide="wallet" class="w-4 h-4"></i> <span>SLIP GAJI</span></button>
+      </div>
+     </div>
+     <div id="listData" class="space-y-3 pt-2"></div>
+    </div>
+   </main>
+   <main id="screenPengaturan" class="screen p-5 space-y-6">
+    <div class="glass rounded-3xl p-5 space-y-4">
+     <h2 class="text-xl font-bold">Manajemen Data &amp; Backup</h2>
+     <p class="text-slate-400 text-xs">Amankan data Anda secara berkala agar tidak hilang saat cache browser dibersihkan.</p>
+     <div class="grid grid-cols-1 gap-3">
+      <button onclick="backupData()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-200 p-4 rounded-2xl font-semibold flex items-center justify-between border border-slate-800 transition active:scale-98">
+       <div class="flex items-center gap-3">
+        <div class="p-2 bg-blue-500/10 text-blue-400 rounded-xl">
+         <i data-lucide="download" class="w-5 h-5"></i>
+        </div>
+        <div class="text-left">
+         <p class="text-sm font-bold">Ekspor Database (.json)</p>
+         <p class="text-slate-400 text-xs mt-0.5">Unduh semua berkas riwayat absen</p>
+        </div>
+       </div>
+       <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
       </button>
+      <button onclick="triggerImport()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-200 p-4 rounded-2xl font-semibold flex items-center justify-between border border-slate-800 transition active:scale-98">
+       <div class="flex items-center gap-3">
+        <div class="p-2 bg-purple-500/10 text-purple-400 rounded-xl">
+         <i data-lucide="upload" class="w-5 h-5"></i>
+        </div>
+        <div class="text-left">
+         <p class="text-sm font-bold">Impor Database (.json)</p>
+         <p class="text-slate-400 text-xs mt-0.5">Pulihkan riwayat dari file cadangan</p>
+        </div>
+       </div>
+       <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+      </button>
+      <input type="file" id="fileImport" accept=".json" class="hidden" onchange="importData(event)">
+     </div>
     </div>
-  </main>
-
-  <main id="screenAbsen" class="screen p-5 space-y-6">
-    <div class="glass rounded-3xl p-5 space-y-4">
-      <div class="flex justify-between items-start gap-2">
-        <div>
-          <h2 id="titlePresensiForm" class="text-xl font-bold">Presensi & Hitung Otomatis</h2>
-          <p class="text-slate-400 text-xs mt-1">Sistem akan menghitung lembur secara otomatis jika jam kerja melebihi 8 jam pada Hari Kerja.</p>
-        </div>
-        <button id="btnToggleLupa" onclick="toggleModeLupaAbsen()" class="text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition shrink-0">
-          Lupa Absen?
-        </button>
-      </div>
-
-      <div class="flex justify-between items-center px-4 py-2.5 bg-slate-900/80 rounded-xl border border-slate-800">
-        <span class="text-xs text-slate-400 font-medium tracking-wide">WAKTU AKTUAL</span>
-        <span id="liveClock" class="text-sm font-bold text-indigo-400 tracking-wider">00:00:00</span>
-      </div>
-      
-      <div id="wrapperAbsenNormal" class="space-y-4">
-        <div id="statusAbsenBox" class="bg-slate-900 rounded-2xl p-4 text-center text-sm font-medium border border-slate-800">
-          --
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <button id="btnMasuk" onclick="absenMasuk()" class="bg-emerald-600 py-4 rounded-2xl font-bold text-white flex flex-col items-center justify-center gap-1 transition active:scale-95">
-            <i data-lucide="log-in" class="w-6 h-6"></i>
-            <span>Absen Masuk</span>
-            <span id="waktuMasukText" class="text-xs font-normal opacity-80">--:--</span>
-          </button>
-          <button id="btnPulang" onclick="absenPulang()" disabled class="bg-slate-800 text-slate-600 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 cursor-not-allowed border border-slate-700">
-            <i data-lucide="log-out" class="w-6 h-6"></i>
-            <span>Absen Pulang</span>
-            <span id="waktuPulangText" class="text-xs font-normal opacity-80">--:--</span>
-          </button>
-        </div>
-      </div>
-
-      <div id="wrapperAbsenLupa" class="hidden bg-slate-950/40 p-4 rounded-2xl border border-slate-800/80 space-y-4">
-        <div class="text-[11px] text-amber-400 font-medium leading-relaxed">
-          ⚠️ <strong>Ketentuan Pengajuan:</strong> Pembatasan maksimal 3 hari ke belakang & hanya diperbolehkan melakukan revisi 1 kali per tanggal.
-        </div>
-        
-        <div>
-          <label class="text-xs text-slate-400 block mb-1">Pilih Tanggal yang Lupa Absen</label>
-          <input type="date" id="tanggalLupa" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="text-xs text-slate-400 block mb-1">Estimasi Jam Masuk</label>
-            <input type="time" id="jamMasukManual" value="08:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
-          </div>
-          <div>
-            <label class="text-xs text-slate-400 block mb-1">Estimasi Jam Pulang</label>
-            <input type="time" id="jamPulangManual" value="17:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
-          </div>
-        </div>
-
-        <button onclick="simpanLupaAbsen()" class="w-full gradient py-3.5 rounded-xl font-bold text-sm text-white transition active:scale-95">
-          Proses Revisi Absen
-        </button>
-      </div>
-    </div>
-
-    <div class="glass rounded-3xl p-5 space-y-4">
-      <h3 class="font-bold text-sm text-slate-400 tracking-wide uppercase">Konfigurasi Upah & Hari</h3>
-      
-      <div class="space-y-3">
-        <div>
-          <label class="text-xs text-slate-400 block mb-1">Skema Hitung Lembur</label>
-          <select id="metodeHitung" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none" onchange="cekMetode()">
-            <option value="pemerintah">Sesuai Peraturan Pemerintah (Gaji / 173)</option>
-            <option value="flat">Tarif Flat Tetap (Per Jam)</option>
-          </select>
-        </div>
-
-        <div>
-          <label id="labelGaji" class="text-xs text-slate-400 block mb-1">Gaji Pokok Bulanan</label>
-          <input type="number" id="gaji" placeholder="Gaji Bulanan" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
-        </div>
-        
-        <div>
-          <label class="text-xs text-slate-400 block mb-1">Kategori Hari Absensi</label>
-          <select id="jenisHari" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
-            <option value="kerja">Hari Kerja Biasa</option>
-            <option value="libur">Hari Libur / Weekend / Tanggal Merah</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <main id="screenRiwayat" class="screen p-5 space-y-6">
-    <div class="glass rounded-3xl p-5 space-y-4">
-      <div class="flex items-center justify-between gap-2">
-        <div>
-          <h2 class="text-xl font-bold">Riwayat Log</h2>
-          <p class="text-slate-400 text-xs mt-0.5">Filter dan kelola berkas laporan.</p>
-        </div>
-        <button onclick="hapusData()" class="bg-red-900/30 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-xs font-bold transition active:scale-95">Reset Log</button>
-      </div>
-
-      <div class="flex flex-col gap-3">
-        <div>
-          <input type="month" id="filterBulan" onchange="tampilkanData()" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white outline-none">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="downloadPDF()" class="bg-indigo-600 py-3 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-1.5 transition active:scale-95">
-            <i data-lucide="file-text" class="w-4 h-4"></i> <span>REKAP TABEL</span>
-          </button>
-          <button onclick="downloadSlipGaji()" class="bg-emerald-600 py-3 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-1.5 transition active:scale-95">
-            <i data-lucide="wallet" class="w-4 h-4"></i> <span>SLIP GAJI</span>
-          </button>
-        </div>
-      </div>
-
-      <div id="listData" class="space-y-3 pt-2"></div>
-    </div>
-  </main>
-
-  <main id="screenPengaturan" class="screen p-5 space-y-6">
-    <div class="glass rounded-3xl p-5 space-y-4">
-      <h2 class="text-xl font-bold">Manajemen Data & Backup</h2>
-      <p class="text-slate-400 text-xs">Amankan data Anda secara berkala agar tidak hilang saat cache browser dibersihkan.</p>
-      
-      <div class="grid grid-cols-1 gap-3">
-        <button onclick="backupData()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-200 p-4 rounded-2xl font-semibold flex items-center justify-between border border-slate-800 transition active:scale-98">
-          <div class="flex items-center gap-3">
-            <div class="p-2 bg-blue-500/10 text-blue-400 rounded-xl"><i data-lucide="download" class="w-5 h-5"></i></div>
-            <div class="text-left">
-              <p class="text-sm font-bold">Ekspor Database (.json)</p>
-              <p class="text-slate-400 text-xs mt-0.5">Unduh semua berkas riwayat absen</p>
-            </div>
-          </div>
-          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
-        </button>
-
-        <button onclick="triggerImport()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-200 p-4 rounded-2xl font-semibold flex items-center justify-between border border-slate-800 transition active:scale-98">
-          <div class="flex items-center gap-3">
-            <div class="p-2 bg-purple-500/10 text-purple-400 rounded-xl"><i data-lucide="upload" class="w-5 h-5"></i></div>
-            <div class="text-left">
-              <p class="text-sm font-bold">Impor Database (.json)</p>
-              <p class="text-slate-400 text-xs mt-0.5">Pulihkan riwayat dari file cadangan</p>
-            </div>
-          </div>
-          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
-        </button>
-        <input type="file" id="fileImport" accept=".json" class="hidden" onchange="importData(event)">
-      </div>
-    </div>
-
     <div class="glass rounded-3xl p-5">
-      <button onclick="logout()" class="w-full bg-red-600/10 border border-red-500/20 text-red-400 py-4 rounded-2xl font-bold text-center text-sm transition active:scale-95 flex items-center justify-center gap-2">
-        <i data-lucide="log-out" class="w-4 h-4"></i> Keluar dari Akun
-      </button>
+     <button onclick="logout()" class="w-full bg-red-600/10 border border-red-500/20 text-red-400 py-4 rounded-2xl font-bold text-center text-sm transition active:scale-95 flex items-center justify-center gap-2"><i data-lucide="log-out" class="w-4 h-4"></i> Keluar dari Akun</button>
     </div>
-  </main>
-
-  <nav class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/60 backdrop-blur-lg border-t border-slate-800/80 z-50 flex justify-around items-center">
-    <button id="nav-beranda" onclick="switchScreen('beranda', this.id)" class="flex flex-col items-center gap-1 text-indigo-400 font-semibold transition">
-      <i data-lucide="home" class="w-5 h-5"></i>
-      <span class="text-[10px]">Beranda</span>
-    </button>
-    <button id="nav-absen" onclick="switchScreen('absen', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition">
-      <i data-lucide="calendar-check" class="w-5 h-5"></i>
-      <span class="text-[10px]">Absensi</span>
-    </button>
-    <button id="nav-riwayat" onclick="switchScreen('riwayat', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition">
-      <i data-lucide="history" class="w-5 h-5"></i>
-      <span class="text-[10px]">Riwayat</span>
-    </button>
-    <button id="nav-pengaturan" onclick="switchScreen('pengaturan', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition">
-      <i data-lucide="settings" class="w-5 h-5"></i>
-      <span class="text-[10px]">Pengaturan</span>
-    </button>
-  </nav>
-
-</div>
-
-<script>
+   </main>
+   <nav class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/60 backdrop-blur-lg border-t border-slate-800/80 z-50 flex justify-around items-center">
+    <button id="nav-beranda" onclick="switchScreen('beranda', this.id)" class="flex flex-col items-center gap-1 text-indigo-400 font-semibold transition"><i data-lucide="home" class="w-5 h-5"></i> <span class="text-[10px]">Beranda</span></button>
+    <button id="nav-absen" onclick="switchScreen('absen', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition"><i data-lucide="calendar-check" class="w-5 h-5"></i> <span class="text-[10px]">Absensi</span></button>
+    <button id="nav-riwayat" onclick="switchScreen('riwayat', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition"><i data-lucide="history" class="w-5 h-5"></i> <span class="text-[10px]">Riwayat</span></button>
+    <button id="nav-pengaturan" onclick="switchScreen('pengaturan', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition"><i data-lucide="settings" class="w-5 h-5"></i> <span class="text-[10px]">Pengaturan</span></button>
+   </nav>
+  </div>
+  <script>
 let clockInterval = null;
-let isModeLupaAbsen = false; // State pelacak sub-form lupa absen
+let isModeLupaAbsen = false; 
 
 lucide.createIcons();
 
@@ -306,7 +227,6 @@ function startLiveClock() {
   }, 1000);
 }
 
-// Mengubah status layout UI formulir presensi biasa ke input manual lupa absen
 function toggleModeLupaAbsen() {
   isModeLupaAbsen = !isModeLupaAbsen;
   const titleForm = document.getElementById("titlePresensiForm");
@@ -362,6 +282,19 @@ function formatTanggal(date) {
   return date.toISOString().split('T')[0];
 }
 
+// OPTIMALISASI: Menyimpan preferensi konfigurasi upah secara real-time
+function simpanKonfigurasi() {
+  const user = localStorage.getItem("activeUser");
+  if (!user) return;
+  
+  const config = {
+    metode: document.getElementById("metodeHitung").value,
+    gaji: document.getElementById("gaji").value,
+    jenisHari: document.getElementById("jenisHari").value
+  };
+  localStorage.setItem(`config_${user}`, JSON.stringify(config));
+}
+
 function cekMetode() {
   const metode = document.getElementById("metodeHitung").value;
   const labelGaji = document.getElementById("labelGaji");
@@ -373,7 +306,15 @@ function cekMetode() {
     labelGaji.innerText = "Gaji Pokok Bulanan (Rp)";
     gajiInput.placeholder = "Gaji Bulanan";
   }
+  simpanKonfigurasi();
 }
+
+// Tambah event listener otomatis untuk melacak perubahan input pengguna
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("metodeHitung").addEventListener("change", cekMetode);
+  document.getElementById("gaji").addEventListener("input", simpanKonfigurasi);
+  document.getElementById("jenisHari").addEventListener("change", simpanKonfigurasi);
+});
 
 function register(){
   const username = document.getElementById("username").value.trim();
@@ -420,6 +361,15 @@ function tampilDashboard(){
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("dashboardPage").classList.remove("hidden");
   document.getElementById("welcomeUser").innerText = "Selamat datang, " + user;
+
+  // OPTIMALISASI: Memuat ulang konfigurasi upah yang tersimpan sebelumnya
+  const savedConfig = JSON.parse(localStorage.getItem(`config_${user}`));
+  if (savedConfig) {
+    document.getElementById("metodeHitung").value = savedConfig.metode || "pemerintah";
+    document.getElementById("gaji").value = savedConfig.gaji || "";
+    document.getElementById("jenisHari").value = savedConfig.jenisHari || "kerja";
+    cekMetode();
+  }
 
   refreshStatusAbsen();
   tampilkanData();
@@ -525,7 +475,8 @@ function absenPulang() {
   if(!statusData) return;
 
   statusData.step = "selesai";
-  statusData.waktuPulangRaw = Track = sekarang.getTime();
+  // FIX CRITICAL BUG: Menghilangkan (= Track) yang memicu error undefined
+  statusData.waktuPulangRaw = sekarang.getTime(); 
   statusData.jamPulang = formatWaktu(sekarang);
 
   const selisihMs = statusData.waktuPulangRaw - statusData.waktuMasukRaw;
@@ -569,7 +520,6 @@ function absenPulang() {
   }
 }
 
-// EKSEKUSI PENYIMPANAN LOG DENGAN RESTRIKSI 3 HARI & MAKS 1 KALI REVISI
 function simpanLupaAbsen() {
   const tanggalLupa = document.getElementById("tanggalLupa").value;
   const gajiInput = document.getElementById("gaji").value;
@@ -591,7 +541,6 @@ function simpanLupaAbsen() {
   const logKey = "lembur_" + user;
   let daftar = JSON.parse(localStorage.getItem(logKey)) || [];
 
-  // --- VALIDASI 1: PEMBATASAN MAKSIMAL 3 HARI KE BELAKANG ---
   const tglDipilih = new Date(tanggalLupa);
   tglDipilih.setHours(0,0,0,0);
   
@@ -610,14 +559,12 @@ function simpanLupaAbsen() {
     return;
   }
 
-  // --- VALIDASI 2: PEMBATASAN MAKSIMAL 1 KALI REVISI PER TANGGAL ---
   const cekDuplikat = daftar.find(item => item.tanggal === tanggalLupa);
   if (cekDuplikat) {
     alert(`❌ Gagal Menyimpan: Tanggal ${tanggalLupa} sudah terdata di sistem. Batas kuota pengisian manual/revisi hanya 1 kali.`);
     return;
   }
 
-  // Proses perhitungan jam kerja manual
   const masukVal = document.getElementById("jamMasukManual").value;
   const pulangVal = document.getElementById("jamPulangManual").value;
 
@@ -630,11 +577,10 @@ function simpanLupaAbsen() {
   const [hPulang, mPulang] = pulangVal.split(':').map(Number);
 
   let totalMenit = (hPulang * 60 + mPulang) - (hMasuk * 60 + mMasuk);
-  if (totalMenit < 0) totalMenit += 24 * 60; // Penanganan shift melewati tengah malam
+  if (totalMenit < 0) totalMenit += 24 * 60; 
 
   let totalJamKerja = parseFloat((totalMenit / 60).toFixed(2));
   
-  // Potong istirahat standar 1 jam secara otomatis jika durasi kerja melebihi 5 jam
   if(totalJamKerja > 5) {
     totalJamKerja = parseFloat((totalJamKerja - 1).toFixed(2));
   }
@@ -648,7 +594,6 @@ function simpanLupaAbsen() {
 
   const totalUpahLembur = hitungLembur(gaji, jenisHari, jamLembur, metode);
 
-  // Simpan data log baru dengan flag internal manual (Locked status)
   daftar.push({
     tanggal: tanggalLupa,
     jamMasuk: masukVal,
@@ -661,13 +606,12 @@ function simpanLupaAbsen() {
     isManual: true
   });
 
-  // Sinkronisasi status presensi lokal hari tersebut agar tidak tumpang tindih
   const statusDayKey = `status_absen_${user}_${tanggalLupa}`;
   localStorage.setItem(statusDayKey, JSON.stringify({ step: "selesai", jamMasuk: masukVal, jamPulang: pulangVal }));
 
   localStorage.setItem(logKey, JSON.stringify(daftar));
   
-  toggleModeLupaAbsen(); // Matikan formulir manual kembali ke biasa
+  toggleModeLupaAbsen(); 
   refreshStatusAbsen();
   tampilkanData();
 
@@ -734,7 +678,6 @@ function tampilkanData(){
     const labelHari = item.jenisHari === 'kerja' ? 'Hari Kerja' : 'Hari Libur';
     const labelMetode = item.metode === 'flat' ? ' • Flat' : '';
     const infoJamLog = (item.jamMasuk && item.jamPulang) ? ` (${item.jamMasuk} - ${item.jamPulang})` : '';
-    // Tambahkan badge penanda khusus jika log merupakan hasil input manual lupa absen
     const badgeManual = item.isManual ? `<span class="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded ml-2 font-normal">Revisi</span>` : '';
     
     list.innerHTML += `
@@ -895,8 +838,15 @@ async function downloadSlipGaji() {
 
   let currentY = 59;
   doc.setFont("helvetica", "normal");
-  doc.text("Gaji Pokok Bulanan", 12, currentY);
-  doc.text(rupiah(metode === 'flat' ? 0 : gajiPokok), 105, currentY);
+  
+  // ADJUSTMENT: Agar label deskripsi slip gaji dinamis menyesuaikan pilihan skema upah
+  if(metode === 'flat') {
+    doc.text("Tarif Flat Base per Jam", 12, currentY);
+    doc.text(rupiah(gajiPokok), 105, currentY);
+  } else {
+    doc.text("Gaji Pokok Bulanan", 12, currentY);
+    doc.text(rupiah(gajiPokok), 105, currentY);
+  }
 
   currentY += 6;
   doc.text(`Uang Lembur Aktif (${totalJamLembur.toFixed(1)} Jam)`, 12, currentY);
@@ -1047,12 +997,10 @@ async function downloadPDF(){
 }
 </script>
 
-<script>
+  <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
 </script>
-  
-</body>
-</html>
-
+ </body>
+  </html>
