@@ -212,13 +212,26 @@
   <script>
 let clockInterval = null;
 let isModeLupaAbsen = false; 
+let tanggalTerakhir = ""; // Menyimpan status tanggal aktif saat ini
 
 lucide.createIcons();
 
 function startLiveClock() {
   if (clockInterval) clearInterval(clockInterval);
+  
+  // Set inisialisasi awal tanggal saat aplikasi dijalankan
+  tanggalTerakhir = formatTanggal(new Date());
+
   clockInterval = setInterval(() => {
     const sekarang = new Date();
+    
+    // Logika Otomatis: Cek apakah sistem di perangkat sudah mendeteksi hari baru
+    const tanggalSekarang = formatTanggal(sekarang);
+    if (tanggalSekarang !== tanggalTerakhir) {
+      tanggalTerakhir = tanggalSekarang;
+      refreshStatusAbsen(); // Melakukan pembaruan tombol masuk/pulang secara real-time
+    }
+
     const jam = String(sekarang.getHours()).padStart(2, '0');
     const menit = String(sekarang.getMinutes()).padStart(2, '0');
     const detik = String(sekarang.getSeconds()).padStart(2, '0');
@@ -278,8 +291,12 @@ function formatWaktu(date) {
   return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 }
 
+// FIX: Menggunakan penanggalan lokal berdasarkan zona waktu perangkat/HP user (Anti Bug UTC)
 function formatTanggal(date) {
-  return date.toISOString().split('T')[0];
+  const tahun = date.getFullYear();
+  const bulan = String(date.getMonth() + 1).padStart(2, '0');
+  const tanggal = String(date.getDate()).padStart(2, '0');
+  return `${tahun}-${bulan}-${tanggal}`;
 }
 
 function simpanKonfigurasi() {
@@ -614,7 +631,6 @@ function simpanLupaAbsen() {
   alert("Sukses! Data lupa absen berhasil diverifikasi dan dikunci ke database riwayat.");
 }
 
-// FIX OPTIMIZED: Menghapus while loop rawan bug & Presisi Desimal Peraturan Pemerintah ESDM / Depnaker
 function hitungLembur(gaji, jenisHari, jam, metode){
   if(jam <= 0) return 0;
   
@@ -628,7 +644,6 @@ function hitungLembur(gaji, jenisHari, jam, metode){
       if(jam >= 1) konversions += 1.5;
       if(jam > 1)  konversions += (jam - 1) * 2;
     } else {
-      // Perhitungan Linier Sekuensial Sesuai Aturan Pemerintah (8 jam pertama x2, jam ke-9 x3, jam ke-10++ x4)
       if (jam <= 8) {
         konversions += jam * 2;
       } else if (jam > 8 && jam <= 9) {
@@ -768,7 +783,6 @@ function importData(event) {
 
 window.onload = tampilDashboard;
 
-// FIX ADJUSTMENT: Penyesuaian kalkulator Slip Gaji Adaptif
 async function downloadSlipGaji() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a5');
@@ -855,7 +869,6 @@ async function downloadSlipGaji() {
   doc.setFontSize(10);
   doc.text("TOTAL DITERIMA (TAKE HOME PAY)", 12, currentY);
   
-  // Jika Flat, asumsikan pendapatan pokok dasar tidak dihitung di sistem (tampilkan total akumulasi lembur saja)
   const takeHomePay = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
   doc.setTextColor(16, 185, 129);
   doc.text(rupiah(takeHomePay), 105, currentY);
