@@ -1,428 +1,471 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4f46e5">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KerjaKu Pro V5</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KerjaKu Pro V6</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4f46e5">
 
-  <style>
-    body{
-      font-family: Arial, sans-serif;
-      background:#020617;
-      color:white;
-    }
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 
-    .glass{
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(12px);
-      border:1px solid rgba(255,255,255,0.08);
-    }
+<style>
+body{
+background:#020617;
+color:white;
+font-family:Arial;
+transition:.3s;
+}
 
-    .gradient{
-      background:linear-gradient(
-      135deg,
-      #4f46e5,
-      #7c3aed
-      );
-    }
+.light{
+background:#f8fafc;
+color:#0f172a;
+}
 
-    .glow{
-      box-shadow:
-      0 0 25px rgba(99,102,241,.25);
-    }
-  </style>
+.glass{
+background:rgba(255,255,255,.05);
+backdrop-filter:blur(12px);
+border:1px solid rgba(255,255,255,.08);
+}
+
+.gradient{
+background:linear-gradient(135deg,#4f46e5,#7c3aed);
+}
+
+.bottom-nav{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+display:flex;
+justify-content:space-around;
+padding:14px;
+background:#0f172a;
+border-top:1px solid #1e293b;
+}
+
+.page{
+display:none;
+}
+
+.active-page{
+display:block;
+}
+
+.toast{
+position:fixed;
+bottom:90px;
+left:50%;
+transform:translateX(-50%);
+background:#4f46e5;
+padding:12px 20px;
+border-radius:16px;
+z-index:999;
+}
+</style>
 </head>
 
 <body>
 
 <div id="loginPage" class="min-h-screen flex items-center justify-center p-5">
-  <div class="glass rounded-3xl p-8 w-full max-w-md">
-    <div class="text-center mb-8">
-      <div class="w-20 h-20 rounded-3xl gradient glow mx-auto flex items-center justify-center mb-5">
-        <i data-lucide="briefcase-business"></i>
-      </div>
-      <h1 class="text-3xl font-bold">KerjaKu Pro</h1>
-      <p class="text-slate-400 mt-2">Teman pekerja Indonesia</p>
-    </div>
+<div class="glass rounded-3xl p-8 w-full max-w-md">
+<h1 class="text-3xl font-bold text-center mb-6">KerjaKu Pro V6</h1>
 
-    <div class="space-y-4">
-      <input type="text" id="username" placeholder="Username" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none">
-      <input type="password" id="pin" maxlength="6" placeholder="PIN 6 Digit" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none">
-      <button onclick="login()" class="w-full gradient py-4 rounded-2xl font-bold text-white">Masuk Aplikasi</button>
-      <button onclick="register()" class="w-full bg-slate-800 py-4 rounded-2xl font-bold text-white">Daftar Akun Baru</button>
-    </div>
-  </div>
+<input id="username" type="text" placeholder="Username" class="w-full p-4 rounded-2xl bg-slate-900 mb-4">
+<input id="pin" type="password" maxlength="6" placeholder="PIN" class="w-full p-4 rounded-2xl bg-slate-900 mb-4">
+
+<button onclick="login()" class="w-full gradient py-4 rounded-2xl font-bold">Masuk</button>
+<button onclick="register()" class="w-full bg-slate-800 py-4 rounded-2xl font-bold mt-3">Daftar</button>
+</div>
 </div>
 
-<div id="dashboardPage" class="hidden pb-32">
-  <header class="p-5 flex justify-between items-center">
-    <div>
-      <h1 class="text-3xl font-bold">KerjaKu 👋</h1>
-      <p id="welcomeUser" class="text-slate-400 mt-1"></p>
-    </div>
-    <button onclick="logout()" class="glass p-3 rounded-2xl">
-      <i data-lucide="log-out"></i>
-    </button>
-  </header>
+<div id="app" class="hidden pb-28">
 
-  <section class="px-5">
-    <div class="glass rounded-3xl p-6 glow">
-      <p class="text-slate-400">Total Upah Lembur</p>
-      <h2 id="totalUpah" class="text-4xl font-bold mt-3">Rp 0</h2>
-      <div class="grid grid-cols-2 gap-4 mt-6">
-        <div class="bg-slate-900 rounded-2xl p-4">
-          <p class="text-slate-400 text-sm">Total Jam</p>
-          <h3 id="totalJam" class="text-2xl font-bold mt-2">0 Jam</h3>
-        </div>
-        <div class="bg-slate-900 rounded-2xl p-4">
-          <p class="text-slate-400 text-sm">Data Tersimpan</p>
-          <h3 id="jumlahData" class="text-2xl font-bold mt-2">0</h3>
-        </div>
-      </div>
-    </div>
-  </section>
+<header class="p-5 flex justify-between items-center">
+<div>
+<h1 class="text-3xl font-bold">KerjaKu 👋</h1>
+<p id="welcomeUser"></p>
+</div>
 
-  <section class="px-5 mt-6">
-    <div class="glass rounded-3xl p-5">
-      <h2 class="text-2xl font-bold mb-5">Kalkulator Lembur</h2>
-      <div class="space-y-4">
-        <input type="date" id="tanggal" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white">
-        <input type="number" id="gaji" placeholder="Gaji Bulanan" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white">
-        <select id="jenisHari" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white">
-          <option value="kerja">Hari Kerja</option>
-          <option value="libur">Hari Libur</option>
-        </select>
+<div class="flex gap-2">
+<button onclick="toggleTheme()" class="glass p-3 rounded-2xl">
+🌙
+</button>
 
-        <div>
-          <div class="flex justify-between mb-2">
-            <span>Jam Lembur</span>
-            <span id="jamText">1</span>
-          </div>
-          <input type="range" id="jam" min="0" max="24" value="0" class="w-full">
-        </div>
+<button onclick="logout()" class="glass p-3 rounded-2xl">
+🚪
+</button>
+</div>
+</header>
 
-        <button onclick="simpanLembur()" class="w-full gradient py-4 rounded-2xl font-bold text-white">Simpan Lembur</button>
-        <button onclick="downloadPDF()" class="w-full bg-emerald-600 py-4 rounded-2xl font-bold text-white">Download PDF</button>
-      </div>
-    </div>
-  </section>
+<div id="homePage" class="page active-page px-5">
 
-  <section class="px-5 mt-6">
-    <div class="glass rounded-3xl p-5">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-bold">Rekap Data</h2>
-        <button onclick="hapusData()" class="bg-red-600 px-4 py-2 rounded-xl text-sm font-bold text-white">Hapus</button>
-      </div>
-      <div id="listData" class="space-y-4"></div>
-    </div>
-  </section>
+<div class="grid grid-cols-2 gap-4">
+<div class="glass rounded-3xl p-5">
+<p>Total Upah</p>
+<h2 id="totalUpah" class="text-2xl font-bold mt-2">Rp 0</h2>
+</div>
+
+<div class="glass rounded-3xl p-5">
+<p>Total Jam</p>
+<h2 id="totalJam" class="text-2xl font-bold mt-2">0 Jam</h2>
+</div>
+</div>
+
+<div class="glass rounded-3xl p-5 mt-5">
+<canvas id="chartBulanan"></canvas>
+</div>
+
+<div class="glass rounded-3xl p-5 mt-5">
+<h2 class="text-xl font-bold mb-4">Rekap Data</h2>
+<div id="listData"></div>
+</div>
+</div>
+
+<div id="tambahPage" class="page px-5">
+<div class="glass rounded-3xl p-5">
+<h2 class="text-2xl font-bold mb-5">Tambah Lembur</h2>
+
+<input id="tanggal" type="date" class="w-full p-4 rounded-2xl bg-slate-900 mb-4">
+<input id="gaji" type="number" placeholder="Gaji Bulanan" class="w-full p-4 rounded-2xl bg-slate-900 mb-4">
+
+<select id="jenisHari" class="w-full p-4 rounded-2xl bg-slate-900 mb-4">
+<option value="kerja">Hari Kerja</option>
+<option value="libur">Hari Libur</option>
+</select>
+
+<input type="range" id="jam" min="1" max="24" value="1" class="w-full">
+<p class="mt-2">Jam: <span id="jamText">1</span></p>
+
+<button onclick="simpanLembur()" class="w-full gradient py-4 rounded-2xl mt-5 font-bold">Simpan</button>
+</div>
+</div>
+
+<div id="statistikPage" class="page px-5">
+<div class="glass rounded-3xl p-5">
+<h2 class="text-2xl font-bold mb-5">Statistik</h2>
+<canvas id="chart2"></canvas>
+</div>
+</div>
+
+<div id="settingPage" class="page px-5">
+<div class="glass rounded-3xl p-5 space-y-4">
+<button onclick="downloadPDF()" class="w-full bg-emerald-600 py-4 rounded-2xl font-bold">Export PDF</button>
+
+<button onclick="exportExcel()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold">Export Excel</button>
+
+<button onclick="backupData()" class="w-full bg-indigo-600 py-4 rounded-2xl font-bold">Backup JSON</button>
+
+<input type="file" id="restoreFile" class="w-full p-4 rounded-2xl bg-slate-900">
+
+<button onclick="restoreData()" class="w-full bg-orange-600 py-4 rounded-2xl font-bold">Restore Data</button>
+
+<button onclick="hapusSemua()" class="w-full bg-red-600 py-4 rounded-2xl font-bold">Hapus Semua</button>
+</div>
+</div>
+
+<nav class="bottom-nav">
+<button onclick="showPage('homePage')">🏠</button>
+<button onclick="showPage('tambahPage')">➕</button>
+<button onclick="showPage('statistikPage')">📊</button>
+<button onclick="showPage('settingPage')">⚙️</button>
+</nav>
+
 </div>
 
 <script>
 lucide.createIcons();
 
-const slider = document.getElementById("jam");
-const jamText = document.getElementById("jamText");
+const slider=document.getElementById('jam');
+const jamText=document.getElementById('jamText');
 
-slider.addEventListener("input", () => {
-  jamText.innerText = slider.value;
-});
+slider.oninput=()=>{
+jamText.innerText=slider.value;
+}
 
-function rupiah(angka){
-  return "Rp " + Math.round(angka).toLocaleString("id-ID");
+function toast(msg){
+const div=document.createElement('div');
+div.className='toast';
+div.innerText=msg;
+document.body.appendChild(div);
+setTimeout(()=>div.remove(),2500);
+}
+
+function rupiah(x){
+return 'Rp '+Math.round(x).toLocaleString('id-ID');
 }
 
 function register(){
-  const username = document.getElementById("username").value.trim();
-  const pin = document.getElementById("pin").value;
+const username=document.getElementById('username').value;
+const pin=document.getElementById('pin').value;
 
-  if(!username || pin.length !== 6){
-    alert("Isi username dan PIN 6 digit");
-    return;
-  }
+if(!username||pin.length!==6){
+alert('Isi benar');
+return;
+}
 
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-  const cek = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+let users=JSON.parse(localStorage.getItem('users'))||[];
+users.push({username,pin});
+localStorage.setItem('users',JSON.stringify(users));
 
-  if(cek){
-    alert("Username sudah ada");
-    return;
-  }
-
-  users.push({ username, pin });
-  localStorage.setItem("users", JSON.stringify(users));
-  alert("Pendaftaran berhasil");
+toast('Pendaftaran berhasil');
 }
 
 function login(){
-  const username = document.getElementById("username").value.trim();
-  const pin = document.getElementById("pin").value;
+const username=document.getElementById('username').value;
+const pin=document.getElementById('pin').value;
 
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.pin === pin);
+let users=JSON.parse(localStorage.getItem('users'))||[];
 
-  if(!user){
-    alert("Username atau PIN salah");
-    return;
-  }
+const user=users.find(u=>u.username===username&&u.pin===pin);
 
-  localStorage.setItem("activeUser", user.username);
-  tampilDashboard();
+if(!user){
+alert('Login gagal');
+return;
 }
 
-function tampilDashboard(){
-  const user = localStorage.getItem("activeUser");
-  if(!user) return;
-
-  document.getElementById("loginPage").classList.add("hidden");
-  document.getElementById("dashboardPage").classList.remove("hidden");
-  document.getElementById("welcomeUser").innerText = "Selamat datang, " + user;
-
-  tampilkanData();
+localStorage.setItem('activeUser',username);
+loadApp();
 }
-
-window.onload = tampilDashboard;
 
 function logout(){
-  localStorage.removeItem("activeUser");
-  location.reload();
+localStorage.removeItem('activeUser');
+location.reload();
 }
 
-function hitungLembur(gaji, jenisHari, jam){
-  const upahPerJam = gaji / 173;
-  let konversions = 0;
+function loadApp(){
+const user=localStorage.getItem('activeUser');
+if(!user)return;
 
-  if(jenisHari === "kerja"){
-    if(jam >= 1) konversions += 1.5;
-    if(jam > 1)  konversions += (jam - 1) * 2;
-  } else {
-    for(let i = 1; i <= jam; i++){
-      if(i <= 8)       konversions += 2;
-      else if(i === 9) konversions += 3;
-      else             konversions += 4;
-    }
-  }
-  return upahPerJam * konversions;
+loginPage.classList.add('hidden');
+app.classList.remove('hidden');
+
+welcomeUser.innerText='Selamat datang '+user;
+
+renderData();
+renderChart();
+}
+
+window.onload=loadApp;
+
+function hitungLembur(gaji,jenis,jam){
+const upah=gaji/173;
+let hasil=0;
+
+if(jenis==='kerja'){
+if(jam>=1)hasil+=1.5;
+if(jam>1)hasil+=(jam-1)*2;
+}else{
+for(let i=1;i<=jam;i++){
+if(i<=8)hasil+=2;
+else if(i===9)hasil+=3;
+else hasil+=4;
+}
+}
+
+return upah*hasil;
 }
 
 function simpanLembur(){
-  const tanggal = document.getElementById("tanggal").value;
-  const gajiInput = document.getElementById("gaji").value;
-  const gaji = parseFloat(gajiInput);
-  const jenisHari = document.getElementById("jenisHari").value;
-  const jam = parseInt(slider.value);
+const tanggal=tanggal.value;
+const gaji=parseFloat(document.getElementById('gaji').value);
+const jenis=jenisHari.value;
+const jam=parseInt(slider.value);
 
-  if(!tanggal || !gajiInput || isNaN(gaji) || gaji <= 0){
-    alert("Lengkapi data dengan benar (Gaji harus berupa angka positif)");
-    return;
-  }
+const total=hitungLembur(gaji,jenis,jam);
 
-  const total = hitungLembur(gaji, jenisHari, jam);
-  const data = { tanggal, jam, jenisHari, total };
+const data={tanggal,jenis,jam,total};
 
-  const user = localStorage.getItem("activeUser");
-  const key = "lembur_" + user;
+const key='lembur_'+localStorage.getItem('activeUser');
 
-  let daftar = JSON.parse(localStorage.getItem(key)) || [];
-  daftar.push(data);
-  localStorage.setItem(key, JSON.stringify(daftar));
+let arr=JSON.parse(localStorage.getItem(key))||[];
+arr.push(data);
 
-  tampilkanData();
-  alert("Data berhasil disimpan");
+localStorage.setItem(key,JSON.stringify(arr));
+
+renderData();
+renderChart();
+
+toast('Data disimpan');
 }
 
-function tampilkanData(){
-  const user = localStorage.getItem("activeUser");
-  const key = "lembur_" + user;
-  let daftar = JSON.parse(localStorage.getItem(key)) || [];
+function renderData(){
+const key='lembur_'+localStorage.getItem('activeUser');
+let data=JSON.parse(localStorage.getItem(key))||[];
 
-  const list = document.getElementById("listData");
-  list.innerHTML = "";
+listData.innerHTML='';
 
-  let grandTotal = 0;
-  let totalJam = 0;
+let total=0;
+let jam=0;
 
-  // Hitung total dari susunan data asli yang stabil
-  daftar.forEach(item => {
-    grandTotal += item.total;
-    totalJam += item.jam;
-  });
+[...data].reverse().forEach((item,index)=>{
 
-  // Salin array sebelum dibalik agar tidak merusak urutan penyimpanan asli
-  const dataTampil = [...daftar].reverse();
+total+=item.total;
+jam+=item.jam;
 
-  dataTampil.forEach(item => {
-    const labelHari = item.jenisHari === 'kerja' ? 'Hari Kerja' : 'Hari Libur';
-    list.innerHTML += `
-    <div class="bg-slate-900 rounded-2xl p-4 flex justify-between items-center border border-slate-800/60">
-      <div>
-        <h3 class="font-bold">${item.tanggal}</h3>
-        <p class="text-slate-400 text-sm mt-1">
-          ${item.jam} Jam • ${labelHari}
-        </p>
-      </div>
-      <div class="text-right">
-        <h3 class="font-bold text-xl text-indigo-400">${rupiah(item.total)}</h3>
-      </div>
-    </div>
-    `;
-  });
+listData.innerHTML+=`
+<div class="bg-slate-900 p-4 rounded-2xl mt-3 flex justify-between">
+<div>
+<h3>${item.tanggal}</h3>
+<p>${item.jam} Jam</p>
+</div>
 
-  document.getElementById("totalUpah").innerText = rupiah(grandTotal);
-  document.getElementById("totalJam").innerText = totalJam + " Jam";
-  document.getElementById("jumlahData").innerText = daftar.length;
+<div class="text-right">
+<h3>${rupiah(item.total)}</h3>
+<button onclick="hapusItem(${data.length-1-index})" class="text-red-400 text-sm mt-2">Hapus</button>
+</div>
+</div>
+`;
+});
+
+if(document.getElementById('totalUpah')){
+document.getElementById('totalUpah').innerText=rupiah(total);
 }
 
-function hapusData(){
-  const user = localStorage.getItem("activeUser");
-  const key = "lembur_" + user;
-  let daftar = JSON.parse(localStorage.getItem(key)) || [];
+if(document.getElementById('totalJam')){
+document.getElementById('totalJam').innerText=jam+' Jam';
+}
+}
 
-  if(daftar.length === 0){
-    alert("Belum ada data untuk dihapus");
-    return;
-  }
+function hapusItem(i){
+const key='lembur_'+localStorage.getItem('activeUser');
+let data=JSON.parse(localStorage.getItem(key))||[];
 
-  if(confirm("Hapus semua data?")){
-    localStorage.removeItem(key);
-    tampilkanData();
-  }
+data.splice(i,1);
+localStorage.setItem(key,JSON.stringify(data));
+
+renderData();
+renderChart();
+}
+
+function hapusSemua(){
+const key='lembur_'+localStorage.getItem('activeUser');
+localStorage.removeItem(key);
+renderData();
+renderChart();
+}
+
+function showPage(id){
+document.querySelectorAll('.page').forEach(p=>{
+p.classList.remove('active-page');
+});
+
+document.getElementById(id).classList.add('active-page');
+}
+
+function renderChart(){
+const key='lembur_'+localStorage.getItem('activeUser');
+let data=JSON.parse(localStorage.getItem(key))||[];
+
+const labels=data.map(d=>d.tanggal);
+const values=data.map(d=>d.total);
+
+const ctx=document.getElementById('chartBulanan');
+
+if(window.chartInstance){
+window.chartInstance.destroy();
+}
+
+window.chartInstance=new Chart(ctx,{
+type:'bar',
+data:{
+labels:labels,
+datasets:[{
+label:'Upah Lembur',
+data:values
+}]
+}
+});
 }
 
 async function downloadPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  
-  const user = localStorage.getItem("activeUser");
-  const key = "lembur_" + user;
-  let daftar = JSON.parse(localStorage.getItem(key)) || [];
+const {jsPDF}=window.jspdf;
+const doc=new jsPDF();
 
-  if(daftar.length === 0){
-    alert("Belum ada data");
-    return;
-  }
+const key='lembur_'+localStorage.getItem('activeUser');
+let data=JSON.parse(localStorage.getItem(key))||[];
 
-  // --- DESIGN BANNER ATAS ---
-  doc.setFillColor(79, 70, 229); // Indigo premium (#4f46e5)
-  doc.rect(0, 0, 210, 40, 'F');
+let body=[];
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
-  doc.setTextColor(255, 255, 255);
-  doc.text("KERJAKU PRO", 15, 20);
+let grand=0;
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(218, 211, 249);
-  doc.text("Laporan Rekapitulasi Upah Lembur Karyawan", 15, 28);
+data.forEach((d,i)=>{
+grand+=d.total;
+body.push([
+i+1,
+d.tanggal,
+d.jam+' Jam',
+rupiah(d.total)
+]);
+});
 
-  // --- INFORMASI KARYAWAN ---
-  let y = 55;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(51, 65, 85); // Slate-700
-  doc.text("NAMA KARYAWAN :", 15, y);
-  
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(15, 23, 42); 
-  doc.text(user.toUpperCase(), 58, y);
+doc.text('Laporan Lembur',14,15);
 
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(51, 65, 85);
-  doc.text("TANGGAL CETAK  :", 15, y + 6);
-  
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(15, 23, 42);
-  const tglSekarang = new Date().toLocaleDateString("id-ID", { year: 'numeric', month: 'long', day: 'numeric' });
-  doc.text(tglSekarang, 58, y + 6);
 
-  // --- STRUKTUR TABEL DATA ---
-  let grandTotal = 0;
-  let totalJamLembur = 0;
-  const barisTabel = [];
+doc.autoTable({
+head:[['No','Tanggal','Jam','Upah']],
+body:body,
+startY:25
+});
 
-  daftar.forEach((item, index) => {
-    grandTotal += item.total;
-    totalJamLembur += item.jam;
-    const infoHari = item.jenisHari === 'kerja' ? 'Hari Kerja' : 'Hari Libur';
-    
-    barisTabel.push([
-      index + 1,
-      item.tanggal,
-      `${item.jam} Jam`,
-      infoHari,
-      rupiah(item.total)
-    ]);
-  });
+doc.text('Grand Total : '+rupiah(grand),14,doc.lastAutoTable.finalY+10);
 
-  // Pembuatan Tabel Otomatis Menggunakan AutoTable plugin
-  doc.autoTable({
-    startY: y + 16,
-    head: [['No', 'Tanggal', 'Durasi', 'Jenis Hari', 'Jumlah Upah']],
-    body: barisTabel,
-    theme: 'striped',
-    headStyles: { 
-      fillColor: [15, 23, 42], // Slate-900 Gelap
-      textColor: [255, 255, 255], 
-      fontStyle: 'bold',
-      halign: 'center'
-    },
-    columnStyles: {
-      0: { halign: 'center', width: 15 },
-      1: { halign: 'center' },
-      2: { halign: 'center' },
-      3: { halign: 'left' },
-      4: { halign: 'right', fontStyle: 'bold' }
-    },
-    styles: { font: 'helvetica', fontSize: 10, cellPadding: 4 },
-    alternateRowStyles: { fillColor: [248, 250, 252] }
-  });
-
-  // --- KOTAK RANGKUMAN TOTAL ---
-  let finalY = doc.lastAutoTable.finalY + 10;
-  if (finalY > 240) {
-    doc.addPage();
-    finalY = 20;
-  }
-
-  // Membuat Box Total Elegan
-  doc.setFillColor(241, 245, 249);
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(110, finalY, 85, 30, 4, 4, 'FD');
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(100, 116, 139);
-  doc.text(`Total Akumulasi Jam: ${totalJamLembur} Jam`, 115, finalY + 10);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(15, 23, 42);
-  doc.text("GRAND TOTAL UPAH:", 115, finalY + 18);
-  
-  doc.setFontSize(14);
-  doc.setTextColor(79, 70, 229); // Indigo Accent
-  doc.text(rupiah(grandTotal), 115, finalY + 25);
-
-  doc.save(`Laporan_Lembur_${user}.pdf`);
+doc.save('KerjaKu.pdf');
 }
+
+function exportExcel(){
+const key='lembur_'+localStorage.getItem('activeUser');
+let data=JSON.parse(localStorage.getItem(key))||[];
+
+const wb=XLSX.utils.book_new();
+const ws=XLSX.utils.json_to_sheet(data);
+
+XLSX.utils.book_append_sheet(wb,ws,'Lembur');
+XLSX.writeFile(wb,'KerjaKu.xlsx');
+}
+
+function backupData(){
+const key='lembur_'+localStorage.getItem('activeUser');
+const data=localStorage.getItem(key);
+
+const blob=new Blob([data],{type:'application/json'});
+const a=document.createElement('a');
+a.href=URL.createObjectURL(blob);
+a.download='backup.json';
+a.click();
+}
+
+function restoreData(){
+const file=document.getElementById('restoreFile').files[0];
+if(!file)return;
+
+const reader=new FileReader();
+
+reader.onload=function(e){
+const key='lembur_'+localStorage.getItem('activeUser');
+localStorage.setItem(key,e.target.result);
+renderData();
+renderChart();
+};
+
+reader.readAsText(file);
+}
+
+function toggleTheme(){
+document.body.classList.toggle('light');
+}
+
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('sw.js');
+}
+
 </script>
 
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
-}
-</script>
-  
 </body>
-</html>
-
+  </html>
