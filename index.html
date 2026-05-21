@@ -36,7 +36,6 @@
       box-shadow: 0 0 25px rgba(99, 102, 241, .25);
     }
     
-    /* Mencegah pergeseran layout pada mobile */
     .screen {
       display: none;
       animation: fadeIn 0.2s ease-in-out;
@@ -149,7 +148,7 @@
         </div>
 
         <div>
-          <label id="labelGaji" class="text-xs text-slate-400 block mb-1">Gaji Pokok Bulanan</label>
+          <label id="labelGaji" class="text-xs text-slate-400 block mb-1">Gaji Pokok Bulanan (Rp)</label>
           <input type="number" id="gaji" placeholder="Gaji Bulanan" class="w-full p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
         </div>
         
@@ -183,8 +182,7 @@
         </button>
       </div>
 
-      <div id="listData" class="space-y-3 pt-2">
-        </div>
+      <div id="listData" class="space-y-3 pt-2"></div>
     </div>
   </main>
 
@@ -249,37 +247,34 @@
 
 <script>
 lucide.createIcons();
-  function safeParse(key, fallback){
-  try{
-    return JSON.parse(localStorage.getItem(key)) || fallback;
-  }catch(e){
+
+function safeParse(key, fallback){
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : fallback;
+  } catch(e) {
     return fallback;
   }
-  }
+}
 
 // KONTROLLER PERPINDAHAN LAYAR (SCREEN MANAGER)
 function switchScreen(screenName, navId) {
-  // Sembunyikan semua layar
   document.querySelectorAll('.screen').forEach(scr => scr.classList.remove('active'));
   
-  // Tampilkan layar target
   const targetScreen = document.getElementById('screen' + screenName.charAt(0).toUpperCase() + screenName.slice(1));
   if(targetScreen) targetScreen.classList.add('active');
 
-  // Reset semua warna ikon navigasi ke default (abu-abu)
   document.querySelectorAll('nav button').forEach(btn => {
     btn.classList.remove('text-indigo-400', 'font-semibold');
     btn.classList.add('text-slate-400');
   });
 
-  // Warnai ikon navigasi aktif (indigo)
   const activeNav = typeof navId === 'string' ? document.getElementById(navId) : navId;
   if(activeNav) {
     activeNav.classList.remove('text-slate-400');
     activeNav.classList.add('text-indigo-400', 'font-semibold');
   }
 
-  // Ganti Judul Header Atas
   document.getElementById('headerTitle').innerText = screenName;
 }
 
@@ -317,7 +312,7 @@ function register(){
     return;
   }
 
-  let users = JSON.parse(localStorage.getItem("users")) || [];
+  let users = safeParse("users", []);
   const cek = users.find(u => u.username.toLowerCase() === username.toLowerCase());
 
   if(cek){
@@ -334,7 +329,7 @@ function login(){
   const username = document.getElementById("username").value.trim();
   const pin = document.getElementById("pin").value;
 
-  let users = JSON.parse(localStorage.getItem("users")) || [];
+  let users = safeParse("users", []);
   const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.pin === pin);
 
   if(!user){
@@ -354,9 +349,16 @@ function tampilDashboard(){
   document.getElementById("dashboardPage").classList.remove("hidden");
   document.getElementById("welcomeUser").innerText = "Selamat datang, " + user;
 
+  // Set default filter bulan ke bulan ini saat masuk dashboard
+  const hariIni = new Date();
+  const blnIni = hariIni.toISOString().substring(0, 7);
+  document.getElementById("filterBulan").value = blnIni;
+
   refreshStatusAbsen();
   tampilkanData();
 }
+
+window.onload = tampilDashboard;
 
 function logout(){
   localStorage.removeItem("activeUser");
@@ -366,6 +368,8 @@ function logout(){
 // MANAGEMENT ABSENSI & AUTO-LEMBUR
 function refreshStatusAbsen() {
   const user = localStorage.getItem("activeUser");
+  if(!user) return;
+  
   const tglHariIni = formatTanggal(new Date());
   const statusKey = `status_absen_${user}_${tglHariIni}`;
   
@@ -440,14 +444,10 @@ function absenMasuk() {
 function absenPulang() {
   const gajiInput = document.getElementById("gaji").value;
   const gaji = Number(gajiInput || 0);
-if (gaji <= 0) {
-  alert("Isi gaji dengan benar");
-  return;
-}
   const metode = document.getElementById("metodeHitung").value;
 
-  if(!gajiInput || isNaN(gaji) || gaji <= 0){
-    alert(metode === "flat" ? "Mohon isi tarif lembur per jam di tab Absensi." : "Mohon isi Gaji Pokok Bulanan di tab Absensi.");
+  if(gaji <= 0){
+    alert(metode === "flat" ? "Mohon isi tarif lembur per jam di tab Absensi dengan benar." : "Mohon isi Gaji Pokok Bulanan di tab Absensi dengan benar.");
     return;
   }
 
@@ -477,7 +477,7 @@ if (gaji <= 0) {
   const totalUpahLembur = hitungLembur(gaji, jenisHari, jamLembur, metode);
 
   const logKey = "lembur_" + user;
-  let daftar = JSON.parse(localStorage.getItem(logKey)) || [];
+  let daftar = safeParse(logKey, []);
   
   daftar.push({
     tanggal: tglHariIni,
@@ -533,6 +533,7 @@ function hitungLembur(gaji, jenisHari, jam, metode){
 
 function tampilkanData(){
   const user = localStorage.getItem("activeUser");
+  if(!user) return;
   const key = "lembur_" + user;
   let daftar = safeParse(key, []);
 
@@ -579,6 +580,7 @@ function tampilkanData(){
     `;
   });
 
+  // Sinkronisasi komponen nilai di dashboard utama secara langsung
   document.getElementById("totalUpah").innerText = rupiah(grandTotal);
   document.getElementById("totalJam").innerText = totalJamLembur.toFixed(1) + " Jam";
   document.getElementById("jumlahData").innerText = dataTersaring.length + " Hari";
@@ -606,7 +608,7 @@ function backupData() {
   const key = "lembur_" + user;
   let daftar = localStorage.getItem(key);
 
-  if (!daftar || JSON.parse(daftar).length === 0) {
+  if (!daftar || safeParse(key, []).length === 0) {
     alert("Belum ada data untuk dicadangkan.");
     return;
   }
@@ -776,3 +778,4 @@ if ("serviceWorker" in navigator) {
   
 </body>
 </html>
+
