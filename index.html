@@ -182,14 +182,8 @@ z-index:999;
 <script>
 lucide.createIcons();
 
-const slider=document.getElementById('jam');
-const jamText=document.getElementById('jamText');
-
-const slider = document.getElementById("jam");
-const jamText = document.getElementById("jamText");
-
 slider.addEventListener("input", function () {
-  jamText.textContent = this.value;
+  document.getElementById("jamText").innerText = this.value;
 });
 
 function toast(msg){
