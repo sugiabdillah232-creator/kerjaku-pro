@@ -255,7 +255,7 @@
       </div>
       <div class="grid grid-cols-2 gap-2">
        <button onclick="downloadPDF()" class="bg-indigo-600 hover:bg-indigo-500 py-3.5 rounded-xl font-bold text-[11px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="file-text" class="w-4 h-4"></i> REKAP TABEL</button>
-       <button onclick="downloadSlipGaji()" class="bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-bold text-[11px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="wallet" class="w-4 h-4"></i> SLIP GAJI</button>       
+       <button onclick="downloadSlipGaji()" class="bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-bold text-[11px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="wallet" class="w-4 h-4"></i> SLIP GAJI</button>
       </div>
      </div>
      
@@ -265,33 +265,9 @@
 
    <main id="screenPengaturan" class="screen p-5 space-y-4">
     <div class="glass-card rounded-3xl p-5 space-y-4">
-     <h2 class="text-lg font-bold tracking-tight text-indigo-400">Konfigurasi Pajak PPh 21</h2>
-     <p class="text-slate-400 text-[11px] leading-relaxed">Pilih kategori TER (Tarif Efektif Rata-Rata) berdasarkan status PTKP karyawan Anda untuk pelaporan pajak otomatis ke HRD.</p>
-     <div>
-       <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Kategori TER Pajak Anda</label> 
-       <select id="kategoriTER" class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs outline-none" onchange="simpanKonfigurasi()"> 
-         <option value="A">Kategori A (TK/0, TK/1, K/0)</option> 
-         <option value="B">Kategori B (TK/2, TK/3, K/1, K/2)</option> 
-         <option value="C">Kategori C (K/3)</option> 
-       </select>
-     </div>
-    </div>
-
-    <div class="glass-card rounded-3xl p-5 space-y-4">
      <h2 class="text-lg font-bold tracking-tight">Cloud Security &amp; Backup</h2>
      <p class="text-slate-400 text-[11px] leading-relaxed">Ekspor atau impor data secara berkala untuk mencegah hilangnya riwayat akibat pembersihan berkas sampah browser.</p>
      <div class="space-y-2">
-      <button onclick="eksporCSVBerhash()" class="w-full bg-emerald-950/30 hover:bg-emerald-900/20 text-slate-200 p-4 rounded-2xl font-semibold flex items-center justify-between border border-emerald-500/20 transition duration-200 active:scale-98">
-       <div class="flex items-center gap-3">
-        <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></div>
-        <div class="text-left">
-         <p class="text-xs font-bold text-emerald-400">Ekspor Data HRD (.csv + Hash)</p>
-         <p class="text-slate-400 text-[10px] mt-0.5">Laporan payroll & PPh21 TER terproteksi</p>
-        </div>
-       </div>
-       <i data-lucide="chevron-right" class="w-4 h-4 text-emerald-600"></i>
-      </button>
-
       <button onclick="backupData()" class="w-full bg-slate-950/40 hover:bg-slate-900/40 text-slate-200 p-4 rounded-2xl font-semibold flex items-center justify-between border border-white/5 transition duration-200 active:scale-98">
        <div class="flex items-center gap-3">
         <div class="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl"><i data-lucide="download" class="w-5 h-5"></i></div>
@@ -333,130 +309,6 @@ let clockInterval = null;
 let isModeLupaAbsen = false; 
 let tanggalTerakhir = ""; 
 
-// DATA GABUNGAN: Database Lapisan Tarif Pajak PPh 21 TER PP 58/2023 Utuh
-const terData = {
-    "A": [
-        {"min": 0, "max": 5400000, "rate": 0.0000},
-        {"min": 5400001, "max": 5650000, "rate": 0.0025},
-        {"min": 5650001, "max": 6200000, "rate": 0.0050},
-        {"min": 6200001, "max": 6500000, "rate": 0.0075},
-        {"min": 6500001, "max": 6900001, "rate": 0.0100},
-        {"min": 6900002, "max": 7300000, "rate": 0.0125},
-        {"min": 7300001, "max": 7800000, "rate": 0.0150},
-        {"min": 7800001, "max": 8850000, "rate": 0.0175},
-        {"min": 8850001, "max": 9800000, "rate": 0.0200},
-        {"min": 9800001, "max": 10950000, "rate": 0.0250},
-        {"min": 10950001, "max": 11200000, "rate": 0.0300},
-        {"min": 11200001, "max": 12050000, "rate": 0.0400},
-        {"min": 12050001, "max": 12950000, "rate": 0.0500},
-        {"min": 12950001, "max": 14150000, "rate": 0.0600},
-        {"min": 14150001, "max": 15550000, "rate": 0.0700},
-        {"min": 15550001, "max": 17050000, "rate": 0.0800},
-        {"min": 17050001, "max": 19500000, "rate": 0.0900},
-        {"min": 19500001, "max": 22700000, "rate": 0.1000},
-        {"min": 22700001, "max": 26600000, "rate": 0.1100},
-        {"min": 26600001, "max": 28100000, "rate": 0.1200},
-        {"min": 28100001, "max": 30100000, "rate": 0.1300},
-        {"min": 30100001, "max": 32600000, "rate": 0.1400},
-        {"min": 32600001, "max": 35400000, "rate": 0.1500},
-        {"min": 35400001, "max": 38900000, "rate": 0.1600},
-        {"min": 38900001, "max": 43700000, "rate": 0.1700},
-        {"min": 43700001, "max": 49600000, "rate": 0.1800},
-        {"min": 49600001, "max": 50600000, "rate": 0.1900},
-        {"min": 50600001, "max": 58600000, "rate": 0.2000},
-        {"min": 58600001, "max": 64500000, "rate": 0.2100},
-        {"min": 64500001, "max": 79800000, "rate": 0.2200},
-        {"min": 79800001, "max": 85400000, "rate": 0.2300},
-        {"min": 85400001, "max": 102200000, "rate": 0.2400},
-        {"min": 102200001, "max": 155400000, "rate": 0.2500},
-        {"min": 155400001, "max": 286300000, "rate": 0.2600},
-        {"min": 286300001, "max": 461100000, "rate": 0.2700},
-        {"min": 461100001, "max": 916000000, "rate": 0.2800},
-        {"min": 916000001, "max": 1418200000, "rate": 0.2900},
-        {"min": 1418200001, "max": 999999999999, "rate": 0.3400}
-    ],
-    "B": [
-        {"min": 0, "max": 6200000, "rate": 0.0000},
-        {"min": 6200001, "max": 6500000, "rate": 0.0025},
-        {"min": 6500001, "max": 6850000, "rate": 0.0050},
-        {"min": 6850001, "max": 7300000, "rate": 0.0075},
-        {"min": 7300001, "max": 7800000, "rate": 0.0100},
-        {"min": 7800001, "max": 8300000, "rate": 0.0125},
-        {"min": 8300001, "max": 9100000, "rate": 0.0150},
-        {"min": 9100001, "max": 9700000, "rate": 0.0175},
-        {"min": 9700001, "max": 10400000, "rate": 0.0200},
-        {"min": 10400001, "max": 11150000, "rate": 0.0225},
-        {"min": 11150001, "max": 11850000, "rate": 0.0250},
-        {"min": 11850001, "max": 12600000, "rate": 0.0300},
-        {"min": 12600001, "max": 13900000, "rate": 0.0400},
-        {"min": 13900001, "max": 15100000, "rate": 0.0500},
-        {"min": 15100001, "max": 16100000, "rate": 0.0600},
-        {"min": 16100001, "max": 17300000, "rate": 0.0700},
-        {"min": 17300001, "max": 19050000, "rate": 0.0800},
-        {"min": 19050001, "max": 21350000, "rate": 0.0900},
-        {"min": 21350001, "max": 24150000, "rate": 0.1000},
-        {"min": 24150001, "max": 27250000, "rate": 0.1100},
-        {"min": 27250001, "max": 30050000, "rate": 0.1200},
-        {"min": 30050001, "max": 32850000, "rate": 0.1300},
-        {"min": 32850001, "max": 35750000, "rate": 0.1400},
-        {"min": 35750001, "max": 39350000, "rate": 0.1500},
-        {"min": 39350001, "max": 43950000, "rate": 0.1600},
-        {"min": 43950001, "max": 49850000, "rate": 0.1700},
-        {"min": 49850001, "max": 51100000, "rate": 0.1800},
-        {"min": 51100001, "max": 59150000, "rate": 0.1900},
-        {"min": 59150001, "max": 65150000, "rate": 0.2000},
-        {"min": 65150001, "max": 80450000, "rate": 0.2100},
-        {"min": 80450001, "max": 86150000, "rate": 0.2200},
-        {"min": 86150001, "max": 102950000, "rate": 0.2300},
-        {"min": 102950001, "max": 156050000, "rate": 0.2400},
-        {"min": 156050001, "max": 286750000, "rate": 0.2500},
-        {"min": 286750001, "max": 461650000, "rate": 0.2600},
-        {"min": 461650001, "max": 916750000, "rate": 0.2700},
-        {"min": 916750001, "max": 1418950000, "rate": 0.2800},
-        {"min": 1418950001, "max": 999999999999, "rate": 0.3400}
-    ],
-    "C": [
-        {"min": 0, "max": 6600000, "rate": 0.0000},
-        {"min": 6600001, "max": 6950000, "rate": 0.0025},
-        {"min": 6950001, "max": 7350000, "rate": 0.0050},
-        {"min": 7350001, "max": 7800000, "rate": 0.0075},
-        {"min": 7800001, "max": 8350000, "rate": 0.0100},
-        {"min": 8350001, "max": 9050000, "rate": 0.0125},
-        {"min": 9050001, "max": 9850000, "rate": 0.0150},
-        {"min": 9850001, "max": 10600000, "rate": 0.0175},
-        {"min": 10600001, "max": 11400000, "rate": 0.0200},
-        {"min": 11400001, "max": 12200000, "rate": 0.0225},
-        {"min": 12200001, "max": 13000000, "rate": 0.0250},
-        {"min": 13000001, "max": 13800000, "rate": 0.0300},
-        {"min": 13800001, "max": 15100000, "rate": 0.0400},
-        {"min": 15100001, "max": 16300000, "rate": 0.0500},
-        {"min": 16300001, "max": 17400000, "rate": 0.0600},
-        {"min": 17400001, "max": 18600000, "rate": 0.0700},
-        {"min": 18600001, "max": 20350000, "rate": 0.0800},
-        {"min": 20350000, "max": 22650000, "rate": 0.0900},
-        {"min": 22650001, "max": 25450000, "rate": 0.1000},
-        {"min": 25450001, "max": 28550000, "rate": 0.1100},
-        {"min": 28550001, "max": 31350000, "rate": 0.1200},
-        {"min": 31350001, "max": 34150000, "rate": 0.1300},
-        {"min": 34150001, "max": 37050000, "rate": 0.1400},
-        {"min": 37050001, "max": 40650000, "rate": 0.1500},
-        {"min": 40650001, "max": 45250000, "rate": 0.1600},
-        {"min": 45250001, "max": 51150000, "rate": 0.1700},
-        {"min": 51150001, "max": 52400000, "rate": 0.1800},
-        {"min": 52400001, "max": 60450000, "rate": 0.1900},
-        {"min": 60450001, "max": 66450000, "rate": 0.2000},
-        {"min": 66450001, "max": 81750000, "rate": 0.2100},
-        {"min": 81750001, "max": 87450000, "rate": 0.2200},
-        {"min": 87450001, "max": 104250000, "rate": 0.2300},
-        {"min": 104250001, "max": 157350000, "rate": 0.2400},
-        {"min": 157350001, "max": 288050000, "rate": 0.2500},
-        {"min": 288050001, "max": 462950000, "rate": 0.2600},
-        {"min": 462950001, "max": 918050000, "rate": 0.2700},
-        {"min": 918050001, "max": 1420250000, "rate": 0.2800},
-        {"min": 1420250001, "max": 999999999999, "rate": 0.3400}
-    ]
-};
-
 lucide.createIcons();
 
 function startLiveClock() {
@@ -479,10 +331,11 @@ function startLiveClock() {
 }
 
 function toggleModeLupaAbsen() {
-  let titleForm = document.getElementById("titlePresensiForm");
-  let btnToggle = document.getElementById("btnToggleLupa");
-  let wrapNormal = document.getElementById("wrapperAbsenNormal");
-  let wrapLupa = document.getElementById("wrapperAbsenLupa");
+  isModeLupaAbsen = !isModeLupaAbsen;
+  const titleForm = document.getElementById("titlePresensiForm");
+  const btnToggle = document.getElementById("btnToggleLupa");
+  const wrapNormal = document.getElementById("wrapperAbsenNormal");
+  const wrapLupa = document.getElementById("wrapperAbsenLupa");
 
   if(isModeLupaAbsen) {
     titleForm.innerText = "Formulir Lupa Absen";
@@ -501,7 +354,7 @@ function toggleModeLupaAbsen() {
 
 function switchScreen(screenName, navId) {
   document.querySelectorAll('.screen').forEach(scr => scr.classList.remove('active'));
-  let targetScreen = document.getElementById('screen' + screenName.charAt(0).toUpperCase() + screenName.slice(1));
+  const targetScreen = document.getElementById('screen' + screenName.charAt(0).toUpperCase() + screenName.slice(1));
   if(targetScreen) targetScreen.classList.add('active');
 
   document.querySelectorAll('nav button').forEach(btn => {
@@ -509,7 +362,7 @@ function switchScreen(screenName, navId) {
     btn.classList.add('text-slate-400');
   });
 
-  let activeNav = typeof navId === 'string' ? document.getElementById(navId) : navId;
+  const activeNav = typeof navId === 'string' ? document.getElementById(navId) : navId;
   if(activeNav) {
     activeNav.classList.remove('text-slate-400');
     activeNav.classList.add('text-indigo-400', 'font-extrabold', 'scale-105');
@@ -528,28 +381,27 @@ function formatWaktu(date) {
 }
 
 function formatTanggal(date) {
-  let tahun = date.getFullYear();
-  let bulan = String(date.getMonth() + 1).padStart(2, '0');
-  let tanggal = String(date.getDate()).padStart(2, '0');
+  const tahun = date.getFullYear();
+  const bulan = String(date.getMonth() + 1).padStart(2, '0');
+  const tanggal = String(date.getDate()).padStart(2, '0');
   return `${tahun}-${bulan}-${tanggal}`;
 }
 
 function simpanKonfigurasi() {
-  let user = localStorage.getItem("activeUser");
+  const user = localStorage.getItem("activeUser");
   if (!user) return;
-  let config = {
+  const config = {
     metode: document.getElementById("metodeHitung").value,
     gaji: document.getElementById("gaji").value,
-    jenisHari: document.getElementById("jenisHari").value,
-    kategoriTER: document.getElementById("kategoriTER").value // Menyimpan data TER baru
+    jenisHari: document.getElementById("jenisHari").value
   };
   localStorage.setItem(`config_${user}`, JSON.stringify(config));
 }
 
 function cekMetode() {
-  let metode = document.getElementById("metodeHitung").value;
-  let labelGaji = document.getElementById("labelGaji");
-  let gajiInput = document.getElementById("gaji");
+  const metode = document.getElementById("metodeHitung").value;
+  const labelGaji = document.getElementById("labelGaji");
+  const gajiInput = document.getElementById("gaji");
   if (metode === "flat") {
     labelGaji.innerText = "Tarif Lembur Tetap Per Jam (Rp)";
     gajiInput.placeholder = "Misal: 25000";
@@ -567,14 +419,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function register(){
-  let username = document.getElementById("username").value.trim();
-  let pin = document.getElementById("pin").value;
+  const username = document.getElementById("username").value.trim();
+  const pin = document.getElementById("pin").value;
   if(!username || pin.length !== 6){
     alert("Isi username dan PIN keamanan 6 digit");
     return;
   }
   let users = JSON.parse(localStorage.getItem("users")) || [];
-  let cek = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  const cek = users.find(u => u.username.toLowerCase() === username.toLowerCase());
   if(cek){
     alert("Username sudah terdaftar");
     return;
@@ -585,10 +437,10 @@ function register(){
 }
 
 function login(){
-  let username = document.getElementById("username").value.trim();
-  let pin = document.getElementById("pin").value;
+  const username = document.getElementById("username").value.trim();
+  const pin = document.getElementById("pin").value;
   let users = JSON.parse(localStorage.getItem("users")) || [];
-  let user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.pin === pin);
+  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.pin === pin);
   if(!user){
     alert("Kombinasi User & PIN salah!");
     return;
@@ -598,21 +450,18 @@ function login(){
 }
 
 function tampilDashboard(){
-  let user = localStorage.getItem("activeUser");
+  const user = localStorage.getItem("activeUser");
   if(!user) return;
 
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("dashboardPage").classList.remove("hidden");
   document.getElementById("welcomeUser").innerText = "AUTHORIZED USER: " + user.toUpperCase();
 
-  let savedConfig = JSON.parse(localStorage.getItem(`config_${user}`));
+  const savedConfig = JSON.parse(localStorage.getItem(`config_${user}`));
   if (savedConfig) {
     document.getElementById("metodeHitung").value = savedConfig.metode || "pemerintah";
     document.getElementById("gaji").value = savedConfig.gaji || "";
     document.getElementById("jenisHari").value = savedConfig.jenisHari || "kerja";
-    if(savedConfig.kategoriTER) {
-        document.getElementById("kategoriTER").value = savedConfig.kategoriTER;
-    }
     cekMetode();
   }
 
@@ -629,15 +478,15 @@ function logout(){
 }
 
 function refreshStatusAbsen() {
-  let user = localStorage.getItem("activeUser");
-  let tglHariIni = formatTanggal(new Date());
-  let statusKey = `status_absen_${user}_${tglHariIni}`;
-  let statusData = JSON.parse(localStorage.getItem(statusKey));
+  const user = localStorage.getItem("activeUser");
+  const tglHariIni = formatTanggal(new Date());
+  const statusKey = `status_absen_${user}_${tglHariIni}`;
+  const statusData = JSON.parse(localStorage.getItem(statusKey));
   
-  let btnMasuk = document.getElementById("btnMasuk");
-  let btnPulang = document.getElementById("btnPulang");
-  let statusBox = document.getElementById("statusAbsenBox");
-  let miniStatusBox = document.getElementById("miniStatusBox");
+  const btnMasuk = document.getElementById("btnMasuk");
+  const btnPulang = document.getElementById("btnPulang");
+  const statusBox = document.getElementById("statusAbsenBox");
+  const miniStatusBox = document.getElementById("miniStatusBox");
 
   if (!statusData) {
     btnMasuk.disabled = false;
@@ -648,7 +497,7 @@ function refreshStatusAbsen() {
     btnPulang.className = "bg-slate-900 text-slate-600 py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 cursor-not-allowed border border-slate-800/80";
     document.getElementById("waktuPulangText").innerText = "--:--";
     
-    let textBelum = "Sistem Mendeteksi Anda Belum Absen Masuk";
+    const textBelum = "Sistem Mendeteksi Anda Belum Absen Masuk";
     statusBox.innerText = textBelum;
     statusBox.className = "bg-slate-950/40 rounded-2xl p-4 text-center text-xs text-amber-500 font-bold border border-white/5";
     miniStatusBox.innerText = textBelum;
@@ -662,7 +511,7 @@ function refreshStatusAbsen() {
     btnPulang.className = "bg-red-600 hover:bg-red-500 text-white py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 transition active:scale-95 shadow-lg shadow-red-600/20 pulse-glow-red";
     document.getElementById("waktuPulangText").innerText = "--:--";
 
-    let textKerja = `Shift Aktif Berjalan (Masuk: ${statusData.jamMasuk})`;
+    const textKerja = `Shift Aktif Berjalan (Masuk: ${statusData.jamMasuk})`;
     statusBox.innerText = textKerja;
     statusBox.className = "bg-slate-950/40 rounded-2xl p-4 text-center text-xs text-indigo-400 font-bold border border-indigo-500/20";
     miniStatusBox.innerText = textKerja;
@@ -676,7 +525,7 @@ function refreshStatusAbsen() {
     btnPulang.className = "bg-slate-900 text-slate-600 py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 cursor-not-allowed border border-slate-800/80";
     document.getElementById("waktuPulangText").innerText = statusData.jamPulang;
 
-    let textSelesai = `Sesi Kerja Selesai (${statusData.jamMasuk} - ${statusData.jamPulang})`;
+    const textSelesai = `Sesi Kerja Selesai (${statusData.jamMasuk} - ${statusData.jamPulang})`;
     statusBox.innerText = "Sesi Absensi Hari Ini Selesai Dilock";
     statusBox.className = "bg-slate-950/40 rounded-2xl p-4 text-center text-xs text-emerald-400 font-bold border border-white/5";
     miniStatusBox.innerText = textSelesai;
@@ -685,15 +534,15 @@ function refreshStatusAbsen() {
 }
 
 function absenMasuk() {
-  let user = localStorage.getItem("activeUser");
-  let sekarang = new Date();
-  let tglHariIni = formatTanggal(sekarang);
-  let statusKey = `status_absen_${user}_${tglHariIni}`;
+  const user = localStorage.getItem("activeUser");
+  const sekarang = new Date();
+  const tglHariIni = formatTanggal(sekarang);
+  const statusKey = `status_absen_${user}_${tglHariIni}`;
 
-  let jenisHariSaatIni = document.getElementById("jenisHari").value;
-  let metodeSaatIni = document.getElementById("metodeHitung").value;
+  const jenisHariSaatIni = document.getElementById("jenisHari").value;
+  const metodeSaatIni = document.getElementById("metodeHitung").value;
 
-  let data = {
+  const data = {
     step: "masuk",
     waktuMasukRaw: sekarang.getTime(),
     jamMasuk: formatWaktu(sekarang),
@@ -707,18 +556,18 @@ function absenMasuk() {
 }
 
 function absenPulang() {
-  let gajiInput = document.getElementById("gaji").value;
-  let gaji = parseFloat(gajiInput);
+  const gajiInput = document.getElementById("gaji").value;
+  const gaji = parseFloat(gajiInput);
   if(!gajiInput || isNaN(gaji) || gaji <= 0){
-    let metodeCek = document.getElementById("metodeHitung").value;
+    const metodeCek = document.getElementById("metodeHitung").value;
     alert(metodeCek === "flat" ? "Konfigurasi tarif flat masih kosong." : "Konfigurasi gaji bulanan masih kosong.");
     return;
   }
 
-  let user = localStorage.getItem("activeUser");
-  let sekarang = new Date();
-  let tglHariIni = formatTanggal(sekarang);
-  let statusKey = `status_absen_${user}_${tglHariIni}`;
+  const user = localStorage.getItem("activeUser");
+  const sekarang = new Date();
+  const tglHariIni = formatTanggal(sekarang);
+  const statusKey = `status_absen_${user}_${tglHariIni}`;
 
   let statusData = JSON.parse(localStorage.getItem(statusKey));
   if(!statusData) return;
@@ -727,11 +576,11 @@ function absenPulang() {
   statusData.waktuPulangRaw = sekarang.getTime(); 
   statusData.jamPulang = formatWaktu(sekarang);
 
-  let selisihMs = statusData.waktuPulangRaw - statusData.waktuMasukRaw;
-  let totalJamKerja = parseFloat((selisihMs / (1000 * 60 * 60)).toFixed(2));
+  const selisihMs = statusData.waktuPulangRaw - statusData.waktuMasukRaw;
+  const totalJamKerja = parseFloat((selisihMs / (1000 * 60 * 60)).toFixed(2));
   
-  let jenisHari = statusData.jenisHari || document.getElementById("jenisHari").value;
-  let metode = statusData.metode || document.getElementById("metodeHitung").value;
+  const jenisHari = statusData.jenisHari || document.getElementById("jenisHari").value;
+  const metode = statusData.metode || document.getElementById("metodeHitung").value;
 
   let jamLembur = 0;
   if (jenisHari === "kerja") {
@@ -740,8 +589,8 @@ function absenPulang() {
     jamLembur = totalJamKerja;
   }
 
-  let totalUpahLembur = hitungLembur(gaji, jenisHari, jamLembur, metode);
-  let logKey = "lembur_" + user;
+  const totalUpahLembur = hitungLembur(gaji, jenisHari, jamLembur, metode);
+  const logKey = "lembur_" + user;
   let daftar = JSON.parse(localStorage.getItem(logKey)) || [];
   
   daftar.push({
@@ -766,11 +615,11 @@ function absenPulang() {
 }
 
 function simpanLupaAbsen() {
-  let tanggalLupa = document.getElementById("tanggalLupa").value;
-  let gajiInput = document.getElementById("gaji").value;
-  let gaji = parseFloat(gajiInput);
-  let metode = document.getElementById("metodeHitung").value;
-  let jenisHari = document.getElementById("jenisHari").value;
+  const tanggalLupa = document.getElementById("tanggalLupa").value;
+  const gajiInput = document.getElementById("gaji").value;
+  const gaji = parseFloat(gajiInput);
+  const metode = document.getElementById("metodeHitung").value;
+  const jenisHari = document.getElementById("jenisHari").value;
 
   if(!gajiInput || isNaN(gaji) || gaji <= 0){
     alert("Tentukan konfigurasi nominal upah terlebih dahulu.");
@@ -781,14 +630,14 @@ function simpanLupaAbsen() {
     return;
   }
 
-  let user = localStorage.getItem("activeUser");
-  let logKey = "lembur_" + user;
+  const user = localStorage.getItem("activeUser");
+  const logKey = "lembur_" + user;
   let daftar = JSON.parse(localStorage.getItem(logKey)) || [];
 
-  let tglDipilih = new Date(tanggalLupa); tglDipilih.setHours(0,0,0,0);
-  let tglHariIni = new Date(); tglHariIni.setHours(0,0,0,0);
-  let selisihMs = tglHariIni.getTime() - tglDipilih.getTime();
-  let selisihHari = Math.floor(selisihMs / (1000 * 60 * 60 * 24));
+  const tglDipilih = new Date(tanggalLupa); tglDipilih.setHours(0,0,0,0);
+  const tglHariIni = new Date(); tglHariIni.setHours(0,0,0,0);
+  const selisihMs = tglHariIni.getTime() - tglDipilih.getTime();
+  const selisihHari = Math.floor(selisihMs / (1000 * 60 * 60 * 24));
 
   if(selisihHari > 3 || selisihHari < 0) {
     alert("❌ Error: Validitas tanggal di luar jangkauan (Maks 3 hari ke belakang).");
@@ -799,12 +648,12 @@ function simpanLupaAbsen() {
     return;
   }
 
-  let masukVal = document.getElementById("jamMasukManual").value;
-  let pulangVal = document.getElementById("jamPulangManual").value;
+  const masukVal = document.getElementById("jamMasukManual").value;
+  const pulangVal = document.getElementById("jamPulangManual").value;
   if(!masukVal || !pulangVal) return;
 
-  let [hMasuk, mMasuk] = masukVal.split(':').map(Number);
-  let [hPulang, mPulang] = pulangVal.split(':').map(Number);
+  const [hMasuk, mMasuk] = masukVal.split(':').map(Number);
+  const [hPulang, mPulang] = pulangVal.split(':').map(Number);
   let totalMenit = (hPulang * 60 + mPulang) - (hMasuk * 60 + mMasuk);
   if (totalMenit < 0) totalMenit += 24 * 60; 
 
@@ -818,7 +667,7 @@ function simpanLupaAbsen() {
     jamLembur = totalJamKerja;
   }
 
-  let totalUpahLembur = hitungLembur(gaji, jenisHari, jamLembur, metode);
+  const totalUpahLembur = hitungLembur(gaji, jenisHari, jamLembur, metode);
   daftar.push({
     tanggal: tanggalLupa, jamMasuk: masukVal, jamPulang: pulangVal,
     totalDurasi: totalJamKerja, jam: jamLembur, jenisHari, metode, total: totalUpahLembur, isManual: true
@@ -837,7 +686,7 @@ function hitungLembur(gaji, jenisHari, jam, metode){
   if(jam <= 0) return 0;
   if(metode === "flat") return gaji * jam;
   
-  let upahPerJam = gaji / 173;
+  const upahPerJam = gaji / 173;
   let konversions = 0;
   if(jenisHari === "kerja"){
     if(jam >= 1) konversions += 1.5;
@@ -851,30 +700,31 @@ function hitungLembur(gaji, jenisHari, jam, metode){
 }
 
 function tampilkanData(){
-  let user = localStorage.getItem("activeUser");
+  const user = localStorage.getItem("activeUser");
   let daftar = JSON.parse(localStorage.getItem("lembur_" + user)) || [];
-  let filterBulan = document.getElementById("filterBulan").value;
-  let list = document.getElementById("listData");
+  const filterBulan = document.getElementById("filterBulan").value;
+  const list = document.getElementById("listData");
   list.innerHTML = "";
 
   let grandTotal = 0, totalJamLembur = 0;
   let filtered = daftar.filter(item => !filterBulan || item.tanggal.startsWith(filterBulan));
 
   filtered.forEach(item => { grandTotal += item.total; totalJamLembur += item.jam; });
-  let dataTampil = [...filtered].reverse();
+  const dataTampil = [...filtered].reverse();
 
   if(dataTampil.length === 0) {
     list.innerHTML = `<p class="text-center text-slate-600 text-xs py-8">Tidak ada data log pada periode ini.</p>`;
   }
 
+  // Gila: Rendering list dengan efek staggered delay CSS kustom
   dataTampil.forEach((item, idx) => {
-    let labelHari = item.jenisHari === 'kerja' ? 'Hari Reguler' : 'Hari Libur';
-    let badgeManual = item.isManual ? `<span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md ml-2 font-bold uppercase tracking-wider">Revisi</span>` : '';
-    let jamLog = (item.jamMasuk && item.jamPulang) ? ` [${item.jamMasuk} - ${item.jamPulang}]` : '';
+    const labelHari = item.jenisHari === 'kerja' ? 'Hari Reguler' : 'Hari Libur';
+    const badgeManual = item.isManual ? `<span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md ml-2 font-bold uppercase tracking-wider">Revisi</span>` : '';
+    const jamLog = (item.jamMasuk && item.jamPulang) ? ` [${item.jamMasuk} - ${item.jamPulang}]` : '';
     
-    let div = document.createElement('div');
+    const div = document.createElement('div');
     div.className = "fade-in-item bg-slate-900/60 p-4 rounded-2xl flex justify-between items-center border border-white/5";
-    div.style.animationDelay = `${idx * 0.05}s`; 
+    div.style.animationDelay = `${idx * 0.05}s`; // Stagger effect
     div.innerHTML = `
       <div>
         <h3 class="font-bold text-xs text-white tracking-wide flex items-center">${item.tanggal}<span class="text-indigo-400 font-medium text-[11px] ml-1">${jamLog}</span>${badgeManual}</h3>
@@ -895,8 +745,8 @@ function tampilkanData(){
 }
 
 function hapusData(){
-  let user = localStorage.getItem("activeUser");
-  let key = "lembur_" + user;
+  const user = localStorage.getItem("activeUser");
+  const key = "lembur_" + user;
   if((JSON.parse(localStorage.getItem(key)) || []).length === 0) return;
 
   if(confirm("Hapus permanen seluruh log data presensi?")){
@@ -906,13 +756,13 @@ function hapusData(){
 }
 
 function backupData() {
-  let user = localStorage.getItem("activeUser");
+  const user = localStorage.getItem("activeUser");
   let daftar = localStorage.getItem("lembur_" + user);
   if (!daftar || JSON.parse(daftar).length === 0) return;
 
-  let blob = new Blob([daftar], { type: "application/json" });
-  let url = URL.createObjectURL(blob);
-  let a = document.createElement("a");
+  const blob = new Blob([daftar], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
   a.href = url;
   a.download = `Database_KerjaKu_${user}.json`;
   a.click();
@@ -921,15 +771,15 @@ function backupData() {
 function triggerImport() { document.getElementById("fileImport").click(); }
 
 function importData(event) {
-  let file = event.target.files[0];
+  const file = event.target.files[0];
   if (!file) return;
-  let reader = new FileReader();
+  const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      let imported = JSON.parse(e.target.result);
+      const imported = JSON.parse(e.target.result);
       if (!Array.isArray(imported)) throw new Error();
-      let user = localStorage.getItem("activeUser");
-      let key = "lembur_" + user;
+      const user = localStorage.getItem("activeUser");
+      const key = "lembur_" + user;
       
       if (confirm("Merge dengan database lokal? (Cancel untuk overwrite)")) {
         let lokal = JSON.parse(localStorage.getItem(key)) || [];
@@ -942,76 +792,6 @@ function importData(event) {
     } catch(err) { alert("Format file rusak."); }
   };
   reader.readAsText(file);
-}
-
-// MESIN BARU 1: Menghitung PPh 21 Berdasarkan Aturan TER (Maks Fallback 34%)
-function hitungPajakPPh21TER(gajiBruto, kategori) {
-    let tabel = terData[kategori] || terData["A"];
-    let layer = tabel.find(l => gajiBruto >= l.min && gajiBruto <= l.max);
-    let tarif = layer ? layer.rate : 0.34;
-    return Math.floor(gajiBruto * tarif);
-}
-
-// MESIN BARU 2: Kriptografi Browser Lokal untuk Membuat Token SHA-256 Aman
-async function generateSHA256(text) {
-    let encoder = new TextEncoder();
-    let data = encoder.encode(text);
-    let hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    let hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// MESIN BARU 3: Proses Ekspor Data Otomatis dengan Perlindungan Integritas File
-async function eksporCSVBerhash() {
-    let user = localStorage.getItem("activeUser");
-    let filterBulan = document.getElementById("filterBulan").value;
-    let gajiPokok = parseFloat(document.getElementById("gaji").value) || 0;
-    let metode = document.getElementById("metodeHitung").value;
-    let kategoriPajak = document.getElementById("kategoriTER").value;
-
-    let daftar = JSON.parse(localStorage.getItem("lembur_" + user)) || [];
-    let dataBulanIni = daftar.filter(item => !filterBulan || item.tanggal.startsWith(filterBulan));
-
-    if(dataBulanIni.length === 0) {
-        alert("Tidak ada log riwayat kerja untuk dicetak pada periode bulan ini.");
-        return;
-    }
-
-    let totalUangLembur = 0;
-    dataBulanIni.forEach(item => { totalUangLembur += item.total; });
-    
-    // Total penghasilan kotor (Bruto) = Gaji Pokok (jika bulanan) + Akumulasi Uang Lembur
-    let totalBruto = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
-    let potonganPPh21 = hitungPajakPPh21TER(totalBruto, kategoriPajak);
-    let takeHomePayNetto = totalBruto - potonganPPh21;
-
-    // Susun Struktur Konten Laporan CSV
-    let csvContent = `LAPORAN PAYROLL & POTONGAN PAJAK PPh21 (METODE TER)\n`;
-    csvContent += `User Terotorisasi,Periode Rekap,Kategori TER PTKP,Skema Kerja\n`;
-    csvContent += `${user.toUpperCase()},${filterBulan || 'Semua Periode'},Kategori ${kategoriPajak},${metode}\n\n`;
-    
-    csvContent += `RINCIAN PENDAPATAN & POTONGAN\n`;
-    csvContent += `Komponen,Nominal Rupiah\n`;
-    csvContent += `Gaji Pokok Dasar,${gajiPokok}\n`;
-    csvContent += `Total Hasil Lemburan,${totalUangLembur}\n`;
-    csvContent += `TOTAL PENGHASILAN BRUTO,${totalBruto}\n`;
-    csvContent += `POTONGAN PAJAK PPh21 (TER),${potonganPPh21}\n`;
-    csvContent += `TOTAL TAKE HOME PAY (NETTO),${takeHomePayNetto}\n`;
-
-    // Amankan file dengan Hash Otentikasi sebelum diunduh
-    let hashSegel = await generateSHA256(csvContent);
-    csvContent += `\n\n--- SECURITY DIGEST SEGEL AUTHENTICATION ---\n`;
-    csvContent += `Token SHA-256: ${hashSegel}\n`;
-    csvContent += `Status File: SECURE & VERIFIED\n`;
-
-    // Trigger Download file CSV aman lewat browser
-    let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `Payroll_Report_Secure_${user}_${filterBulan || 'All'}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 }
 
 window.onload = tampilDashboard;
@@ -1055,21 +835,12 @@ async function downloadSlipGaji() {
     doc.text("Gaji Pokok Bulanan", 12, currentY); doc.text(rupiah(gajiPokok), 105, currentY);
   }
 
-  let kategoriPajak = document.getElementById("kategoriTER").value;
-  let totalBruto = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
-  let potonganPPh21 = hitungPajakPPh21TER(totalBruto, kategoriPajak);
-
   currentY += 6; doc.text(`Uang Lembur Aktif (${totalJamLembur.toFixed(1)} Jam)`, 12, currentY);
   doc.text(rupiah(totalUangLembur), 105, currentY);
-  
-  currentY += 6; doc.text(`Potongan Pajak PPh 21 (TER Kat. ${kategoriPajak})`, 12, currentY);
-  doc.textColor(239, 68, 68); doc.text("-" + rupiah(potonganPPh21), 105, currentY);
-  doc.textColor(0, 0, 0);
-
   currentY += 4; doc.line(10, currentY, 138, currentY);
 
   currentY += 6; doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.text("TOTAL DITERIMA (TAKE HOME PAY)", 12, currentY);
-  const takeHomePay = totalBruto - potonganPPh21;
+  const takeHomePay = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
   doc.setTextColor(16, 185, 129); doc.text(rupiah(takeHomePay), 105, currentY);
 
   doc.save(`Slip_Gaji_${user}_${filterBulan}.pdf`);
@@ -1114,14 +885,6 @@ async function downloadPDF(){
 
   doc.save(`Laporan_KerjaKu_${user}.pdf`);
 }
-
-// Sensor PWA Otomatis agar PWA Anda tetap berjalan
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-        .then(() => console.log('Service Worker Terregistrasi Aman'))
-        .catch(err => console.log('SW Gagal:', err));
-}
 </script>
  </body>
 </html>
-
