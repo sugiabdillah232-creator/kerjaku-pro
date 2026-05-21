@@ -1,84 +1,64 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4f46e5">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>KerjaKu Pro V5 - Multi Screen</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KerjaKu Pro V6</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4f46e5">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #020617;
-      color: white;
-      -webkit-tap-highlight-color: transparent;
-    }
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-    .glass {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .gradient {
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    }
-
-    .glow {
-      box-shadow: 0 0 25px rgba(99, 102, 241, .25);
-    }
-
-    .screen { display:none; }
-    .screen.active { display:block; }
-  </style>
+<style>
+body {
+  font-family: Arial;
+  background:#020617;
+  color:white;
+}
+.screen{display:none}
+.screen.active{display:block}
+</style>
 </head>
 
 <body>
 
-<div id="loginPage" class="min-h-screen flex items-center justify-center p-5">
-  <div class="glass rounded-3xl p-8 w-full max-w-md">
-    <h1 class="text-3xl font-bold text-center mb-6">KerjaKu Pro</h1>
-
-    <input id="username" class="w-full p-4 mb-3 rounded-xl bg-slate-900" placeholder="Username">
-    <input id="pin" class="w-full p-4 mb-3 rounded-xl bg-slate-900" placeholder="PIN 6 digit" maxlength="6">
-
-    <button onclick="login()" class="w-full gradient p-4 rounded-xl font-bold mb-2">Login</button>
-    <button onclick="register()" class="w-full bg-slate-800 p-4 rounded-xl">Daftar</button>
-  </div>
+<!-- LOGIN -->
+<div id="loginPage">
+  <input id="username" placeholder="username">
+  <input id="pin" placeholder="pin">
+  <button onclick="login()">Login</button>
 </div>
 
-<div id="dashboardPage" class="hidden min-h-screen pb-24">
+<!-- DASHBOARD -->
+<div id="dashboardPage" class="hidden">
 
-<header class="p-5 flex justify-between border-b border-slate-800">
+<header>
   <h1>KerjaKu Pro</h1>
   <div id="headerTitle">Beranda</div>
 </header>
 
-<main id="screenBeranda" class="screen active p-5">
+<main id="screenBeranda" class="screen active">
   <h2>Dashboard</h2>
 </main>
 
-<main id="screenAbsen" class="screen p-5">
-  <button id="btnMasuk" onclick="absenMasuk()">Absen Masuk</button>
-  <button id="btnPulang" onclick="absenPulang()">Absen Pulang</button>
+<main id="screenAbsen" class="screen">
+  <button id="btnMasuk" onclick="absenMasuk()">Masuk</button>
+  <button id="btnPulang" onclick="absenPulang()">Pulang</button>
 </main>
 
-<main id="screenRiwayat" class="screen p-5"></main>
-<main id="screenPengaturan" class="screen p-5"></main>
+<main id="screenRiwayat" class="screen"></main>
+<main id="screenPengaturan" class="screen"></main>
 
 <nav>
-  <button id="nav-beranda" onclick="switchScreen('beranda', this.id)">Beranda</button>
-  <button id="nav-absen" onclick="switchScreen('absen', this.id)">Absensi</button>
-  <button id="nav-riwayat" onclick="switchScreen('riwayat', this.id)">Riwayat</button>
-  <button id="nav-pengaturan" onclick="switchScreen('pengaturan', this.id)">Setting</button>
+<button id="nav-beranda" onclick="switchScreen('beranda',this.id)">Beranda</button>
+<button id="nav-absen" onclick="switchScreen('absen',this.id)">Absensi</button>
+<button id="nav-riwayat" onclick="switchScreen('riwayat',this.id)">Riwayat</button>
+<button id="nav-pengaturan" onclick="switchScreen('pengaturan',this.id)">Setting</button>
 </nav>
 
 </div>
@@ -86,88 +66,107 @@
 <script>
 lucide.createIcons();
 
-function switchScreen(screenName, navId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+/* =========================
+SCREEN CONTROLLER (FIXED)
+========================= */
+function switchScreen(screenName, navId){
 
-  const target = document.getElementById('screen' + screenName.charAt(0).toUpperCase() + screenName.slice(1));
-  if (target) target.classList.add('active');
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
 
-  const label = {
-    beranda: "Beranda",
-    absen: "Absensi",
-    riwayat: "Riwayat",
-    pengaturan: "Pengaturan"
-  };
+const target=document.getElementById('screen'+screenName.charAt(0).toUpperCase()+screenName.slice(1));
+if(target) target.classList.add('active');
 
-  document.getElementById("headerTitle").innerText = label[screenName] || screenName;
+const label={
+beranda:"Beranda",
+absen:"Absensi",
+riwayat:"Riwayat",
+pengaturan:"Pengaturan"
+};
 
-  document.querySelectorAll("nav button").forEach(b => {
-    b.classList.remove("text-indigo-400");
-    b.classList.add("text-slate-400");
-  });
+document.getElementById("headerTitle").innerText=label[screenName]||screenName;
 
-  document.getElementById(navId).classList.add("text-indigo-400");
+document.querySelectorAll("nav button").forEach(b=>{
+b.style.color="#94a3b8";
+});
+
+document.getElementById(navId).style.color="#6366f1";
 }
 
-function absenMasuk(){
-  const user = localStorage.getItem("activeUser");
-  const now = new Date();
-
-  const key = `status_${user}_${now.toISOString().split('T')[0]}`;
-
-  localStorage.setItem(key, JSON.stringify({
-    step: "masuk",
-    waktuMasukRaw: now.getTime(),
-    jamMasuk: now.toLocaleTimeString()
-  }));
-
-  alert("Absen masuk berhasil");
-}
-
-function absenPulang(){
-  const user = localStorage.getItem("activeUser");
-  const now = new Date();
-
-  const key = `status_${user}_${now.toISOString().split('T')[0]}`;
-  let data = JSON.parse(localStorage.getItem(key));
-
-  if(!data) return alert("Belum absen masuk");
-
-  data.step = "selesai";
-  data.waktuPulangRaw = now.getTime(); // ✅ FIX BUG
-  data.jamPulang = now.toLocaleTimeString();
-
-  localStorage.setItem(key, JSON.stringify(data));
-
-  alert("Absen pulang berhasil");
-}
-
+/* =========================
+LOGIN
+========================= */
 function login(){
-  const u = document.getElementById("username").value;
-  const p = document.getElementById("pin").value;
+const u=document.getElementById("username").value;
+const p=document.getElementById("pin").value;
 
-  let users = JSON.parse(localStorage.getItem("users") || "[]");
-  const found = users.find(x => x.username === u && x.pin === p);
+let users=JSON.parse(localStorage.getItem("users")||"[]");
+const found=users.find(x=>x.username===u&&x.pin===p);
 
-  if(!found) return alert("Login gagal");
+if(!found)return alert("Login gagal");
 
-  localStorage.setItem("activeUser", u);
-  document.getElementById("loginPage").classList.add("hidden");
-  document.getElementById("dashboardPage").classList.remove("hidden");
+localStorage.setItem("activeUser",u);
 
-  switchScreen("beranda","nav-beranda"); // auto masuk beranda
+document.getElementById("loginPage").style.display="none";
+document.getElementById("dashboardPage").classList.remove("hidden");
+
+switchScreen("beranda","nav-beranda");
 }
 
+/* =========================
+ABSEN MASUK
+========================= */
+function absenMasuk(){
+const user=localStorage.getItem("activeUser");
+const now=new Date();
+
+const key=`status_${user}_${now.toISOString().split('T')[0]}`;
+
+localStorage.setItem(key,JSON.stringify({
+step:"masuk",
+waktuMasukRaw:now.getTime(),
+jamMasuk:now.toLocaleTimeString()
+}));
+
+alert("Absen masuk berhasil");
+}
+
+/* =========================
+ABSEN PULANG (FIX GRANDMA BUG)
+========================= */
+function absenPulang(){
+
+const user=localStorage.getItem("activeUser");
+const now=new Date();
+
+const key=`status_${user}_${now.toISOString().split('T')[0]}`;
+
+let data=JSON.parse(localStorage.getItem(key)||"null");
+if(!data)return alert("Belum absen masuk");
+
+/* ❗ FIX BUG UTAMA */
+data.step="selesai";
+data.waktuPulangRaw=now.getTime(); // FIXED
+data.jamPulang=now.toLocaleTimeString();
+
+localStorage.setItem(key,JSON.stringify(data));
+
+alert("Absen pulang berhasil");
+}
+
+/* =========================
+REGISTER
+========================= */
 function register(){
-  const u = document.getElementById("username").value;
-  const p = document.getElementById("pin").value;
+const u=document.getElementById("username").value;
+const p=document.getElementById("pin").value;
 
-  let users = JSON.parse(localStorage.getItem("users") || "[]");
+let users=JSON.parse(localStorage.getItem("users")||"[]");
 
-  users.push({username:u,pin:p});
-  localStorage.setItem("users", JSON.stringify(users));
+users.push({username:u,pin:p});
 
-  alert("User dibuat");
+localStorage.setItem("users",JSON.stringify(users));
+
+alert("User dibuat");
 }
 </script>
 
