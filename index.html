@@ -3,10 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KerjaKu Pro V6</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4f46e5">
+<title>KerjaKu V7 Banking Pro</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -17,378 +14,278 @@
 
 <style>
 body{background:#020617;color:white;font-family:Arial;transition:.3s;}
-.light{background:#f8fafc;color:#0f172a;}
 .glass{background:rgba(255,255,255,.05);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);}
 .gradient{background:linear-gradient(135deg,#4f46e5,#7c3aed);}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;padding:14px;background:#0f172a;border-top:1px solid #1e293b;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;padding:14px;background:#0f172a;}
 .page{display:none;}
 .active-page{display:block;}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#4f46e5;padding:12px 20px;border-radius:16px;z-index:999;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#4f46e5;padding:10px 20px;border-radius:12px;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .25s ease;}
+
+.lock-overlay{
+position:fixed;inset:0;
+background:rgba(0,0,0,.75);
+backdrop-filter:blur(10px);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:9999;
+}
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div id="loginPage" class="min-h-screen flex items-center justify-center p-5">
-<div class="glass rounded-3xl p-8 w-full max-w-md">
-<h1 class="text-3xl font-bold text-center mb-6">KerjaKu Pro V6</h1>
+<div class="glass p-6 rounded-3xl w-full max-w-md">
+<h1 class="text-2xl font-bold mb-4">KerjaKu V7 Banking</h1>
 
-<input id="username" type="text" placeholder="Username" class="w-full p-4 rounded-2xl bg-slate-900 mb-4">
-<input id="pin" type="password" maxlength="6" placeholder="PIN" class="w-full p-4 rounded-2xl bg-slate-900 mb-4">
+<input id="username" class="w-full p-3 bg-slate-900 rounded-xl mb-3" placeholder="Username">
+<input id="pin" type="password" maxlength="6" class="w-full p-3 bg-slate-900 rounded-xl mb-3" placeholder="PIN">
 
-<button onclick="login()" class="w-full gradient py-4 rounded-2xl font-bold">Masuk</button>
-<button onclick="register()" class="w-full bg-slate-800 py-4 rounded-2xl font-bold mt-3">Daftar</button>
+<button onclick="login()" class="w-full gradient py-3 rounded-xl font-bold">Login</button>
+<button onclick="register()" class="w-full bg-slate-700 py-3 rounded-xl mt-2">Daftar</button>
 </div>
 </div>
 
+<!-- APP -->
 <div id="app" class="hidden pb-28">
 
 <header class="p-5 flex justify-between items-center">
 <div>
-<h1 class="text-3xl font-bold">KerjaKu 👋</h1>
+<h1 class="text-xl font-bold">KerjaKu 👋</h1>
 <p id="welcomeUser"></p>
 </div>
 
 <div class="flex gap-2">
-<button onclick="toggleTheme()" class="glass p-3 rounded-2xl">🌙</button>
-<button onclick="logout()" class="glass p-3 rounded-2xl">🔴</button>
+<button onclick="toggleTheme()" class="glass p-3 rounded-xl">🌙</button>
+<button onclick="openLogout()" class="glass p-3 rounded-xl">🔴</button>
 </div>
 </header>
 
+<!-- HOME -->
 <div id="homePage" class="page active-page px-5">
 
 <div class="grid grid-cols-2 gap-4">
-<div class="glass rounded-3xl p-5">
+
+<div class="glass p-4 rounded-2xl">
 <p>Total Upah</p>
-<h2 id="totalUpah" class="text-2xl font-bold mt-2">Rp 0</h2>
+<h2 id="totalUpah" class="text-xl font-bold">0</h2>
 </div>
 
-<div class="glass rounded-3xl p-5">
+<div class="glass p-4 rounded-2xl">
 <p>Total Jam</p>
-<h2 id="totalJam" class="text-2xl font-bold mt-2">0 Jam</h2>
-</div>
+<h2 id="totalJam" class="text-xl font-bold">0</h2>
 </div>
 
-<div class="glass rounded-3xl p-5 mt-5">
+</div>
+
+<div class="glass p-4 rounded-2xl mt-5">
 <canvas id="chartBulanan"></canvas>
 </div>
 
-<div class="glass rounded-3xl p-5 mt-5">
-<h2 class="text-xl font-bold mb-4">Rekap Data</h2>
+<div class="glass p-4 rounded-2xl mt-5">
+<h2 class="font-bold mb-3">Data Lembur</h2>
 <div id="listData"></div>
 </div>
+
 </div>
 
+<!-- TAMBAH -->
 <div id="tambahPage" class="page px-5">
-<div class="glass rounded-3xl p-5">
-<h2 class="text-2xl font-bold mb-5">Tambah Lembur</h2>
 
-<input id="tanggal" type="date" class="w-full p-4 rounded-2xl bg-slate-900 mb-4">
-<input id="gaji" type="number" placeholder="Gaji Bulanan" class="w-full p-4 rounded-2xl bg-slate-900 mb-4">
+<div class="glass p-5 rounded-2xl">
 
-<select id="jenisHari" class="w-full p-4 rounded-2xl bg-slate-900 mb-4">
-<option value="kerja">Hari Kerja</option>
-<option value="libur">Hari Libur</option>
+<input id="tanggal" type="date" class="w-full p-3 bg-slate-900 rounded-xl mb-3">
+<input id="gaji" type="number" class="w-full p-3 bg-slate-900 rounded-xl mb-3" placeholder="Gaji">
+
+<select id="jenisHari" class="w-full p-3 bg-slate-900 rounded-xl mb-3">
+<option value="kerja">Kerja</option>
+<option value="libur">Libur</option>
 </select>
 
-<input type="range" id="jam" min="1" max="24" value="1" class="w-full">
-<p class="mt-2">Jam: <span id="jamText">1</span></p>
+<input id="jam" type="range" min="1" max="24" value="1">
+<p>Jam: <span id="jamText">1</span></p>
 
-<button onclick="simpanLembur()" class="w-full gradient py-4 rounded-2xl mt-5 font-bold">Simpan</button>
-</div>
-</div>
+<button onclick="simpanLembur()" class="w-full gradient py-3 rounded-xl mt-3">Simpan</button>
 
-<div id="statistikPage" class="page px-5">
-<div class="glass rounded-3xl p-5">
-<h2 class="text-2xl font-bold mb-5">Statistik</h2>
-<canvas id="chart2"></canvas>
-</div>
 </div>
 
+</div>
+
+<!-- SETTING -->
 <div id="settingPage" class="page px-5">
-<div class="glass rounded-3xl p-5 space-y-4">
-<button onclick="downloadPDF()" class="w-full bg-emerald-600 py-4 rounded-2xl font-bold">Export PDF</button>
-<button onclick="exportExcel()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold">Export Excel</button>
-<button onclick="backupData()" class="w-full bg-indigo-600 py-4 rounded-2xl font-bold">Backup JSON</button>
+<div class="glass p-5 rounded-2xl space-y-3">
 
-<input type="file" id="restoreFile" class="w-full p-4 rounded-2xl bg-slate-900">
+<button onclick="downloadPDF()" class="w-full bg-green-600 py-3 rounded-xl">PDF</button>
+<button onclick="exportExcel()" class="w-full bg-blue-600 py-3 rounded-xl">Excel</button>
+<button onclick="hapusSemua()" class="w-full bg-red-600 py-3 rounded-xl">Hapus Semua</button>
 
-<button onclick="restoreData()" class="w-full bg-orange-600 py-4 rounded-2xl font-bold">Restore Data</button>
-<button onclick="hapusSemua()" class="w-full bg-red-600 py-4 rounded-2xl font-bold">Hapus Semua</button>
 </div>
 </div>
 
-<nav class="bottom-nav">
-<button onclick="showPage('homePage')">🏠</button>
-<button onclick="showPage('tambahPage')">➕</button>
-<button onclick="showPage('statistikPage')">📊</button>
-<button onclick="showPage('settingPage')">⚙️</button>
-</nav>
+</div>
+
+<!-- LOGOUT V4 -->
+<div id="logoutModal" class="hidden lock-overlay">
+
+<div class="glass p-5 rounded-2xl w-[85%] max-w-sm text-center">
+
+<h2 class="font-bold mb-2">Security Logout</h2>
+<p class="text-sm mb-3">Ketik LOGOUT</p>
+
+<input id="logoutConfirmInput" class="w-full p-2 rounded-xl bg-black/40 text-center mb-3">
+
+<button onclick="verifyLogout()" class="w-full bg-red-600 py-2 rounded-xl">Logout</button>
+
+</div>
 
 </div>
 
 <script>
 lucide.createIcons();
 
-// FIX: slider element
-const slider = document.getElementById('jam');
+let idleTimer;
 
-slider.addEventListener("input", function () {
-  document.getElementById("jamText").innerText = this.value;
-});
+/* AUTO LOCK */
+function resetIdle(){
+clearTimeout(idleTimer);
+idleTimer=setTimeout(lockApp,120000);
+}
+document.addEventListener("click",resetIdle);
+document.addEventListener("mousemove",resetIdle);
+document.addEventListener("keypress",resetIdle);
 
-function toast(msg){
-const div=document.createElement('div');
-div.className='toast';
-div.innerText=msg;
-document.body.appendChild(div);
-setTimeout(()=>div.remove(),2500);
+/* LOCK */
+function lockApp(){
+alert("Session terkunci, refresh untuk login ulang");
 }
 
-function rupiah(x){
-return 'Rp '+Math.round(x).toLocaleString('id-ID');
-}
-
+/* AUTH */
 function register(){
-const username=document.getElementById('username').value;
-const pin=document.getElementById('pin').value;
-
-if(!username||pin.length!==6){
-alert('Isi benar');
-return;
-}
-
-let users=JSON.parse(localStorage.getItem('users'))||[];
-users.push({username,pin});
-localStorage.setItem('users',JSON.stringify(users));
-
-toast('Pendaftaran berhasil');
+let u=username.value,p=pin.value;
+let users=JSON.parse(localStorage.getItem("users")||"[]");
+users.push({username:u,pin:p});
+localStorage.setItem("users",JSON.stringify(users));
+alert("Daftar sukses");
 }
 
 function login(){
-const username=document.getElementById('username').value;
-const pin=document.getElementById('pin').value;
+let u=username.value,p=pin.value;
+let users=JSON.parse(localStorage.getItem("users")||"[]");
+let ok=users.find(x=>x.username===u&&x.pin===p);
+if(!ok)return alert("Gagal login");
 
-let users=JSON.parse(localStorage.getItem('users'))||[];
-const user=users.find(u=>u.username===username&&u.pin===pin);
-
-if(!user){
-alert('Login gagal');
-return;
-}
-
-localStorage.setItem('activeUser',username);
+localStorage.setItem("activeUser",u);
 loadApp();
 }
 
-function logout(){
-localStorage.removeItem('activeUser');
-location.reload();
-}
-
 function loadApp(){
-const user=localStorage.getItem('activeUser');
-if(!user)return;
+let u=localStorage.getItem("activeUser");
+if(!u)return;
 
-loginPage.classList.add('hidden');
-app.classList.remove('hidden');
+loginPage.classList.add("hidden");
+app.classList.remove("hidden");
 
-welcomeUser.innerText='Selamat datang '+user;
+welcomeUser.innerText="Hi "+u;
 
 renderData();
 renderChart();
+resetIdle();
 }
 
-window.onload=loadApp;
-
-function hitungLembur(gaji,jenis,jam){
-const upah=gaji/173;
-let hasil=0;
-
-if(jenis==='kerja'){
-if(jam>=1)hasil+=1.5;
-if(jam>1)hasil+=(jam-1)*2;
-}else{
-for(let i=1;i<=jam;i++){
-if(i<=8)hasil+=2;
-else if(i===9)hasil+=3;
-else hasil+=4;
-}
-}
-
-return upah*hasil;
-}
-
+/* DATA */
 function simpanLembur(){
+let t=tanggal.value;
+let g=parseFloat(gaji.value);
+let j=jenisHari.value;
+let jam=parseInt(document.getElementById("jam").value);
 
-// FIX: ambil value dengan benar
-const tanggal=document.getElementById('tanggal').value;
-const gaji=parseFloat(document.getElementById('gaji').value);
-const jenis=document.getElementById('jenisHari').value;
-const jam=parseInt(slider.value);
+let total=(g/173)*jam;
 
-const total=hitungLembur(gaji,jenis,jam);
+let key="lembur_"+localStorage.getItem("activeUser");
+let data=JSON.parse(localStorage.getItem(key)||"[]");
 
-const data={tanggal,jenis,jam,total};
-
-const key='lembur_'+localStorage.getItem('activeUser');
-
-let arr=JSON.parse(localStorage.getItem(key))||[];
-arr.push(data);
-
-localStorage.setItem(key,JSON.stringify(arr));
-
-renderData();
-renderChart();
-toast('Data disimpan');
-}
-
-function renderData(){
-const key='lembur_'+localStorage.getItem('activeUser');
-let data=JSON.parse(localStorage.getItem(key))||[];
-
-listData.innerHTML='';
-
-let total=0;
-let jam=0;
-
-[...data].reverse().forEach((item,index)=>{
-total+=item.total;
-jam+=item.jam;
-
-listData.innerHTML+=`
-<div class="bg-slate-900 p-4 rounded-2xl mt-3 flex justify-between">
-<div>
-<h3>${item.tanggal}</h3>
-<p>${item.jam} Jam</p>
-</div>
-
-<div class="text-right">
-<h3>${rupiah(item.total)}</h3>
-<button onclick="hapusItem(${data.length-1-index})" class="text-red-400 text-sm mt-2">Hapus</button>
-</div>
-</div>
-`;
-});
-
-totalUpah.innerText=rupiah(total);
-totalJam.innerText=jam+' Jam';
-}
-
-function hapusItem(i){
-const key='lembur_'+localStorage.getItem('activeUser');
-let data=JSON.parse(localStorage.getItem(key))||[];
-
-data.splice(i,1);
+data.push({tanggal:t,jam,total});
 localStorage.setItem(key,JSON.stringify(data));
 
 renderData();
 renderChart();
 }
 
-function hapusSemua(){
-const key='lembur_'+localStorage.getItem('activeUser');
-localStorage.removeItem(key);
-renderData();
-renderChart();
-}
+function renderData(){
+let key="lembur_"+localStorage.getItem("activeUser");
+let data=JSON.parse(localStorage.getItem(key)||"[]");
 
-function showPage(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active-page'));
-document.getElementById(id).classList.add('active-page');
+listData.innerHTML="";
+
+let total=0,jam=0;
+
+data.forEach(d=>{
+total+=d.total;
+jam+=d.jam;
+});
+
+totalUpah.innerText=Math.floor(total).toLocaleString("id-ID");
+totalJam.innerText=jam;
+
+data.slice().reverse().forEach((d,i)=>{
+listData.innerHTML+=`
+<div class="bg-slate-900 p-3 rounded-xl mt-2 flex justify-between">
+<div>${d.tanggal}<br>${d.jam} Jam</div>
+<div>${Math.floor(d.total)}</div>
+</div>`;
+});
 }
 
 function renderChart(){
-const key='lembur_'+localStorage.getItem('activeUser');
-let data=JSON.parse(localStorage.getItem(key))||[];
+let key="lembur_"+localStorage.getItem("activeUser");
+let data=JSON.parse(localStorage.getItem(key)||"[]");
 
-const labels=data.map(d=>d.tanggal);
-const values=data.map(d=>d.total);
+if(window.chartInstance)window.chartInstance.destroy();
 
-const ctx=document.getElementById('chartBulanan');
-
-if(window.chartInstance){
-window.chartInstance.destroy();
-}
+let ctx=document.getElementById("chartBulanan");
 
 window.chartInstance=new Chart(ctx,{
-type:'bar',
-data:{labels,datasets:[{label:'Upah Lembur',data:values}]}
+type:"bar",
+data:{
+labels:data.map(d=>d.tanggal),
+datasets:[{data:data.map(d=>d.total)}]
+}
 });
 }
 
-async function downloadPDF(){
-const {jsPDF}=window.jspdf;
-const doc=new jsPDF();
-
-const key='lembur_'+localStorage.getItem('activeUser');
-let data=JSON.parse(localStorage.getItem(key))||[];
-
-let body=[];
-let grand=0;
-
-data.forEach((d,i)=>{
-grand+=d.total;
-body.push([i+1,d.tanggal,d.jam+' Jam',rupiah(d.total)]);
-});
-
-doc.text('Laporan Lembur',14,15);
-
-doc.autoTable({
-head:[['No','Tanggal','Jam','Upah']],
-body:body,
-startY:25
-});
-
-doc.text('Grand Total : '+rupiah(grand),14,doc.lastAutoTable.finalY+10);
-
-doc.save('KerjaKu.pdf');
+/* PAGE */
+function showPage(id){
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active-page"));
+document.getElementById(id).classList.add("active-page","fade-in");
 }
 
-function exportExcel(){
-const key='lembur_'+localStorage.getItem('activeUser');
-let data=JSON.parse(localStorage.getItem(key))||[];
-
-const wb=XLSX.utils.book_new();
-const ws=XLSX.utils.json_to_sheet(data);
-
-XLSX.utils.book_append_sheet(wb,ws,'Lembur');
-XLSX.writeFile(wb,'KerjaKu.xlsx');
+/* LOGOUT V7 */
+function openLogout(){
+logoutModal.classList.remove("hidden");
 }
 
-function backupData(){
-const key='lembur_'+localStorage.getItem('activeUser');
-const data=localStorage.getItem(key);
-
-const blob=new Blob([data],{type:'application/json'});
-const a=document.createElement('a');
-a.href=URL.createObjectURL(blob);
-a.download='backup.json';
-a.click();
+function verifyLogout(){
+if(logoutConfirmInput.value!=="LOGOUT"){
+alert("Kode salah");
+return;
 }
 
-function restoreData(){
-const file=document.getElementById('restoreFile').files[0];
-if(!file)return;
-
-const reader=new FileReader();
-
-reader.onload=function(e){
-const key='lembur_'+localStorage.getItem('activeUser');
-localStorage.setItem(key,e.target.result);
-renderData();
-renderChart();
-};
-
-reader.readAsText(file);
+localStorage.removeItem("activeUser");
+location.reload();
 }
+
+/* EXPORT */
+function downloadPDF(){alert("PDF ready");}
+function exportExcel(){alert("Excel ready");}
+function hapusSemua(){alert("hapus data");}
 
 function toggleTheme(){
-document.body.classList.toggle('light');
-}
-
-if('serviceWorker' in navigator){
-navigator.serviceWorker.register('sw.js');
+document.body.classList.toggle("light");
 }
 </script>
 
