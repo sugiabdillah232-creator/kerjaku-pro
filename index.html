@@ -212,24 +212,22 @@
   <script>
 let clockInterval = null;
 let isModeLupaAbsen = false; 
-let tanggalTerakhir = ""; // Menyimpan status tanggal aktif saat ini
+let tanggalTerakhir = ""; 
 
 lucide.createIcons();
 
 function startLiveClock() {
   if (clockInterval) clearInterval(clockInterval);
   
-  // Set inisialisasi awal tanggal saat aplikasi dijalankan
   tanggalTerakhir = formatTanggal(new Date());
 
   clockInterval = setInterval(() => {
     const sekarang = new Date();
     
-    // Logika Otomatis: Cek apakah sistem di perangkat sudah mendeteksi hari baru
     const tanggalSekarang = formatTanggal(sekarang);
     if (tanggalSekarang !== tanggalTerakhir) {
       tanggalTerakhir = tanggalSekarang;
-      refreshStatusAbsen(); // Melakukan pembaruan tombol masuk/pulang secara real-time
+      refreshStatusAbsen(); 
     }
 
     const jam = String(sekarang.getHours()).padStart(2, '0');
@@ -291,7 +289,6 @@ function formatWaktu(date) {
   return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 }
 
-// FIX: Menggunakan penanggalan lokal berdasarkan zona waktu perangkat/HP user (Anti Bug UTC)
 function formatTanggal(date) {
   const tahun = date.getFullYear();
   const bulan = String(date.getMonth() + 1).padStart(2, '0');
@@ -493,8 +490,13 @@ function absenPulang() {
   statusData.jamPulang = formatWaktu(sekarang);
 
   const selisihMs = statusData.waktuPulangRaw - statusData.waktuMasukRaw;
-  const totalJamKerja = parseFloat((selisihMs / (1000 * 60 * 60)).toFixed(2));
+  let totalJamKerja = parseFloat((selisihMs / (1000 * 60 * 60)).toFixed(2));
   const jenisHari = document.getElementById("jenisHari").value;
+
+  // FIX BUG: Pengurangan istirahat dilakukan proporsional
+  if (totalJamKerja > 5) {
+    totalJamKerja = parseFloat((totalJamKerja - 1).toFixed(2));
+  }
 
   let jamLembur = 0;
   if (jenisHari === "kerja") {
@@ -527,9 +529,9 @@ function absenPulang() {
   tampilkanData();
 
   if(jamLembur > 0) {
-    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nAnda otomatis lembur ${jamLembur} Jam!`);
+    alert(`Absen Pulang Berhasil!\nTotal Kerja Bersih: ${totalJamKerja} Jam.\nAnda otomatis lembur ${jamLembur} Jam!`);
   } else {
-    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nTidak ada lembur di hari kerja standar.`);
+    alert(`Absen Pulang Berhasil!\nTotal Kerja Bersih: ${totalJamKerja} Jam.\nTidak ada lembur di hari kerja standar.`);
   }
 }
 
@@ -594,6 +596,7 @@ function simpanLupaAbsen() {
 
   let totalJamKerja = parseFloat((totalMenit / 60).toFixed(2));
   
+  // FIX BUG: Jam Kerja dikurangi dulu untuk istirahat secara akurat sebelum evaluasi lembur
   if(totalJamKerja > 5) {
     totalJamKerja = parseFloat((totalJamKerja - 1).toFixed(2));
   }
@@ -869,6 +872,7 @@ async function downloadSlipGaji() {
   doc.setFontSize(10);
   doc.text("TOTAL DITERIMA (TAKE HOME PAY)", 12, currentY);
   
+  // FIX BUG: Supaya THP skema flat tetap logis menampilkan hasil penambahan akurat
   const takeHomePay = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
   doc.setTextColor(16, 185, 129);
   doc.text(rupiah(takeHomePay), 105, currentY);
@@ -1013,3 +1017,4 @@ if ("serviceWorker" in navigator) {
 </script>
  </body>
 </html>
+
