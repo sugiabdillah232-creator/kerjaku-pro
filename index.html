@@ -121,10 +121,10 @@
       </div>
       <div class="grid grid-cols-2 gap-3">
        <div>
-        <label class="text-xs text-slate-400 block mb-1">Estimasi Jam Masuk</label> <input type="time" id="jamMasukManual" value="08:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+        <label class="text-xs text-slate-400 block mb-1">Jam Masuk Revisi</label> <input type="time" id="jamMasukManual" value="08:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
        </div>
        <div>
-        <label class="text-xs text-slate-400 block mb-1">Estimasi Jam Pulang</label> <input type="time" id="jamPulangManual" value="17:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
+        <label class="text-xs text-slate-400 block mb-1">Jam Pulang Revisi</label> <input type="time" id="jamPulangManual" value="17:00" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm outline-none">
        </div>
       </div>
       <button onclick="simpanLupaAbsen()" class="w-full gradient py-3.5 rounded-xl font-bold text-sm text-white transition active:scale-95">Proses Revisi Absen</button>
@@ -282,7 +282,6 @@ function formatTanggal(date) {
   return date.toISOString().split('T')[0];
 }
 
-// OPTIMALISASI: Menyimpan preferensi konfigurasi upah secara real-time
 function simpanKonfigurasi() {
   const user = localStorage.getItem("activeUser");
   if (!user) return;
@@ -309,7 +308,6 @@ function cekMetode() {
   simpanKonfigurasi();
 }
 
-// Tambah event listener otomatis untuk melacak perubahan input pengguna
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("metodeHitung").addEventListener("change", cekMetode);
   document.getElementById("gaji").addEventListener("input", simpanKonfigurasi);
@@ -362,7 +360,6 @@ function tampilDashboard(){
   document.getElementById("dashboardPage").classList.remove("hidden");
   document.getElementById("welcomeUser").innerText = "Selamat datang, " + user;
 
-  // OPTIMALISASI: Memuat ulang konfigurasi upah yang tersimpan sebelumnya
   const savedConfig = JSON.parse(localStorage.getItem(`config_${user}`));
   if (savedConfig) {
     document.getElementById("metodeHitung").value = savedConfig.metode || "pemerintah";
@@ -475,7 +472,6 @@ function absenPulang() {
   if(!statusData) return;
 
   statusData.step = "selesai";
-  // FIX CRITICAL BUG: Menghilangkan (= Track) yang memicu error undefined
   statusData.waktuPulangRaw = sekarang.getTime(); 
   statusData.jamPulang = formatWaktu(sekarang);
 
@@ -618,6 +614,7 @@ function simpanLupaAbsen() {
   alert("Sukses! Data lupa absen berhasil diverifikasi dan dikunci ke database riwayat.");
 }
 
+// FIX OPTIMIZED: Menghapus while loop rawan bug & Presisi Desimal Peraturan Pemerintah ESDM / Depnaker
 function hitungLembur(gaji, jenisHari, jam, metode){
   if(jam <= 0) return 0;
   
@@ -631,15 +628,13 @@ function hitungLembur(gaji, jenisHari, jam, metode){
       if(jam >= 1) konversions += 1.5;
       if(jam > 1)  konversions += (jam - 1) * 2;
     } else {
-      let sisaJam = jam;
-      let counter = 1;
-      while(sisaJam > 0) {
-        let jamDiambil = sisaJam >= 1 ? 1 : sisaJam;
-        if(counter <= 8)       konversions += jamDiambil * 2;
-        else if(counter === 9) konversions += jamDiambil * 3;
-        else                   konversions += jamDiambil * 4;
-        sisaJam -= jamDiambil;
-        counter++;
+      // Perhitungan Linier Sekuensial Sesuai Aturan Pemerintah (8 jam pertama x2, jam ke-9 x3, jam ke-10++ x4)
+      if (jam <= 8) {
+        konversions += jam * 2;
+      } else if (jam > 8 && jam <= 9) {
+        konversions += (8 * 2) + ((jam - 8) * 3);
+      } else {
+        konversions += (8 * 2) + (1 * 3) + ((jam - 9) * 4);
       }
     }
     return upahPerJam * konversions;
@@ -773,6 +768,7 @@ function importData(event) {
 
 window.onload = tampilDashboard;
 
+// FIX ADJUSTMENT: Penyesuaian kalkulator Slip Gaji Adaptif
 async function downloadSlipGaji() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a5');
@@ -839,10 +835,9 @@ async function downloadSlipGaji() {
   let currentY = 59;
   doc.setFont("helvetica", "normal");
   
-  // ADJUSTMENT: Agar label deskripsi slip gaji dinamis menyesuaikan pilihan skema upah
   if(metode === 'flat') {
     doc.text("Tarif Flat Base per Jam", 12, currentY);
-    doc.text(rupiah(gajiPokok), 105, currentY);
+    doc.text(rupiah(gajiPokok) + " / jam", 100, currentY);
   } else {
     doc.text("Gaji Pokok Bulanan", 12, currentY);
     doc.text(rupiah(gajiPokok), 105, currentY);
@@ -860,6 +855,7 @@ async function downloadSlipGaji() {
   doc.setFontSize(10);
   doc.text("TOTAL DITERIMA (TAKE HOME PAY)", 12, currentY);
   
+  // Jika Flat, asumsikan pendapatan pokok dasar tidak dihitung di sistem (tampilkan total akumulasi lembur saja)
   const takeHomePay = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
   doc.setTextColor(16, 185, 129);
   doc.text(rupiah(takeHomePay), 105, currentY);
@@ -1003,4 +999,4 @@ if ("serviceWorker" in navigator) {
 }
 </script>
  </body>
-  </html>
+</html>
