@@ -256,6 +256,10 @@
       <div class="grid grid-cols-2 gap-2">
        <button onclick="downloadPDF()" class="bg-indigo-600 hover:bg-indigo-500 py-3.5 rounded-xl font-bold text-[11px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="file-text" class="w-4 h-4"></i> REKAP TABEL</button>
        <button onclick="downloadSlipGaji()" class="bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-bold text-[11px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="wallet" class="w-4 h-4"></i> SLIP GAJI</button>
+       <button style="background-color: #28a745; color: white; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;" onclick="prosesEksporHRD()">
+    Ekspor CSV + Hash Otentikasi
+</button>
+
       </div>
      </div>
      
@@ -301,8 +305,6 @@
     <button id="nav-absen" onclick="switchScreen('absen', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition duration-300"><i data-lucide="calendar-check" class="w-5 h-5"></i> <span class="text-[9px] uppercase tracking-wider">Absensi</span></button>
     <button id="nav-riwayat" onclick="switchScreen('riwayat', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition duration-300"><i data-lucide="history" class="w-5 h-5"></i> <span class="text-[9px] uppercase tracking-wider">Riwayat</span></button>
     <button id="nav-pengaturan" onclick="switchScreen('pengaturan', this.id)" class="flex flex-col items-center gap-1 text-slate-400 transition duration-300"><i data-lucide="settings" class="w-5 h-5"></i> <span class="text-[9px] uppercase tracking-wider">Opsi</span></button>
-    <button style="background-color: #28a745; color: white; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;" onclick="prosesEksporHRD()">
-    Ekspor CSV + Hash Otentikasi
 </button>
 
    </nav>
