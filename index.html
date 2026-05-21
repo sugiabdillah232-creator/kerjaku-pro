@@ -573,7 +573,7 @@ function absenPulang() {
   if(!statusData) return;
 
   statusData.step = "selesai";
-  statusData.waktuPulangRaw = sekarang.getTime(); 
+  statusData.waktuPulangRaw = Thermal_getTime() || sekarang.getTime(); 
   statusData.jamPulang = formatWaktu(sekarang);
 
   const selisihMs = statusData.waktuPulangRaw - statusData.waktuMasukRaw;
@@ -885,6 +885,166 @@ async function downloadPDF(){
 
   doc.save(`Laporan_KerjaKu_${user}.pdf`);
 }
+
+// =========================================================================
+// INJEKSI ENGINE PERHITUNGAN PPH 21 TANPA MERUBAH STRUKTUR ASLI (MONKEY PATCH)
+// =========================================================================
+function Thermal_getTime() { return null; }
+
+(function pph21InjectedEngine() {
+  // Fungsi menghitung PPh21 Progresif Terutang Bulanan (Asumsi Dasar PTKP TK/0)
+  function kalkulasiPph21Bulanan(bruto) {
+    if (bruto <= 4500000) return 0; // Dibawah PTKP bulanan ekuivalen
+    let brutoSetahun = bruto * 12;
+    let ptkp = 54000000; // Standar TK/0 Penghasilan Tidak Kena Pajak
+    let pkp = brutoSetahun - ptkp;
+    if (pkp <= 0) return 0;
+
+    let pajakSetahun = 0;
+    // Layer Tarif Progresif UU HPP
+    if (pkp <= 60000000) {
+      pajakSetahun = pkp * 0.05;
+    } else if (pkp <= 250000000) {
+      pajakSetahun = (60000000 * 0.05) + ((pkp - 60000000) * 0.15);
+    } else if (pkp <= 500000000) {
+      pajakSetahun = (60000000 * 0.05) + (190000000 * 0.15) + ((pkp - 250000000) * 0.25);
+    } else {
+      pajakSetahun = (60000000 * 0.05) + (190000000 * 0.15) + (250000000 * 0.25) + ((pkp - 500000000) * 0.30);
+    }
+    return pajakSetahun / 12;
+  }
+
+  // 1. Intersepsi fungsi tampilkanData untuk menyuntikkan tampilan PPh 21 & Net Pay ke DOM UI secara dinamis
+  const originalTampilkanData = window.tampilkanData;
+  window.tampilkanData = function() {
+    // Jalankan kalkulasi dan pembuatan komponen asli
+    originalTampilkanData.apply(this, arguments);
+
+    const user = localStorage.getItem("activeUser");
+    if (!user) return;
+
+    const filterBulan = document.getElementById("filterBulan").value;
+    const gajiPokok = parseFloat(document.getElementById("gaji").value) || 0;
+    const metode = document.getElementById("metodeHitung").value;
+
+    let daftar = JSON.parse(localStorage.getItem("lembur_" + user)) || [];
+    let dataBulanIni = daftar.filter(item => !filterBulan || item.tanggal.startsWith(filterBulan));
+    
+    let totalUangLembur = 0;
+    dataBulanIni.forEach(item => totalUangLembur += item.total);
+
+    let pendapatanBruto = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
+    let pph21 = kalkulasiPph21Bulanan(pendapatanBruto);
+    let netTakeHomePay = pendapatanBruto - pph21;
+
+    // Suntik komponen visual baru di bawah elemen total upah lembur tanpa merusak template id
+    const totalUpahEl = document.getElementById("totalUpah");
+    if (totalUpahEl && totalUpahEl.parentElement) {
+      let pphContainer = document.getElementById("pph21-injected-view");
+      if (!pphContainer) {
+        pphContainer = document.createElement("div");
+        pphContainer.id = "pph21-injected-view";
+        pphContainer.className = "mt-4 pt-4 border-t border-white/5 space-y-1.5 text-xs text-slate-400";
+        totalUpahEl.parentElement.appendChild(pphContainer);
+      }
+      pphContainer.innerHTML = `
+        <div class="flex justify-between">
+          <span>Pendapatan Bruto Terhitung:</span>
+          <span class="text-slate-200 font-medium">${rupiah(pendapatanBruto)}</span>
+        </div>
+        <div class="flex justify-between text-red-400">
+          <span>Potongan PPh 21 (Progresif):</span>
+          <span class="font-bold">-${rupiah(pph21)}</span>
+        </div>
+        <div class="flex justify-between text-emerald-400 pt-1 font-extrabold text-sm">
+          <span>Estimasi Bersih (Net Pay):</span>
+          <span>${rupiah(netTakeHomePay)}</span>
+        </div>
+      `;
+    }
+  };
+
+  // 2. Intersepsi pembuatan dokumen PDF Slip Gaji Karyawan untuk mencetak PPh 21 dan Total Bersih
+  const originalDownloadSlipGaji = window.downloadSlipGaji;
+  window.downloadSlipGaji = async function() {
+    // Tangkap referensi jspdf aslinya dengan membajak instansiasinya
+    const originalJsPDF = window.jspdf.jsPDF;
+    
+    window.jspdf.jsPDF = function() {
+      const docInstance = new originalJsPDF(...arguments);
+      
+      // Bajak metode text dan save pada instance jspdf khusus slip gaji ini
+      const originalText = docInstance.text;
+      const originalSave = docInstance.save;
+      
+      let capturedY = 0;
+      docInstance.text = function(text, x, y) {
+        // Melacak koordinat teks terakhir sebelum cetak Total Take Home Pay
+        if (typeof text === 'string' && text.includes("TOTAL DITERIMA")) {
+          capturedY = y;
+        }
+        return originalText.apply(this, arguments);
+      };
+
+      docInstance.save = function(filename) {
+        // Balikkan jspdf asli ke global scope
+        window.jspdf.jsPDF = originalJsPDF;
+        return originalSave.apply(this, arguments);
+      };
+
+      // Buat delay mikro untuk melakukan injeksi tulisan pajak tepat di atas cetak dokumen selesai
+      setTimeout(() => {
+        const user = localStorage.getItem("activeUser");
+        const filterBulan = document.getElementById("filterBulan").value;
+        const gajiPokok = parseFloat(document.getElementById("gaji").value) || 0;
+        const metode = document.getElementById("metodeHitung").value;
+        let daftar = JSON.parse(localStorage.getItem("lembur_" + user)) || [];
+        let dataBulanIni = daftar.filter(item => item.tanggal.startsWith(filterBulan));
+        let totalUangLembur = 0;
+        dataBulanIni.forEach(item => { totalUangLembur += item.total; });
+
+        let bruto = (metode === 'flat' ? 0 : gajiPokok) + totalUangLembur;
+        let pph21 = kalkulasiPph21Bulanan(bruto);
+        let netPay = bruto - pph21;
+
+        if (capturedY > 0) {
+          // Bersihkan area teks bawaan lama dengan menggambar kotak background baru
+          docInstance.setFillColor(23, 23, 23); // samakan warna base atau biarkan transparan
+          docInstance.setFillColor(255, 255, 255);
+          docInstance.rect(10, capturedY - 4, 128, 20, 'F');
+
+          // Cetak ulang detail yang dimodifikasi dengan potongan PPh 21
+          docInstance.setFont("helvetica", "normal");
+          docInstance.setFontSize(8.5);
+          docInstance.setTextColor(100, 116, 139);
+          docInstance.text("Total Penghasilan Bruto", 12, capturedY - 2);
+          docInstance.setTextColor(15, 23, 42);
+          docInstance.text(rupiah(bruto), 105, capturedY - 2);
+
+          docInstance.setTextColor(239, 68, 68);
+          docInstance.text("Potongan Pajak PPh 21", 12, capturedY + 4);
+          docInstance.text("-" + rupiah(pph21), 105, capturedY + 4);
+
+          docInstance.setDrawColor(226, 232, 240);
+          docInstance.line(10, capturedY + 8, 138, capturedY + 8);
+
+          docInstance.setFont("helvetica", "bold");
+          docInstance.setFontSize(10);
+          docInstance.setTextColor(15, 23, 42);
+          docInstance.text("TOTAL NET PAY (DITERIMA)", 12, capturedY + 14);
+          docInstance.setTextColor(16, 185, 129);
+          docInstance.text(rupiah(netPay), 105, capturedY + 14);
+        }
+      }, 5);
+
+      return docInstance;
+    };
+
+    // Jalankan fungsi asli yang akan memicu instansiasi jspdf yang telah dibajak
+    await originalDownloadSlipGaji.apply(this, arguments);
+    window.jspdf.jsPDF = originalJsPDF; // Proteksi pemulihan object global
+  };
+})();
 </script>
  </body>
 </html>
