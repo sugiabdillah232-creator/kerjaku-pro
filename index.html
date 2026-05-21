@@ -253,10 +253,11 @@
       <div>
        <input type="month" id="filterBulan" onchange="tampilkanData()" class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white outline-none">
       </div>
-      <div class="grid grid-cols-2 gap-2">
-       <button onclick="downloadPDF()" class="bg-indigo-600 hover:bg-indigo-500 py-3.5 rounded-xl font-bold text-[11px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="file-text" class="w-4 h-4"></i> REKAP TABEL</button>
-       <button onclick="downloadSlipGaji()" class="bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-bold text-[11px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="wallet" class="w-4 h-4"></i> SLIP GAJI</button>
-      </div>
+      <div class="grid grid-cols-3 gap-2">
+ <button onclick="downloadPDF()" class="bg-indigo-600 py-3 rounded-xl font-bold text-[10px] text-white flex flex-col items-center justify-center gap-1 transition active:scale-95"><i data-lucide="file-text" class="w-4 h-4"></i> <span>REKAP TABEL</span></button>
+ <button onclick="downloadSlipGaji()" class="bg-emerald-600 py-3 rounded-xl font-bold text-[10px] text-white flex flex-col items-center justify-center gap-1 transition active:scale-95"><i data-lucide="wallet" class="w-4 h-4"></i> <span>SLIP GAJI</span></button>
+ <button onclick="exportToCSV()" class="bg-amber-600 py-3 rounded-xl font-bold text-[10px] text-white flex flex-col items-center justify-center gap-1 transition active:scale-95"><i data-lucide="sheet" class="w-4 h-4"></i> <span>EKSPOR EXCEL</span></button>
+</div>
      </div>
      
      <div id="listData" class="space-y-2.5 pt-2"></div>
