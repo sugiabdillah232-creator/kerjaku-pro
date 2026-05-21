@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>KerjaKu Pro V5 - Multi Screen</title>
+  <title>KerjaKu Pro V5 - Ultimate Edition</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -115,6 +115,11 @@
       <div>
         <h2 class="text-xl font-bold">Presensi & Hitung Otomatis</h2>
         <p class="text-slate-400 text-xs mt-1">Sistem akan menghitung lembur secara otomatis jika jam kerja melebihi 8 jam pada Hari Kerja.</p>
+      </div>
+
+      <div class="text-center py-2 bg-slate-900/50 rounded-xl border border-slate-800/60">
+        <p class="text-[10px] text-slate-400 uppercase tracking-wider">Waktu Presensi Akurat</p>
+        <h2 id="liveClock" class="text-2xl font-bold text-indigo-400 mt-0.5">00:00:00</h2>
       </div>
       
       <div id="statusAbsenBox" class="bg-slate-900 rounded-2xl p-4 text-center text-sm font-medium border border-slate-800">
@@ -246,7 +251,7 @@
 </div>
 
 <script>
-lucide.createIcons();
+let clockInterval = null;
 
 function safeParse(key, fallback){
   try {
@@ -288,6 +293,19 @@ function formatWaktu(date) {
 
 function formatTanggal(date) {
   return date.toISOString().split('T')[0];
+}
+
+// FITUR BARU: MANAGEMENT JAM DIGITAL REAL-TIME
+function startLiveClock() {
+  if (clockInterval) clearInterval(clockInterval);
+  clockInterval = setInterval(() => {
+    const sekarang = new Date();
+    const jam = String(sekarang.getHours()).padStart(2, '0');
+    const menit = String(sekarang.getMinutes()).padStart(2, '0');
+    const detik = String(sekarang.getSeconds()).padStart(2, '0');
+    const clockEl = document.getElementById("liveClock");
+    if (clockEl) clockEl.innerText = `${jam}:${menit}:${detik}`;
+  }, 1000);
 }
 
 function cekMetode() {
@@ -349,23 +367,24 @@ function tampilDashboard(){
   document.getElementById("dashboardPage").classList.remove("hidden");
   document.getElementById("welcomeUser").innerText = "Selamat datang, " + user;
 
-  // Set default filter bulan ke bulan ini saat masuk dashboard
   const hariIni = new Date();
   const blnIni = hariIni.toISOString().substring(0, 7);
   document.getElementById("filterBulan").value = blnIni;
 
   refreshStatusAbsen();
   tampilkanData();
+  startLiveClock(); // Aktifkan jam real-time saat masuk dashboard
 }
 
 window.onload = tampilDashboard;
 
 function logout(){
+  if(clockInterval) clearInterval(clockInterval);
   localStorage.removeItem("activeUser");
   location.reload();
 }
 
-// MANAGEMENT ABSENSI & AUTO-LEMBUR
+// MANAGEMENT ABSENSI & AUTO-LEMBUR WITH GPS GEOLOCATION
 function refreshStatusAbsen() {
   const user = localStorage.getItem("activeUser");
   if(!user) return;
@@ -430,12 +449,25 @@ function absenMasuk() {
   const tglHariIni = formatTanggal(sekarang);
   const statusKey = `status_absen_${user}_${tglHariIni}`;
 
+  // Melacak koordinat lokasi GPS secara dinamis (opsional)
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((position) => {
+      simpanMasuk(statusKey, sekarang, position.coords.latitude, position.coords.longitude);
+    }, () => {
+      simpanMasuk(statusKey, sekarang, null, null);
+    });
+  } else {
+    simpanMasuk(statusKey, sekarang, null, null);
+  }
+}
+
+function simpanMasuk(statusKey, sekarang, lat, lon) {
   const data = {
     step: "masuk",
     waktuMasukRaw: sekarang.getTime(),
-    jamMasuk: formatWaktu(sekarang)
+    jamMasuk: formatWaktu(sekarang),
+    locMasuk: lat && lon ? `${lat.toFixed(4)},${lon.toFixed(4)}` : '-'
   };
-
   localStorage.setItem(statusKey, JSON.stringify(data));
   refreshStatusAbsen();
   alert("Absen Masuk Berhasil dicatat! Selamat bekerja.");
@@ -447,7 +479,7 @@ function absenPulang() {
   const metode = document.getElementById("metodeHitung").value;
 
   if(gaji <= 0){
-    alert(metode === "flat" ? "Mohon isi tarif lembur per jam di tab Absensi dengan benar." : "Mohon isi Gaji Pokok Bulanan di tab Absensi dengan benar.");
+    alert(metode === "flat" ? "Mohon isi tarif lembur per jam dengan benar." : "Mohon isi Gaji Pokok Bulanan dengan benar.");
     return;
   }
 
@@ -459,9 +491,22 @@ function absenPulang() {
   let statusData = safeParse(statusKey, null);
   if(!statusData) return;
 
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((position) => {
+      simpanPulang(statusKey, statusData, sekarang, gaji, metode, user, tglHariIni, position.coords.latitude, position.coords.longitude);
+    }, () => {
+      simpanPulang(statusKey, statusData, sekarang, gaji, metode, user, tglHariIni, null, null);
+    });
+  } else {
+    simpanPulang(statusKey, statusData, sekarang, gaji, metode, user, tglHariIni, null, null);
+  }
+}
+
+function simpanPulang(statusKey, statusData, sekarang, gaji, metode, user, tglHariIni, lat, lon) {
   statusData.step = "selesai";
   statusData.waktuPulangRaw = sekarang.getTime();
   statusData.jamPulang = formatWaktu(sekarang);
+  const locPulang = lat && lon ? `${lat.toFixed(4)},${lon.toFixed(4)}` : '-';
 
   const selisihMs = statusData.waktuPulangRaw - statusData.waktuMasukRaw;
   const totalJamKerja = parseFloat((selisihMs / (1000 * 60 * 60)).toFixed(2));
@@ -475,11 +520,12 @@ function absenPulang() {
   }
 
   const totalUpahLembur = hitungLembur(gaji, jenisHari, jamLembur, metode);
-
   const logKey = "lembur_" + user;
   let daftar = safeParse(logKey, []);
   
+  // FITUR BARU: Menambahkan ID Unik 'id: Date.now()' agar bisa dihapus per baris log
   daftar.push({
+    id: Date.now(), 
     tanggal: tglHariIni,
     jamMasuk: statusData.jamMasuk,
     jamPulang: statusData.jamPulang,
@@ -487,7 +533,8 @@ function absenPulang() {
     jam: jamLembur,
     jenisHari,
     metode,
-    total: totalUpahLembur
+    total: totalUpahLembur,
+    lokasi: `M:[${statusData.locMasuk || '-'}] P:[${locPulang}]`
   });
 
   localStorage.setItem(logKey, JSON.stringify(daftar));
@@ -497,38 +544,35 @@ function absenPulang() {
   tampilkanData();
 
   if(jamLembur > 0) {
-    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nAnda otomatis lembur ${jamLembur} Jam!`);
+    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nLembur otomatis ${jamLembur} Jam!`);
   } else {
-    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.\nTidak ada lembur di hari kerja standar.`);
+    alert(`Absen Pulang Berhasil!\nTotal Kerja: ${totalJamKerja} Jam.`);
   }
 }
 
 function hitungLembur(gaji, jenisHari, jam, metode){
   if(jam <= 0) return 0;
-  
-  if(metode === "flat") {
-    return gaji * jam;
-  } else {
-    const upahPerJam = gaji / 173;
-    let konversions = 0;
+  if(metode === "flat") return gaji * jam;
 
-    if(jenisHari === "kerja"){
-      if(jam >= 1) konversions += 1.5;
-      if(jam > 1)  konversions += (jam - 1) * 2;
-    } else {
-      let sisaJam = jam;
-      let counter = 1;
-      while(sisaJam > 0) {
-        let jamDiambil = sisaJam >= 1 ? 1 : sisaJam;
-        if(counter <= 8)       konversions += jamDiambil * 2;
-        else if(counter === 9) konversions += jamDiambil * 3;
-        else                   konversions += jamDiambil * 4;
-        sisaJam -= jamDiambil;
-        counter++;
-      }
+  const upahPerJam = gaji / 173;
+  let konversions = 0;
+
+  if(jenisHari === "kerja"){
+    if(jam >= 1) konversions += 1.5;
+    if(jam > 1)  konversions += (jam - 1) * 2;
+  } else {
+    let sisaJam = jam;
+    let counter = 1;
+    while(sisaJam > 0) {
+      let jamDiambil = sisaJam >= 1 ? 1 : sisaJam;
+      if(counter <= 8)       konversions += jamDiambil * 2;
+      else if(counter === 9) konversions += jamDiambil * 3;
+      else                   konversions += jamDiambil * 4;
+      sisaJam -= jamDiambil;
+      counter++;
     }
-    return upahPerJam * konversions;
   }
+  return upahPerJam * konversions;
 }
 
 function tampilkanData(){
@@ -561,29 +605,57 @@ function tampilkanData(){
   }
 
   dataTampil.forEach(item => {
-    const labelHari = item.jenisHari === 'kerja' ? 'Hari Kerja' : 'Hari Libur';
+    const isKerja = item.jenisHari === 'kerja';
+    const labelHari = isKerja ? 'Hari Kerja' : 'Hari Libur';
+    const indicatorColor = isKerja ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30';
     const labelMetode = item.metode === 'flat' ? ' • Flat' : '';
     const infoJamLog = (item.jamMasuk && item.jamPulang) ? ` (${item.jamMasuk} - ${item.jamPulang})` : '';
     
+    // FITUR BARU: Penyesuaian layout dan penambahan Tombol Hapus Satuan (<i data-lucide="trash-2">)
     list.innerHTML += `
-    <div class="bg-slate-900/90 rounded-2xl p-4 flex justify-between items-center border border-slate-800/80">
-      <div>
-        <h3 class="font-bold text-sm">${item.tanggal}${infoJamLog}</h3>
-        <p class="text-slate-400 text-xs mt-1">
-          Kerja: ${item.totalDurasi || item.jam}j • <span class="text-amber-400 font-medium">Lembur: ${item.jam}j</span> • ${labelHari}${labelMetode}
+    <div class="bg-slate-900/90 rounded-2xl p-4 flex justify-between items-center border border-slate-800/80 gap-3">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h3 class="font-bold text-sm text-white">${item.tanggal}${infoJamLog}</h3>
+          <span class="text-[9px] px-1.5 py-0.5 rounded-full border ${indicatorColor}">${labelHari}</span>
+        </div>
+        <p class="text-slate-400 text-xs mt-1 truncate">
+          Kerja: ${item.totalDurasi || item.jam}j • <span class="text-emerald-400 font-medium">Lembur: ${item.jam}j</span>${labelMetode}
         </p>
       </div>
-      <div class="text-right">
-        <h3 class="font-bold text-base text-indigo-400">${rupiah(item.total)}</h3>
+      <div class="text-right flex items-center gap-3">
+        <div>
+          <h3 class="font-bold text-sm text-indigo-400">${rupiah(item.total)}</h3>
+        </div>
+        <button onclick="hapusBarisLog(${item.id || 0})" class="p-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 rounded-xl transition active:scale-90">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+        </button>
       </div>
     </div>
     `;
   });
 
-  // Sinkronisasi komponen nilai di dashboard utama secara langsung
   document.getElementById("totalUpah").innerText = rupiah(grandTotal);
   document.getElementById("totalJam").innerText = totalJamLembur.toFixed(1) + " Jam";
   document.getElementById("jumlahData").innerText = dataTersaring.length + " Hari";
+  lucide.createIcons();
+}
+
+// FITUR BARU: FUNGSI HAPUS DATA BARIS TUNGGAL
+function hapusBarisLog(idLog) {
+  if(!idLog) {
+    alert("Catatan lama tidak memiliki ID unik dan hanya bisa dihapus via Reset Log.");
+    return;
+  }
+  if(confirm("Hapus catatan log terpilih ini?")) {
+    const user = localStorage.getItem("activeUser");
+    const key = "lembur_" + user;
+    let daftar = safeParse(key, []);
+    
+    let daftarBaru = daftar.filter(item => item.id !== idLog);
+    localStorage.setItem(key, JSON.stringify(daftarBaru));
+    tampilkanData();
+  }
 }
 
 function hapusData(){
@@ -658,7 +730,7 @@ function importData(event) {
   event.target.value = '';
 }
 
-// EKSPOR PDF REKAP
+// EKSPOR PDF REKAP ELEGAN DENGAN KOORDINAT GEOLOCATION
 async function downloadPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -684,12 +756,12 @@ async function downloadPDF(){
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
   doc.setTextColor(255, 255, 255);
-  doc.text("KERJAKU PRO", 15, 20);
+  doc.text("AMBIL DATA: KERJAKU PRO", 15, 20);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(218, 211, 249);
-  doc.text("Laporan Resmi Kehadiran & Kalkulasi Lembur Karyawan", 15, 28);
+  doc.text("Laporan Resmi Kehadiran & Kalkulasi Lembur Karyawan Berbasis Geofencing", 15, 28);
 
   let y = 55;
   doc.setFont("helvetica", "bold");
@@ -714,7 +786,7 @@ async function downloadPDF(){
   dataCetak.forEach((item, index) => {
     grandTotal += item.total;
     totalJamLembur += item.jam;
-    const infoHari = item.jenisHari === 'kerja' ? 'Hari Kerja' : 'Hari Libur';
+    const infoHari = item.jenisHari === 'kerja' ? 'Kerja' : 'Libur';
     const jamLog = (item.jamMasuk && item.jamPulang) ? `${item.jamMasuk}-${item.jamPulang}` : '-';
     
     barisTabel.push([
@@ -724,25 +796,28 @@ async function downloadPDF(){
       `${item.totalDurasi || item.jam} Jam`,
       `${item.jam} Jam`,
       infoHari,
+      item.lokasi || '-',
       rupiah(item.total)
     ]);
   });
 
   doc.autoTable({
     startY: y + 16,
-    head: [['No', 'Tanggal', 'Jam Log', 'Total Kerja', 'Jam Lembur', 'Kategori', 'Upah Lembur']],
+    head: [['No', 'Tanggal', 'Jam Log', 'Total Kerja', 'Jam Lembur', 'Kategori', 'Koordinat GPS', 'Upah Lembur']],
     body: barisTabel,
     theme: 'striped',
     headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
     columnStyles: {
-      0: { halign: 'center', width: 12 },
-      1: { halign: 'center' },
-      2: { halign: 'center' },
-      3: { halign: 'center' },
-      4: { halign: 'center' },
-      6: { halign: 'right', fontStyle: 'bold' }
+      0: { halign: 'center', width: 10 },
+      1: { halign: 'center', width: 22 },
+      2: { halign: 'center', width: 22 },
+      3: { halign: 'center', width: 22 },
+      4: { halign: 'center', width: 22 },
+      5: { halign: 'center', width: 18 },
+      6: { halign: 'center', fontSize: 7, width: 35 },
+      7: { halign: 'right', fontStyle: 'bold' }
     },
-    styles: { font: 'helvetica', fontSize: 9, cellPadding: 4 }
+    styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 3 }
   });
 
   let finalY = doc.lastAutoTable.finalY + 10;
@@ -778,4 +853,3 @@ if ("serviceWorker" in navigator) {
   
 </body>
 </html>
-
