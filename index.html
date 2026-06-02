@@ -7,7 +7,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <title>KerjaKu Pro V5 - NextGen UI</title>
+  <title>KerjaKu Pro V5 - Manual Attendance</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -76,22 +76,6 @@
       transform: translateY(0) scale(1);
     }
 
-    .pulse-glow-emerald { animation: pulseEmerald 2s infinite; }
-
-    @keyframes pulseEmerald {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-      70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
-
-    .pulse-glow-red { animation: pulseRed 2s infinite; }
-
-    @keyframes pulseRed {
-      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-      70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-
     .fade-in-item {
       animation: itemSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       opacity: 0;
@@ -102,14 +86,18 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .animate-fadeIn { animation: fadeIn 0.25s ease-in-out forwards; }
+    .animate-fadeIn {
+      animation: fadeIn 0.25s ease-in-out forwards;
+    }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    input, select { transition: all 0.25s ease; }
+    input, select {
+      transition: all 0.25s ease;
+    }
 
     input:focus, select:focus {
       border-color: #6366f1 !important;
@@ -136,7 +124,7 @@
         </h1>
 
         <p class="text-slate-400 text-sm mt-2">
-          NextGen Smart Attendance Hub
+          Manual Attendance & Wage Calculator
         </p>
       </div>
 
@@ -183,7 +171,7 @@
         <h1 class="text-xl font-black tracking-tight flex items-center gap-2">
           KerjaKu
           <span class="text-[10px] px-2.5 py-0.5 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-indigo-300 border border-indigo-500/20 rounded-full font-bold">
-            V5 ULTRA
+            MANUAL
           </span>
         </h1>
         <p id="welcomeUser" class="text-slate-400 text-[11px] mt-0.5 tracking-wide"></p>
@@ -208,7 +196,7 @@
         </h2>
 
         <p id="summaryMode" class="text-[11px] text-slate-500 mt-2">
-          Pilih metode kerja di menu Absensi.
+          Pilih sistem pekerjaan di menu Absensi.
         </p>
 
         <div class="grid grid-cols-2 gap-3 mt-6">
@@ -241,102 +229,54 @@
       <div class="glass-card rounded-3xl p-5 space-y-4">
         <div class="flex justify-between items-center">
           <h3 class="font-bold text-xs text-slate-400 tracking-wider uppercase">
-            Live Activity Status
+            Status Sistem
           </h3>
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
         </div>
 
-        <div id="miniStatusBox" class="p-4 bg-slate-950/60 rounded-2xl text-center text-xs font-semibold border border-white/5 transition duration-300">
-          Menghubungkan satelit absensi...
+        <div id="miniStatusBox" class="p-4 bg-emerald-500/5 text-emerald-400 border border-emerald-500/10 rounded-2xl text-center text-xs font-bold">
+          Mode input manual aktif. Masukkan tanggal, jam masuk, dan jam pulang.
         </div>
 
         <button
           onclick="switchScreen('absen', 'nav-absen')"
           class="w-full bg-slate-900/80 hover:bg-indigo-900/20 border border-white/5 hover:border-indigo-500/30 text-indigo-400 py-3.5 rounded-2xl font-bold text-xs text-center transition duration-300 flex items-center justify-center gap-2">
-          Buka Console Presensi
+          Input Absensi Manual
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
       </div>
     </main>
 
-    <!-- ABSEN -->
+    <!-- ABSEN MANUAL -->
     <main id="screenAbsen" class="screen p-5 space-y-4">
 
       <div class="glass-card rounded-3xl p-6 space-y-5">
-        <div class="flex justify-between items-center gap-2">
-          <div>
-            <h2 id="titlePresensiForm" class="text-lg font-bold tracking-tight">
-              Presensi &amp; Engine Kalkulator
-            </h2>
-            <p class="text-slate-400 text-[11px] mt-0.5">
-              Jam kerja bersih = jam masuk-pulang, potong istirahat 1 jam jika durasi lebih dari 5 jam.
-            </p>
-          </div>
-
-          <button
-            id="btnToggleLupa"
-            onclick="toggleModeLupaAbsen()"
-            class="text-[10px] font-extrabold px-3 py-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition shrink-0 uppercase tracking-wider">
-            Lupa Absen?
-          </button>
+        <div>
+          <h2 class="text-lg font-bold tracking-tight">
+            Input Absensi Manual
+          </h2>
+          <p class="text-slate-400 text-[11px] mt-1 leading-relaxed">
+            Masukkan tanggal kerja, jam masuk, dan jam pulang. Sistem akan menghitung jam kerja, istirahat, lembur, dan upah secara otomatis.
+          </p>
         </div>
 
-        <div class="flex justify-between items-center px-4 py-3 bg-slate-950/80 rounded-2xl border border-white/5">
-          <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-            Waktu Sistem
-          </span>
-          <span id="liveClock" class="text-base font-black text-indigo-400 tracking-widest font-mono">
-            00:00:00
-          </span>
+        <div class="bg-slate-950/50 rounded-2xl p-4 border border-white/5">
+          <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">
+            Aturan Jam Kerja
+          </p>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            Jika durasi kerja lebih dari 5 jam, otomatis dipotong 1 jam istirahat. Lembur dihitung setelah 8 jam kerja bersih. Menit 0–30 tidak dihitung, mulai menit ke-31 dibulatkan menjadi 1 jam.
+          </p>
         </div>
 
-        <div id="wrapperAbsenNormal" class="space-y-4">
-          <div id="statusAbsenBox" class="bg-slate-950/40 rounded-2xl p-4 text-center text-xs font-bold border border-white/5">
-            --
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <button
-              id="btnMasuk"
-              onclick="absenMasuk()"
-              class="bg-emerald-600 hover:bg-emerald-500 text-white py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 transition active:scale-95 shadow-lg shadow-emerald-600/10">
-              <i data-lucide="log-in" class="w-5 h-5"></i>
-              <span class="text-xs uppercase tracking-wider">Absen Masuk</span>
-              <span id="waktuMasukText" class="text-[10px] font-semibold bg-black/20 px-2 py-0.5 rounded-full opacity-90 mt-0.5">
-                --:--
-              </span>
-            </button>
-
-            <button
-              id="btnPulang"
-              onclick="absenPulang()"
-              disabled
-              class="bg-slate-900 text-slate-600 py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 cursor-not-allowed border border-slate-800/80">
-              <i data-lucide="log-out" class="w-5 h-5"></i>
-              <span class="text-xs uppercase tracking-wider">Absen Pulang</span>
-              <span id="waktuPulangText" class="text-[10px] font-semibold bg-black/10 px-2 py-0.5 rounded-full opacity-60 mt-0.5">
-                --:--
-              </span>
-            </button>
-          </div>
-        </div>
-
-        <div id="wrapperAbsenLupa" class="hidden bg-slate-950/60 p-5 rounded-2xl border border-amber-500/10 space-y-4 animate-fadeIn">
-          <div class="text-[11px] text-amber-400 font-medium leading-relaxed bg-amber-500/5 p-3 rounded-xl border border-amber-500/10 flex gap-2">
-            <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 mt-0.5"></i>
-            <span>
-              Maksimal pengisian 3 hari ke belakang &amp; kuota revisi 1 kali per tanggal kerja.
-            </span>
-          </div>
-
+        <div class="space-y-3">
           <div>
             <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">
-              Tanggal Absen
+              Tanggal Kerja
             </label>
             <input
               type="date"
-              id="tanggalLupa"
+              id="tanggalManual"
               class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs outline-none">
           </div>
 
@@ -365,9 +305,10 @@
           </div>
 
           <button
-            onclick="simpanLupaAbsen()"
-            class="w-full bg-gradient-to-r from-amber-600 to-orange-600 py-4 rounded-xl font-bold text-xs text-white uppercase tracking-wider transition active:scale-[0.98]">
-            Submit Berkas Log
+            onclick="simpanAbsensiManual()"
+            class="w-full bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 py-4 rounded-2xl font-bold text-xs text-white uppercase tracking-wider transition active:scale-[0.98] flex items-center justify-center gap-2">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            Simpan Absensi Manual
           </button>
         </div>
       </div>
@@ -414,6 +355,7 @@
                 placeholder="Contoh: 4500000"
                 class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs outline-none">
             </div>
+
             <p class="text-[10px] text-indigo-300 bg-indigo-500/5 border border-indigo-500/10 p-3 rounded-xl leading-relaxed">
               Sistem pemerintah menghitung upah lembur dari gaji pokok / 173. Untuk hari kerja, lembur dihitung setelah 8 jam kerja bersih. Untuk hari libur, seluruh jam kerja bersih dihitung sebagai jam lembur.
             </p>
@@ -457,15 +399,6 @@
 
             <p class="text-[10px] text-emerald-300 bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-xl leading-relaxed">
               Sistem mitra menghitung total upah dari uang harian sesuai kategori hari + lembur flat per jam. Lembur dihitung setelah 8 jam kerja bersih.
-            </p>
-          </div>
-
-          <div class="bg-slate-950/50 rounded-2xl p-4 border border-white/5">
-            <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">
-              Aturan Pembulatan Lembur
-            </p>
-            <p class="text-[11px] text-slate-300 leading-relaxed">
-              0–30 menit tidak dihitung. Mulai menit ke-31 sampai 59 menit dibulatkan menjadi 1 jam.
             </p>
           </div>
         </div>
@@ -530,7 +463,7 @@
         </h2>
 
         <p class="text-slate-400 text-[11px] leading-relaxed">
-          Ekspor atau impor data secara berkala untuk mencegah hilangnya riwayat akibat pembersihan berkas sampah browser.
+          Ekspor atau impor data secara berkala untuk mencegah hilangnya riwayat akibat pembersihan data browser.
         </p>
 
         <div class="space-y-2">
@@ -628,10 +561,6 @@
   </div>
 
   <script>
-    let clockInterval = null;
-    let isModeLupaAbsen = false;
-    let tanggalTerakhir = "";
-
     function safeCreateIcons() {
       if (window.lucide && typeof lucide.createIcons === "function") {
         lucide.createIcons();
@@ -641,13 +570,6 @@
     function rupiah(angka) {
       const nilai = Number(angka) || 0;
       return "Rp " + Math.round(nilai).toLocaleString("id-ID");
-    }
-
-    function formatWaktu(date) {
-      return date.toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
     }
 
     function formatTanggal(date) {
@@ -670,25 +592,42 @@
       return parseFloat(el.value) || 0;
     }
 
-    function hitungJamKerjaBersih(totalJamKotor) {
-      let total = parseFloat(totalJamKotor) || 0;
+    function hitungMenitKotor(jamMasuk, jamPulang) {
+      const [hMasuk, mMasuk] = jamMasuk.split(":").map(Number);
+      const [hPulang, mPulang] = jamPulang.split(":").map(Number);
 
-      if (total > 5) {
-        total = total - 1;
+      let totalMenit = (hPulang * 60 + mPulang) - (hMasuk * 60 + mMasuk);
+
+      if (totalMenit < 0) {
+        totalMenit += 24 * 60;
+      }
+
+      return totalMenit;
+    }
+
+    function hitungMenitBersih(totalMenitKotor) {
+      let total = Number(totalMenitKotor) || 0;
+
+      if (total > 300) {
+        total -= 60;
       }
 
       if (total < 0) total = 0;
 
-      return parseFloat(total.toFixed(2));
+      return total;
     }
 
-    function bulatkanJamLembur(jamLemburAsli) {
-      const total = parseFloat(jamLemburAsli) || 0;
+    function menitKeJam(menit) {
+      return parseFloat(((Number(menit) || 0) / 60).toFixed(2));
+    }
 
-      if (total <= 0) return 0;
+    function bulatkanMenitLembur(menitLemburAsli) {
+      const totalMenit = Math.max(0, Math.round(Number(menitLemburAsli) || 0));
 
-      const jamPenuh = Math.floor(total);
-      const sisaMenit = Math.round((total - jamPenuh) * 60);
+      if (totalMenit <= 0) return 0;
+
+      const jamPenuh = Math.floor(totalMenit / 60);
+      const sisaMenit = totalMenit % 60;
 
       if (sisaMenit >= 31) {
         return jamPenuh + 1;
@@ -697,16 +636,16 @@
       return jamPenuh;
     }
 
-    function hitungJamLemburAsli(totalJamKerjaBersih, jenisHari, metode) {
-      const kerjaBersih = parseFloat(totalJamKerjaBersih) || 0;
+    function hitungMenitLemburAsli(totalMenitBersih, jenisHari, metode) {
+      const bersih = Number(totalMenitBersih) || 0;
 
       if (metode === "pemerintah" && jenisHari === "libur") {
-        return kerjaBersih;
+        return bersih;
       }
 
-      const lembur = kerjaBersih - 8;
+      const lembur = bersih - 480;
 
-      return lembur > 0 ? parseFloat(lembur.toFixed(2)) : 0;
+      return lembur > 0 ? lembur : 0;
     }
 
     function hitungUpahLemburPemerintah(gaji, jenisHari, jamLemburDibayar) {
@@ -754,54 +693,6 @@
         tarifLemburMitra,
         total
       };
-    }
-
-    function startLiveClock() {
-      if (clockInterval) clearInterval(clockInterval);
-
-      tanggalTerakhir = formatTanggal(new Date());
-
-      clockInterval = setInterval(() => {
-        const sekarang = new Date();
-        const tanggalSekarang = formatTanggal(sekarang);
-
-        if (tanggalSekarang !== tanggalTerakhir) {
-          tanggalTerakhir = tanggalSekarang;
-          refreshStatusAbsen();
-        }
-
-        const jam = String(sekarang.getHours()).padStart(2, "0");
-        const menit = String(sekarang.getMinutes()).padStart(2, "0");
-        const detik = String(sekarang.getSeconds()).padStart(2, "0");
-
-        const clockEl = document.getElementById("liveClock");
-        if (clockEl) clockEl.innerText = `${jam}:${menit}:${detik}`;
-      }, 1000);
-    }
-
-    function toggleModeLupaAbsen() {
-      isModeLupaAbsen = !isModeLupaAbsen;
-
-      const titleForm = document.getElementById("titlePresensiForm");
-      const btnToggle = document.getElementById("btnToggleLupa");
-      const wrapNormal = document.getElementById("wrapperAbsenNormal");
-      const wrapLupa = document.getElementById("wrapperAbsenLupa");
-
-      if (isModeLupaAbsen) {
-        titleForm.innerText = "Formulir Lupa Absen";
-        btnToggle.innerText = "Batal";
-        btnToggle.className = "text-[10px] font-extrabold px-3 py-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition shrink-0 uppercase tracking-wider";
-        wrapNormal.classList.add("hidden");
-        wrapLupa.classList.remove("hidden");
-      } else {
-        titleForm.innerText = "Presensi & Hitung Otomatis";
-        btnToggle.innerText = "Lupa Absen?";
-        btnToggle.className = "text-[10px] font-extrabold px-3 py-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition shrink-0 uppercase tracking-wider";
-        wrapNormal.classList.remove("hidden");
-        wrapLupa.classList.add("hidden");
-      }
-
-      safeCreateIcons();
     }
 
     function switchScreen(screenName, navId) {
@@ -896,7 +787,6 @@
       }
 
       users.push({ username, pin });
-
       localStorage.setItem("users", JSON.stringify(users));
 
       alert("Akun berhasil dibuat. Silakan masuk aplikasi.");
@@ -919,7 +809,6 @@
       }
 
       localStorage.setItem("activeUser", user.username);
-
       tampilDashboard();
     }
 
@@ -936,6 +825,11 @@
         filterBulan.value = formatBulanIni();
       }
 
+      const tanggalManual = document.getElementById("tanggalManual");
+      if (tanggalManual && !tanggalManual.value) {
+        tanggalManual.value = formatTanggal(new Date());
+      }
+
       const savedConfig = JSON.parse(localStorage.getItem(`config_${user}`));
 
       if (savedConfig) {
@@ -948,92 +842,13 @@
       }
 
       cekMetode();
-      refreshStatusAbsen();
       tampilkanData();
-      startLiveClock();
       safeCreateIcons();
     }
 
     function logout() {
-      if (clockInterval) clearInterval(clockInterval);
       localStorage.removeItem("activeUser");
       location.reload();
-    }
-
-    function refreshStatusAbsen() {
-      const user = localStorage.getItem("activeUser");
-      if (!user) return;
-
-      const tglHariIni = formatTanggal(new Date());
-      const statusKey = `status_absen_${user}_${tglHariIni}`;
-      const statusData = JSON.parse(localStorage.getItem(statusKey));
-
-      const btnMasuk = document.getElementById("btnMasuk");
-      const btnPulang = document.getElementById("btnPulang");
-      const statusBox = document.getElementById("statusAbsenBox");
-      const miniStatusBox = document.getElementById("miniStatusBox");
-
-      if (!btnMasuk || !btnPulang || !statusBox || !miniStatusBox) return;
-
-      if (!statusData) {
-        btnMasuk.disabled = false;
-        btnMasuk.className = "bg-emerald-600 hover:bg-emerald-500 text-white py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 transition active:scale-95 shadow-lg shadow-emerald-600/10 pulse-glow-emerald";
-
-        document.getElementById("waktuMasukText").innerText = "--:--";
-
-        btnPulang.disabled = true;
-        btnPulang.className = "bg-slate-900 text-slate-600 py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 cursor-not-allowed border border-slate-800/80";
-
-        document.getElementById("waktuPulangText").innerText = "--:--";
-
-        const textBelum = "Sistem Mendeteksi Anda Belum Absen Masuk";
-
-        statusBox.innerText = textBelum;
-        statusBox.className = "bg-slate-950/40 rounded-2xl p-4 text-center text-xs text-amber-500 font-bold border border-white/5";
-
-        miniStatusBox.innerText = textBelum;
-        miniStatusBox.className = "p-4 bg-amber-500/5 text-amber-400 border border-amber-500/10 rounded-2xl text-center text-xs font-bold";
-      }
-
-      else if (statusData.step === "masuk") {
-        btnMasuk.disabled = true;
-        btnMasuk.className = "bg-slate-900 text-slate-600 py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 cursor-not-allowed border border-slate-800/80";
-
-        document.getElementById("waktuMasukText").innerText = statusData.jamMasuk || "--:--";
-
-        btnPulang.disabled = false;
-        btnPulang.className = "bg-red-600 hover:bg-red-500 text-white py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 transition active:scale-95 shadow-lg shadow-red-600/20 pulse-glow-red";
-
-        document.getElementById("waktuPulangText").innerText = "--:--";
-
-        const textKerja = `Shift Aktif Berjalan (Masuk: ${statusData.jamMasuk})`;
-
-        statusBox.innerText = textKerja;
-        statusBox.className = "bg-slate-950/40 rounded-2xl p-4 text-center text-xs text-indigo-400 font-bold border border-indigo-500/20";
-
-        miniStatusBox.innerText = textKerja;
-        miniStatusBox.className = "p-4 bg-indigo-500/5 text-indigo-400 border border-indigo-500/10 rounded-2xl text-center text-xs font-bold animate-pulse";
-      }
-
-      else if (statusData.step === "selesai") {
-        btnMasuk.disabled = true;
-        btnMasuk.className = "bg-slate-900 text-slate-600 py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 cursor-not-allowed border border-slate-800/80";
-
-        document.getElementById("waktuMasukText").innerText = statusData.jamMasuk || "--:--";
-
-        btnPulang.disabled = true;
-        btnPulang.className = "bg-slate-900 text-slate-600 py-5 rounded-2xl font-extrabold flex flex-col items-center justify-center gap-1.5 cursor-not-allowed border border-slate-800/80";
-
-        document.getElementById("waktuPulangText").innerText = statusData.jamPulang || "--:--";
-
-        const textSelesai = `Sesi Kerja Selesai (${statusData.jamMasuk} - ${statusData.jamPulang})`;
-
-        statusBox.innerText = "Sesi Absensi Hari Ini Selesai Dilock";
-        statusBox.className = "bg-slate-950/40 rounded-2xl p-4 text-center text-xs text-emerald-400 font-bold border border-white/5";
-
-        miniStatusBox.innerText = textSelesai;
-        miniStatusBox.className = "p-4 bg-emerald-500/5 text-emerald-400 border border-emerald-500/10 rounded-2xl text-center text-xs font-bold";
-      }
     }
 
     function validasiNominalUntukMetode() {
@@ -1066,12 +881,13 @@
       return true;
     }
 
-    function buatLogAbsensi({ tanggal, jamMasuk, jamPulang, totalJamKotor, isManual }) {
+    function buatLogAbsensi({ tanggal, jamMasuk, jamPulang, totalMenitKotor }) {
       const metode = document.getElementById("metodeHitung").value;
       const jenisHari = document.getElementById("jenisHari").value;
-      const totalJamKerja = hitungJamKerjaBersih(totalJamKotor);
-      const jamLemburAsli = hitungJamLemburAsli(totalJamKerja, jenisHari, metode);
-      const jamLemburDibayar = bulatkanJamLembur(jamLemburAsli);
+
+      const totalMenitBersih = hitungMenitBersih(totalMenitKotor);
+      const menitLemburAsli = hitungMenitLemburAsli(totalMenitBersih, jenisHari, metode);
+      const jamLemburDibayar = bulatkanMenitLembur(menitLemburAsli);
 
       let total = 0;
       let uangHarian = 0;
@@ -1095,9 +911,9 @@
         tanggal,
         jamMasuk,
         jamPulang,
-        totalDurasi: totalJamKerja,
-        totalDurasiKotor: totalJamKotor,
-        jamLemburAsli,
+        totalDurasi: menitKeJam(totalMenitBersih),
+        totalDurasiKotor: menitKeJam(totalMenitKotor),
+        jamLemburAsli: menitKeJam(menitLemburAsli),
         jam: jamLemburDibayar,
         jenisHari,
         metode,
@@ -1106,185 +922,64 @@
         uangLembur,
         tarifLemburMitra,
         total,
-        isManual
+        isManual: true
       };
     }
 
-    function absenMasuk() {
-      const user = localStorage.getItem("activeUser");
-      if (!user) return;
-
-      simpanKonfigurasi();
-
-      const sekarang = new Date();
-      const tglHariIni = formatTanggal(sekarang);
-      const statusKey = `status_absen_${user}_${tglHariIni}`;
-
-      const statusSebelumnya = JSON.parse(localStorage.getItem(statusKey));
-
-      if (statusSebelumnya) {
-        alert("Anda sudah memiliki sesi absen hari ini.");
-        refreshStatusAbsen();
-        return;
-      }
-
-      const jenisHariSaatIni = document.getElementById("jenisHari").value;
-      const metodeSaatIni = document.getElementById("metodeHitung").value;
-
-      const data = {
-        step: "masuk",
-        waktuMasukRaw: sekarang.getTime(),
-        jamMasuk: formatWaktu(sekarang),
-        jenisHari: jenisHariSaatIni,
-        metode: metodeSaatIni
-      };
-
-      localStorage.setItem(statusKey, JSON.stringify(data));
-
-      refreshStatusAbsen();
-
-      alert("Sesi masuk terverifikasi. Selamat bekerja!");
-    }
-
-    function absenPulang() {
+    function simpanAbsensiManual() {
       if (!validasiNominalUntukMetode()) return;
 
-      const user = localStorage.getItem("activeUser");
-      if (!user) return;
+      const tanggal = document.getElementById("tanggalManual").value;
+      const jamMasuk = document.getElementById("jamMasukManual").value;
+      const jamPulang = document.getElementById("jamPulangManual").value;
 
-      simpanKonfigurasi();
-
-      const sekarang = new Date();
-      const tglHariIni = formatTanggal(sekarang);
-      const statusKey = `status_absen_${user}_${tglHariIni}`;
-
-      let statusData = JSON.parse(localStorage.getItem(statusKey));
-
-      if (!statusData || statusData.step !== "masuk") {
-        alert("Belum ada sesi masuk yang aktif.");
-        refreshStatusAbsen();
+      if (!tanggal) {
+        alert("Tanggal kerja wajib diisi.");
         return;
       }
 
-      statusData.step = "selesai";
-      statusData.waktuPulangRaw = sekarang.getTime();
-      statusData.jamPulang = formatWaktu(sekarang);
-
-      const selisihMs = statusData.waktuPulangRaw - statusData.waktuMasukRaw;
-      const totalJamKotor = parseFloat((selisihMs / (1000 * 60 * 60)).toFixed(2));
-
-      const log = buatLogAbsensi({
-        tanggal: tglHariIni,
-        jamMasuk: statusData.jamMasuk,
-        jamPulang: statusData.jamPulang,
-        totalJamKotor,
-        isManual: false
-      });
-
-      const logKey = "lembur_" + user;
-      let daftar = JSON.parse(localStorage.getItem(logKey)) || [];
-
-      daftar.push(log);
-
-      localStorage.setItem(logKey, JSON.stringify(daftar));
-      localStorage.setItem(statusKey, JSON.stringify(statusData));
-
-      refreshStatusAbsen();
-      tampilkanData();
-
-      const labelTotal = log.metode === "mitra" ? "Total upah mitra" : "Total uang lembur";
-      alert(
-        `Sesi pulang sukses!\n` +
-        `Total kerja bersih: ${log.totalDurasi} Jam.\n` +
-        `Lembur asli: ${log.jamLemburAsli} Jam.\n` +
-        `Lembur dibayar: ${log.jam} Jam.\n` +
-        `${labelTotal}: ${rupiah(log.total)}.`
-      );
-    }
-
-    function simpanLupaAbsen() {
-      if (!validasiNominalUntukMetode()) return;
-
-      const tanggalLupa = document.getElementById("tanggalLupa").value;
-
-      if (!tanggalLupa) {
-        alert("Pilih tanggal pengajuan berkas log.");
-        return;
-      }
-
-      const user = localStorage.getItem("activeUser");
-      if (!user) return;
-
-      simpanKonfigurasi();
-
-      const logKey = "lembur_" + user;
-      let daftar = JSON.parse(localStorage.getItem(logKey)) || [];
-
-      const tglDipilih = new Date(tanggalLupa);
-      tglDipilih.setHours(0, 0, 0, 0);
-
-      const tglHariIni = new Date();
-      tglHariIni.setHours(0, 0, 0, 0);
-
-      const selisihMs = tglHariIni.getTime() - tglDipilih.getTime();
-      const selisihHari = Math.floor(selisihMs / (1000 * 60 * 60 * 24));
-
-      if (selisihHari > 3 || selisihHari < 0) {
-        alert("❌ Error: Validitas tanggal di luar jangkauan. Maksimal 3 hari ke belakang.");
-        return;
-      }
-
-      if (daftar.find(item => item.tanggal === tanggalLupa)) {
-        alert(`❌ Gagal: Tanggal ${tanggalLupa} sudah terisi.`);
-        return;
-      }
-
-      const masukVal = document.getElementById("jamMasukManual").value;
-      const pulangVal = document.getElementById("jamPulangManual").value;
-
-      if (!masukVal || !pulangVal) {
+      if (!jamMasuk || !jamPulang) {
         alert("Jam masuk dan jam pulang wajib diisi.");
         return;
       }
 
-      const [hMasuk, mMasuk] = masukVal.split(":").map(Number);
-      const [hPulang, mPulang] = pulangVal.split(":").map(Number);
+      const user = localStorage.getItem("activeUser");
+      if (!user) return;
 
-      let totalMenit = (hPulang * 60 + mPulang) - (hMasuk * 60 + mMasuk);
+      simpanKonfigurasi();
 
-      if (totalMenit < 0) {
-        totalMenit += 24 * 60;
+      const logKey = "lembur_" + user;
+      let daftar = JSON.parse(localStorage.getItem(logKey)) || [];
+
+      if (daftar.find(item => item.tanggal === tanggal)) {
+        alert(`Tanggal ${tanggal} sudah terisi. Jika ingin mengganti, hapus data terlebih dahulu.`);
+        return;
       }
 
-      const totalJamKotor = parseFloat((totalMenit / 60).toFixed(2));
+      const totalMenitKotor = hitungMenitKotor(jamMasuk, jamPulang);
+
+      if (totalMenitKotor <= 0) {
+        alert("Jam masuk dan jam pulang tidak valid.");
+        return;
+      }
 
       const log = buatLogAbsensi({
-        tanggal: tanggalLupa,
-        jamMasuk: masukVal,
-        jamPulang: pulangVal,
-        totalJamKotor,
-        isManual: true
+        tanggal,
+        jamMasuk,
+        jamPulang,
+        totalMenitKotor
       });
 
       daftar.push(log);
-
-      localStorage.setItem(`status_absen_${user}_${tanggalLupa}`, JSON.stringify({
-        step: "selesai",
-        jamMasuk: masukVal,
-        jamPulang: pulangVal,
-        jenisHari: log.jenisHari,
-        metode: log.metode
-      }));
-
       localStorage.setItem(logKey, JSON.stringify(daftar));
 
-      toggleModeLupaAbsen();
-      refreshStatusAbsen();
       tampilkanData();
+      switchScreen("riwayat", "nav-riwayat");
 
       alert(
-        `Log manual berhasil disimpan.\n` +
+        `Absensi manual berhasil disimpan.\n` +
         `Kerja bersih: ${log.totalDurasi} Jam.\n` +
+        `Lembur asli: ${log.jamLemburAsli} Jam.\n` +
         `Lembur dibayar: ${log.jam} Jam.\n` +
         `Total: ${rupiah(log.total)}.`
       );
@@ -1324,9 +1019,7 @@
       dataTampil.forEach((item, idx) => {
         const metode = item.metode === "mitra" ? "Mitra" : "Pemerintah";
         const labelHari = item.jenisHari === "kerja" ? "Hari Biasa" : "Hari Libur";
-        const badgeManual = item.isManual
-          ? `<span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md ml-2 font-bold uppercase tracking-wider">Revisi</span>`
-          : "";
+        const badgeManual = `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-md ml-2 font-bold uppercase tracking-wider">Manual</span>`;
 
         const jamLog = (item.jamMasuk && item.jamPulang)
           ? ` [${item.jamMasuk} - ${item.jamPulang}]`
@@ -1622,7 +1315,7 @@
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(218, 211, 249);
-      doc.text("Laporan Kehadiran & Kalkulasi Upah", 15, 28);
+      doc.text("Laporan Kehadiran & Kalkulasi Upah Manual", 15, 28);
 
       let y = 55;
 
@@ -1654,10 +1347,6 @@
 
         let metode = item.metode === "mitra" ? "Mitra" : "Pemerintah";
         let infoHari = item.jenisHari === "kerja" ? "Hari Biasa" : "Hari Libur";
-
-        if (item.isManual) {
-          infoHari += " (Manual)";
-        }
 
         barisTabel.push([
           index + 1,
@@ -1751,4 +1440,4 @@
   </script>
 
 </body>
-            </html>
+  </html>
