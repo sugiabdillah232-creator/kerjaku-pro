@@ -596,17 +596,23 @@
       return totalMenit;
     }
 
-    function hitungMenitBersih(totalMenitKotor) {
-      let total = Number(totalMenitKotor) || 0;
+    function hitungMenitBersih(totalMenitKotor, jenisHari) {
+  let total = Number(totalMenitKotor) || 0;
 
-      if (total > 300) {
-        total -= 60;
-      }
+  // Hari libur tidak dipotong istirahat.
+  if (jenisHari === "libur") {
+    return total;
+  }
 
-      if (total < 0) total = 0;
+  // Hari kerja biasa dipotong 1 jam istirahat jika durasi lebih dari 5 jam.
+  if (total > 300) {
+    total -= 60;
+  }
 
-      return total;
-    }
+  if (total < 0) total = 0;
+
+  return total;
+}
 
     function menitKeJam(menit) {
       return parseFloat(((Number(menit) || 0) / 60).toFixed(2));
@@ -921,7 +927,7 @@ function hitungJamLemburDibayar(jamMasuk, jamPulang, jenisHari, metode, totalMen
       const metode = document.getElementById("metodeHitung").value;
       const jenisHari = document.getElementById("jenisHari").value;
 
-      const totalMenitBersih = hitungMenitBersih(totalMenitKotor);
+      const totalMenitBersih = hitungMenitBersih(totalMenitKotor, jenisHari);
       const jamLemburDibayar = hitungJamLemburDibayar(
   jamMasuk,
   jamPulang,
@@ -1501,4 +1507,4 @@ const menitLemburAsli = jamLemburDibayar * 60;
   </script>
 
 </body>
-</html>
+                </html>
