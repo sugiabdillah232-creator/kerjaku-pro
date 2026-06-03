@@ -410,10 +410,10 @@
           </div>
 
           <button
-  onclick="hapusData()"
-  class="bg-red-950/40 text-red-400 border border-red-500/20 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition active:scale-95">
-  Reset Periode
-</button>
+            onclick="hapusData()"
+            class="bg-red-950/40 text-red-400 border border-red-500/20 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition active:scale-95">
+            Reset Periode
+          </button>
         </div>
 
         <div class="space-y-3">
@@ -597,22 +597,22 @@
     }
 
     function hitungMenitBersih(totalMenitKotor, jenisHari) {
-  let total = Number(totalMenitKotor) || 0;
+      let total = Number(totalMenitKotor) || 0;
 
-  // Hari libur tidak dipotong istirahat.
-  if (jenisHari === "libur") {
-    return total;
-  }
+      // Hari libur tidak dipotong istirahat.
+      if (jenisHari === "libur") {
+        return total;
+      }
 
-  // Hari kerja biasa dipotong 1 jam istirahat jika durasi lebih dari 5 jam.
-  if (total > 300) {
-    total -= 60;
-  }
+      // Hari kerja biasa dipotong 1 jam istirahat jika durasi lebih dari 5 jam.
+      if (total > 300) {
+        total -= 60;
+      }
 
-  if (total < 0) total = 0;
+      if (total < 0) total = 0;
 
-  return total;
-}
+      return total;
+    }
 
     function menitKeJam(menit) {
       return parseFloat(((Number(menit) || 0) / 60).toFixed(2));
@@ -634,61 +634,61 @@
     }
 
     function hitungLemburPagi(jamMasuk) {
-  const jamNormalMasuk = 8;
+      const jamNormalMasuk = 8;
 
-  const [jam, menit] = jamMasuk.split(":").map(Number);
+      const [jam, menit] = jamMasuk.split(":").map(Number);
 
-  if (jam >= jamNormalMasuk) {
-    return 0;
-  }
+      if (jam >= jamNormalMasuk) {
+        return 0;
+      }
 
-  let jamMulaiHitung = jam;
+      let jamMulaiHitung = jam;
 
-  // Aturan lembur pagi:
-  // Menit 00-30 dihitung dari jam itu.
-  // Menit 31-59 naik ke jam berikutnya.
-  if (menit > 30) {
-    jamMulaiHitung = jam + 1;
-  }
+      // Aturan lembur pagi:
+      // Menit 00-30 dihitung dari jam itu.
+      // Menit 31-59 naik ke jam berikutnya.
+      if (menit > 30) {
+        jamMulaiHitung = jam + 1;
+      }
 
-  const hasil = jamNormalMasuk - jamMulaiHitung;
+      const hasil = jamNormalMasuk - jamMulaiHitung;
 
-  return hasil > 0 ? hasil : 0;
-}
+      return hasil > 0 ? hasil : 0;
+    }
 
-function hitungLemburSore(jamPulang) {
-  const jamNormalPulang = 17;
+    function hitungLemburSore(jamPulang) {
+      const jamNormalPulang = 17;
 
-  const [jam, menit] = jamPulang.split(":").map(Number);
+      const [jam, menit] = jamPulang.split(":").map(Number);
 
-  if (jam < jamNormalPulang) {
-    return 0;
-  }
+      if (jam < jamNormalPulang) {
+        return 0;
+      }
 
-  let jamLembur = jam - jamNormalPulang;
+      let jamLembur = jam - jamNormalPulang;
 
-  // Aturan lembur sore:
-  // 0-30 menit tidak dihitung.
-  // Mulai menit ke-31 dihitung 1 jam.
-  if (menit >= 31) {
-    jamLembur += 1;
-  }
+      // Aturan lembur sore:
+      // 0-30 menit tidak dihitung.
+      // Mulai menit ke-31 dihitung 1 jam.
+      if (menit >= 31) {
+        jamLembur += 1;
+      }
 
-  return jamLembur > 0 ? jamLembur : 0;
-}
+      return jamLembur > 0 ? jamLembur : 0;
+    }
 
-function hitungJamLemburDibayar(jamMasuk, jamPulang, jenisHari, metode, totalMenitBersih) {
-  // Untuk sistem pemerintah + hari libur:
-  // seluruh jam kerja bersih tetap dihitung lembur sesuai aturan sebelumnya.
-  if (metode === "pemerintah" && jenisHari === "libur") {
-    return bulatkanMenitLembur(totalMenitBersih);
-  }
+    function hitungJamLemburDibayar(jamMasuk, jamPulang, jenisHari, metode, totalMenitBersih) {
+      // Untuk sistem pemerintah + hari libur:
+      // seluruh jam kerja bersih tetap dihitung lembur sesuai aturan sebelumnya.
+      if (metode === "pemerintah" && jenisHari === "libur") {
+        return bulatkanMenitLembur(totalMenitBersih);
+      }
 
-  const lemburPagi = hitungLemburPagi(jamMasuk);
-  const lemburSore = hitungLemburSore(jamPulang);
+      const lemburPagi = hitungLemburPagi(jamMasuk);
+      const lemburSore = hitungLemburSore(jamPulang);
 
-  return lemburPagi + lemburSore;
-}
+      return lemburPagi + lemburSore;
+    }
 
     function hitungUpahLemburPemerintah(gaji, jenisHari, jamLemburDibayar) {
       const nominal = parseFloat(gaji) || 0;
@@ -884,6 +884,7 @@ function hitungJamLemburDibayar(jamMasuk, jamPulang, jenisHari, metode, totalMen
       }
 
       cekMetode();
+      perbaikiDataLamaOtomatis();
       tampilkanData();
       safeCreateIcons();
     }
@@ -928,15 +929,16 @@ function hitungJamLemburDibayar(jamMasuk, jamPulang, jenisHari, metode, totalMen
       const jenisHari = document.getElementById("jenisHari").value;
 
       const totalMenitBersih = hitungMenitBersih(totalMenitKotor, jenisHari);
-      const jamLemburDibayar = hitungJamLemburDibayar(
-  jamMasuk,
-  jamPulang,
-  jenisHari,
-  metode,
-  totalMenitBersih
-);
 
-const menitLemburAsli = jamLemburDibayar * 60;
+      const jamLemburDibayar = hitungJamLemburDibayar(
+        jamMasuk,
+        jamPulang,
+        jenisHari,
+        metode,
+        totalMenitBersih
+      );
+
+      const menitLemburAsli = jamLemburDibayar * 60;
 
       let total = 0;
       let uangHarian = 0;
@@ -973,6 +975,124 @@ const menitLemburAsli = jamLemburDibayar * 60;
         total,
         isManual: true
       };
+    }
+
+    function perbaikiDataLamaOtomatis() {
+      const user = localStorage.getItem("activeUser");
+      if (!user) return;
+
+      const key = "lembur_" + user;
+      let daftar = JSON.parse(localStorage.getItem(key)) || [];
+
+      if (daftar.length === 0) return;
+
+      let adaPerubahan = false;
+
+      daftar = daftar.map(item => {
+        if (!item.tanggal || !item.jamMasuk || !item.jamPulang) {
+          return item;
+        }
+
+        let metode = item.metode || "pemerintah";
+
+        if (metode === "flat") {
+          metode = "mitra";
+        }
+
+        const jenisHari = item.jenisHari || "kerja";
+
+        const totalMenitKotor = hitungMenitKotor(item.jamMasuk, item.jamPulang);
+        const totalMenitBersih = hitungMenitBersih(totalMenitKotor, jenisHari);
+
+        const jamLemburDibayar = hitungJamLemburDibayar(
+          item.jamMasuk,
+          item.jamPulang,
+          jenisHari,
+          metode,
+          totalMenitBersih
+        );
+
+        const menitLemburAsli = jamLemburDibayar * 60;
+
+        let gajiPokok = Number(item.gajiPokok) || Number(item.gaji) || ambilAngka("gaji");
+        let uangHarian = Number(item.uangHarian) || 0;
+        let uangLembur = 0;
+        let tarifLemburMitra = Number(item.tarifLemburMitra) || ambilAngka("tarifLemburMitra");
+        let total = 0;
+
+        if (metode === "pemerintah") {
+          if (gajiPokok <= 0) {
+            return {
+              ...item,
+              metode,
+              jenisHari,
+              totalDurasi: menitKeJam(totalMenitBersih),
+              totalDurasiKotor: menitKeJam(totalMenitKotor),
+              jamLemburAsli: menitKeJam(menitLemburAsli),
+              jam: jamLemburDibayar,
+              isManual: true
+            };
+          }
+
+          uangLembur = hitungUpahLemburPemerintah(
+            gajiPokok,
+            jenisHari,
+            jamLemburDibayar
+          );
+
+          total = uangLembur;
+        } else {
+          if (uangHarian <= 0) {
+            uangHarian = jenisHari === "libur"
+              ? ambilAngka("uangHarianLibur")
+              : ambilAngka("uangHarianBiasa");
+          }
+
+          if (tarifLemburMitra <= 0) {
+            tarifLemburMitra = Number(item.tarifLemburMitra) || 0;
+          }
+
+          uangLembur = tarifLemburMitra * jamLemburDibayar;
+
+          if (uangHarian <= 0 && tarifLemburMitra <= 0) {
+            return {
+              ...item,
+              metode,
+              jenisHari,
+              totalDurasi: menitKeJam(totalMenitBersih),
+              totalDurasiKotor: menitKeJam(totalMenitKotor),
+              jamLemburAsli: menitKeJam(menitLemburAsli),
+              jam: jamLemburDibayar,
+              isManual: true
+            };
+          }
+
+          total = uangHarian + uangLembur;
+          gajiPokok = 0;
+        }
+
+        adaPerubahan = true;
+
+        return {
+          ...item,
+          metode,
+          jenisHari,
+          totalDurasi: menitKeJam(totalMenitBersih),
+          totalDurasiKotor: menitKeJam(totalMenitKotor),
+          jamLemburAsli: menitKeJam(menitLemburAsli),
+          jam: jamLemburDibayar,
+          gajiPokok,
+          uangHarian,
+          uangLembur,
+          tarifLemburMitra,
+          total,
+          isManual: true
+        };
+      });
+
+      if (adaPerubahan) {
+        localStorage.setItem(key, JSON.stringify(daftar));
+      }
     }
 
     function simpanAbsensiManual() {
@@ -1118,40 +1238,40 @@ const menitLemburAsli = jamLemburDibayar * 60;
     }
 
     function hapusData() {
-  const user = localStorage.getItem("activeUser");
-  if (!user) return;
+      const user = localStorage.getItem("activeUser");
+      if (!user) return;
 
-  const key = "lembur_" + user;
-  const daftar = JSON.parse(localStorage.getItem(key)) || [];
-  const filterBulan = document.getElementById("filterBulan").value;
+      const key = "lembur_" + user;
+      const daftar = JSON.parse(localStorage.getItem(key)) || [];
+      const filterBulan = document.getElementById("filterBulan").value;
 
-  if (daftar.length === 0) {
-    alert("Belum ada data yang bisa dihapus.");
-    return;
-  }
+      if (daftar.length === 0) {
+        alert("Belum ada data yang bisa dihapus.");
+        return;
+      }
 
-  if (!filterBulan) {
-    alert("Pilih periode bulan terlebih dahulu sebelum reset log.");
-    return;
-  }
+      if (!filterBulan) {
+        alert("Pilih periode bulan terlebih dahulu sebelum reset log.");
+        return;
+      }
 
-  const dataPeriode = daftar.filter(item => item.tanggal.startsWith(filterBulan));
+      const dataPeriode = daftar.filter(item => item.tanggal.startsWith(filterBulan));
 
-  if (dataPeriode.length === 0) {
-    alert("Tidak ada data pada periode yang dipilih.");
-    return;
-  }
+      if (dataPeriode.length === 0) {
+        alert("Tidak ada data pada periode yang dipilih.");
+        return;
+      }
 
-  if (confirm(`Hapus log hanya untuk periode ${filterBulan}?\n\nData bulan lain tidak akan terhapus.`)) {
-    const dataTersisa = daftar.filter(item => !item.tanggal.startsWith(filterBulan));
+      if (confirm(`Hapus log hanya untuk periode ${filterBulan}?\n\nData bulan lain tidak akan terhapus.`)) {
+        const dataTersisa = daftar.filter(item => !item.tanggal.startsWith(filterBulan));
 
-    localStorage.setItem(key, JSON.stringify(dataTersisa));
+        localStorage.setItem(key, JSON.stringify(dataTersisa));
 
-    tampilkanData();
+        tampilkanData();
 
-    alert(`Log periode ${filterBulan} berhasil dihapus.`);
-  }
-}
+        alert(`Log periode ${filterBulan} berhasil dihapus.`);
+      }
+    }
 
     function backupData() {
       const user = localStorage.getItem("activeUser");
@@ -1204,6 +1324,7 @@ const menitLemburAsli = jamLemburDibayar * 60;
             localStorage.setItem(key, JSON.stringify(imported));
           }
 
+          perbaikiDataLamaOtomatis();
           tampilkanData();
 
           alert("Sinkronisasi database eksternal berhasil.");
@@ -1507,4 +1628,4 @@ const menitLemburAsli = jamLemburDibayar * 60;
   </script>
 
 </body>
-                </html>
+</html>
