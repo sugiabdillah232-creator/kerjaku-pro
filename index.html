@@ -271,32 +271,17 @@
               class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs outline-none">
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">
-                Jam Masuk
-              </label>
-              <input
-                type="time"
-                id="jamMasukManual"
-                value="08:00"
-                class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs outline-none">
-            </div>
-
-            <div>
-              <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">
-                Jam Pulang
-              </label>
-              <input
-                type="time"
-                id="jamPulangManual"
-                value="17:00"
-                class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs outline-none">
-            </div>
-          </div>
-
-          <button
-            onclick="simpanAbsensiManual()"
+          <div>
+  <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">
+    Kategori Hari
+  </label>
+  <select
+    id="jenisHari"
+    class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs outline-none">
+    <option value="kerja">Hari Kerja Biasa</option>
+    <option value="libur">Hari Libur</option>
+  </select>
+</div>
             class="w-full bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 py-4 rounded-2xl font-bold text-xs text-white uppercase tracking-wider transition active:scale-[0.98] flex items-center justify-center gap-2">
             <i data-lucide="save" class="w-4 h-4"></i>
             Simpan Absensi Manual
