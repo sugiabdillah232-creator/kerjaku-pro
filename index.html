@@ -627,17 +627,62 @@
       return jamPenuh;
     }
 
-    function hitungMenitLemburAsli(totalMenitBersih, jenisHari, metode) {
-      const bersih = Number(totalMenitBersih) || 0;
+    function hitungLemburPagi(jamMasuk) {
+  const jamNormalMasuk = 8;
 
-      if (metode === "pemerintah" && jenisHari === "libur") {
-        return bersih;
-      }
+  const [jam, menit] = jamMasuk.split(":").map(Number);
 
-      const lembur = bersih - 480;
+  if (jam >= jamNormalMasuk) {
+    return 0;
+  }
 
-      return lembur > 0 ? lembur : 0;
-    }
+  let jamMulaiHitung = jam;
+
+  // Aturan lembur pagi:
+  // Menit 00-30 dihitung dari jam itu.
+  // Menit 31-59 naik ke jam berikutnya.
+  if (menit > 30) {
+    jamMulaiHitung = jam + 1;
+  }
+
+  const hasil = jamNormalMasuk - jamMulaiHitung;
+
+  return hasil > 0 ? hasil : 0;
+}
+
+function hitungLemburSore(jamPulang) {
+  const jamNormalPulang = 17;
+
+  const [jam, menit] = jamPulang.split(":").map(Number);
+
+  if (jam < jamNormalPulang) {
+    return 0;
+  }
+
+  let jamLembur = jam - jamNormalPulang;
+
+  // Aturan lembur sore:
+  // 0-30 menit tidak dihitung.
+  // Mulai menit ke-31 dihitung 1 jam.
+  if (menit >= 31) {
+    jamLembur += 1;
+  }
+
+  return jamLembur > 0 ? jamLembur : 0;
+}
+
+function hitungJamLemburDibayar(jamMasuk, jamPulang, jenisHari, metode, totalMenitBersih) {
+  // Untuk sistem pemerintah + hari libur:
+  // seluruh jam kerja bersih tetap dihitung lembur sesuai aturan sebelumnya.
+  if (metode === "pemerintah" && jenisHari === "libur") {
+    return bulatkanMenitLembur(totalMenitBersih);
+  }
+
+  const lemburPagi = hitungLemburPagi(jamMasuk);
+  const lemburSore = hitungLemburSore(jamPulang);
+
+  return lemburPagi + lemburSore;
+}
 
     function hitungUpahLemburPemerintah(gaji, jenisHari, jamLemburDibayar) {
       const nominal = parseFloat(gaji) || 0;
@@ -877,8 +922,15 @@
       const jenisHari = document.getElementById("jenisHari").value;
 
       const totalMenitBersih = hitungMenitBersih(totalMenitKotor);
-      const menitLemburAsli = hitungMenitLemburAsli(totalMenitBersih, jenisHari, metode);
-      const jamLemburDibayar = bulatkanMenitLembur(menitLemburAsli);
+      const jamLemburDibayar = hitungJamLemburDibayar(
+  jamMasuk,
+  jamPulang,
+  jenisHari,
+  metode,
+  totalMenitBersih
+);
+
+const menitLemburAsli = jamLemburDibayar * 60;
 
       let total = 0;
       let uangHarian = 0;
