@@ -348,7 +348,7 @@
             </div>
 
             <p class="text-[10px] text-indigo-300 bg-indigo-500/5 border border-indigo-500/10 p-3 rounded-xl leading-relaxed">
-              Sistem pemerintah menghitung upah lembur dari gaji pokok / 173. Untuk hari kerja, lembur dihitung setelah 8 jam kerja bersih. Untuk hari libur, seluruh jam kerja bersih dihitung sebagai jam lembur.
+              Sistem PKWT menghitung upah lembur dari gaji pokok / 173. Hari kerja memakai hitungan lembur pagi dan lembur sore. Jika pulang lewat tengah malam, jam pulang tetap dihitung sebagai hari berikutnya.
             </p>
           </div>
 
@@ -389,7 +389,7 @@
             </div>
 
             <p class="text-[10px] text-emerald-300 bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-xl leading-relaxed">
-              Sistem mitra menghitung total upah dari uang harian sesuai kategori hari + lembur flat per jam. Lembur dihitung setelah 8 jam kerja bersih.
+              Sistem mitra menghitung total upah dari uang harian sesuai kategori hari + lembur flat per jam.
             </p>
           </div>
         </div>
@@ -599,12 +599,10 @@
     function hitungMenitBersih(totalMenitKotor, jenisHari) {
       let total = Number(totalMenitKotor) || 0;
 
-      // Hari libur tidak dipotong istirahat.
       if (jenisHari === "libur") {
         return total;
       }
 
-      // Hari kerja biasa dipotong 1 jam istirahat jika durasi lebih dari 5 jam.
       if (total > 300) {
         total -= 60;
       }
@@ -635,7 +633,6 @@
 
     function hitungLemburPagi(jamMasuk) {
       const jamNormalMasuk = 8;
-
       const [jam, menit] = jamMasuk.split(":").map(Number);
 
       if (jam >= jamNormalMasuk) {
@@ -644,9 +641,6 @@
 
       let jamMulaiHitung = jam;
 
-      // Aturan lembur pagi:
-      // Menit 00-30 dihitung dari jam itu.
-      // Menit 31-59 naik ke jam berikutnya.
       if (menit > 30) {
         jamMulaiHitung = jam + 1;
       }
@@ -656,36 +650,41 @@
       return hasil > 0 ? hasil : 0;
     }
 
-    function hitungLemburSore(jamPulang) {
-      const jamNormalPulang = 17;
+    function hitungLemburSore(jamMasuk, jamPulang) {
+      const menitNormalPulang = 17 * 60;
 
-      const [jam, menit] = jamPulang.split(":").map(Number);
+      const [hMasuk, mMasuk] = jamMasuk.split(":").map(Number);
+      const [hPulang, mPulang] = jamPulang.split(":").map(Number);
 
-      if (jam < jamNormalPulang) {
+      const menitMasuk = (hMasuk * 60) + mMasuk;
+      let menitPulang = (hPulang * 60) + mPulang;
+
+      if (menitPulang < menitMasuk) {
+        menitPulang += 24 * 60;
+      }
+
+      if (menitPulang <= menitNormalPulang) {
         return 0;
       }
 
-      let jamLembur = jam - jamNormalPulang;
+      const menitLembur = menitPulang - menitNormalPulang;
+      const jamPenuh = Math.floor(menitLembur / 60);
+      const sisaMenit = menitLembur % 60;
 
-      // Aturan lembur sore:
-      // 0-30 menit tidak dihitung.
-      // Mulai menit ke-31 dihitung 1 jam.
-      if (menit >= 31) {
-        jamLembur += 1;
+      if (sisaMenit >= 31) {
+        return jamPenuh + 1;
       }
 
-      return jamLembur > 0 ? jamLembur : 0;
+      return jamPenuh;
     }
 
     function hitungJamLemburDibayar(jamMasuk, jamPulang, jenisHari, metode, totalMenitBersih) {
-      // Untuk sistem pemerintah + hari libur:
-      // seluruh jam kerja bersih tetap dihitung lembur sesuai aturan sebelumnya.
       if (metode === "pemerintah" && jenisHari === "libur") {
         return bulatkanMenitLembur(totalMenitBersih);
       }
 
       const lemburPagi = hitungLemburPagi(jamMasuk);
-      const lemburSore = hitungLemburSore(jamPulang);
+      const lemburSore = hitungLemburSore(jamMasuk, jamPulang);
 
       return lemburPagi + lemburSore;
     }
@@ -1617,6 +1616,7 @@
             cekMetode();
           } else {
             simpanKonfigurasi();
+            perbaikiDataLamaOtomatis();
             tampilkanData();
           }
         });
