@@ -410,10 +410,10 @@
           </div>
 
           <button
-            onclick="hapusData()"
-            class="bg-red-950/40 text-red-400 border border-red-500/20 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition active:scale-95">
-            Reset Log
-          </button>
+  onclick="hapusData()"
+  class="bg-red-950/40 text-red-400 border border-red-500/20 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition active:scale-95">
+  Reset Periode
+</button>
         </div>
 
         <div class="space-y-3">
@@ -1060,22 +1060,40 @@
     }
 
     function hapusData() {
-      const user = localStorage.getItem("activeUser");
-      if (!user) return;
+  const user = localStorage.getItem("activeUser");
+  if (!user) return;
 
-      const key = "lembur_" + user;
-      const daftar = JSON.parse(localStorage.getItem(key)) || [];
+  const key = "lembur_" + user;
+  const daftar = JSON.parse(localStorage.getItem(key)) || [];
+  const filterBulan = document.getElementById("filterBulan").value;
 
-      if (daftar.length === 0) {
-        alert("Belum ada data yang bisa dihapus.");
-        return;
-      }
+  if (daftar.length === 0) {
+    alert("Belum ada data yang bisa dihapus.");
+    return;
+  }
 
-      if (confirm("Hapus permanen seluruh log data presensi?")) {
-        localStorage.removeItem(key);
-        tampilkanData();
-      }
-    }
+  if (!filterBulan) {
+    alert("Pilih periode bulan terlebih dahulu sebelum reset log.");
+    return;
+  }
+
+  const dataPeriode = daftar.filter(item => item.tanggal.startsWith(filterBulan));
+
+  if (dataPeriode.length === 0) {
+    alert("Tidak ada data pada periode yang dipilih.");
+    return;
+  }
+
+  if (confirm(`Hapus log hanya untuk periode ${filterBulan}?\n\nData bulan lain tidak akan terhapus.`)) {
+    const dataTersisa = daftar.filter(item => !item.tanggal.startsWith(filterBulan));
+
+    localStorage.setItem(key, JSON.stringify(dataTersisa));
+
+    tampilkanData();
+
+    alert(`Log periode ${filterBulan} berhasil dihapus.`);
+  }
+}
 
     function backupData() {
       const user = localStorage.getItem("activeUser");
@@ -1431,4 +1449,4 @@
   </script>
 
 </body>
-  </html>
+</html>
