@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="id">
- <head
+ <head>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6366f1">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -11,6 +11,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
       --color-primary: #6366f1;
@@ -192,7 +193,16 @@
       <div>
        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1"> Kategori Hari </label> <select id="jenisHari" class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs outline-none"> <option value="kerja">Hari Kerja Biasa</option> <option value="libur">Hari Libur</option> </select>
       </div>
-      <button onclick="simpanAbsensiManual()" class="w-full bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 py-4 rounded-2xl font-bold text-xs text-white uppercase tracking-wider transition active:scale-[0.98] flex items-center justify-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> Simpan Absensi Manual</button>
+      <div id="editModeBox" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+       <div class="flex items-center justify-between gap-3">
+        <div>
+         <p class="text-[10px] font-bold uppercase tracking-wider text-amber-300">Mode Edit Aktif</p>
+         <p id="editModeText" class="text-[10px] text-slate-300 mt-1">Anda sedang mengubah data tanggal tertentu.</p>
+        </div>
+        <button type="button" onclick="batalkanModeEdit()" class="px-3 py-2 rounded-lg bg-slate-900/70 border border-white/10 text-[10px] font-bold text-slate-200 uppercase tracking-wider">Batal</button>
+       </div>
+      </div>
+      <button id="btnSimpanAbsensi" onclick="simpanAbsensiManual()" class="w-full bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 py-4 rounded-2xl font-bold text-xs text-white uppercase tracking-wider transition active:scale-[0.98] flex items-center justify-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> <span id="btnSimpanAbsensiText">Simpan Absensi Manual</span></button>
      </div>
     </div>
     <div class="glass-card rounded-3xl p-5 space-y-4">
@@ -232,15 +242,25 @@
        <h2 class="text-lg font-bold tracking-tight">Database Log</h2>
        <p class="text-slate-400 text-[11px] mt-0.5">Filter berkas dan cetak dokumen resmi.</p>
       </div>
-      <button onclick="hapusData()" class="bg-red-950/40 text-red-400 border border-red-500/20 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition active:scale-95">Hapus Periode Terpilih</button>
+      <button onclick="hapusData()" class="bg-red-950/40 text-red-400 border border-red-500/20 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition active:scale-95">Hapus Periode</button>
      </div>
      <div class="space-y-3">
-      <div>
-       <input type="month" id="filterBulan" onchange="tampilkanData()" class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white outline-none">
+      <div class="grid grid-cols-1 gap-2">
+       <div>
+        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1"> Filter Bulan </label> <input type="month" id="filterBulan" onchange="tampilkanData()" class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white outline-none">
+       </div>
+       <div>
+        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1"> Cari Tanggal Spesifik </label>
+        <div class="grid grid-cols-[1fr_auto] gap-2">
+         <input type="date" id="cariTanggal" onchange="tampilkanData()" class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white outline-none">
+         <button onclick="resetCariTanggal()" class="px-3 rounded-xl bg-slate-900/80 border border-white/5 text-slate-300 text-[10px] font-bold uppercase tracking-wider">Reset</button>
+        </div>
+       </div>
       </div>
-      <div class="grid grid-cols-2 gap-2">
-       <button onclick="downloadPDF()" class="bg-indigo-600 hover:bg-indigo-500 py-3.5 rounded-xl font-bold text-[11px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="file-text" class="w-4 h-4"></i> REKAP TABEL</button>
-       <button onclick="downloadSlipGaji()" class="bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-bold text-[11px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="wallet" class="w-4 h-4"></i> SLIP GAJI</button>
+      <div class="grid grid-cols-3 gap-2">
+       <button onclick="downloadPDF()" class="bg-indigo-600 hover:bg-indigo-500 py-3.5 rounded-xl font-bold text-[10px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="file-text" class="w-4 h-4"></i> PDF</button>
+       <button onclick="downloadSlipGaji()" class="bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-bold text-[10px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="wallet" class="w-4 h-4"></i> SLIP</button>
+       <button onclick="downloadExcel()" class="bg-amber-600 hover:bg-amber-500 py-3.5 rounded-xl font-bold text-[10px] text-white flex items-center justify-center gap-1.5 transition active:scale-95 uppercase tracking-wider"><i data-lucide="table" class="w-4 h-4"></i> EXCEL</button>
       </div>
      </div>
      <div id="listData" class="space-y-2.5 pt-2"></div>
@@ -261,6 +281,17 @@
        </div>
       </div>
      </div>
+     <div class="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
+      <div class="flex items-start gap-3">
+       <div class="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl shrink-0">
+        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+       </div>
+       <div>
+        <p class="text-xs font-bold text-white">Sistem Update Aman</p>
+        <p id="statusUpdateApp" class="text-slate-400 text-[10px] mt-1 leading-relaxed">Mengecek versi aplikasi...</p>
+       </div>
+      </div>
+     </div>
      <p class="text-slate-400 text-[11px] leading-relaxed">Gunakan backup terenkripsi agar file cadangan tidak mudah dibaca orang lain. Simpan password backup dengan aman karena tidak bisa dipulihkan jika lupa.</p>
      <div class="space-y-2">
       <button onclick="backupData()" class="w-full bg-slate-950/40 hover:bg-slate-900/40 text-slate-200 p-4 rounded-2xl font-semibold flex items-center justify-between border border-white/5 transition duration-200 active:scale-[0.98]">
@@ -271,6 +302,18 @@
         <div class="text-left">
          <p class="text-xs font-bold text-white">Ekspor Backup Terenkripsi</p>
          <p class="text-slate-400 text-[10px] mt-0.5">Cadangan lokal dilindungi password</p>
+        </div>
+       </div>
+       <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600"></i>
+      </button>
+      <button onclick="downloadAutoBackupUpdateTerakhir()" class="w-full bg-slate-950/40 hover:bg-slate-900/40 text-slate-200 p-4 rounded-2xl font-semibold flex items-center justify-between border border-white/5 transition duration-200 active:scale-[0.98]">
+       <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl">
+         <i data-lucide="archive" class="w-5 h-5"></i>
+        </div>
+        <div class="text-left">
+         <p class="text-xs font-bold text-white">Download Auto-Backup Update</p>
+         <p class="text-slate-400 text-[10px] mt-0.5">Cadangan otomatis sebelum update terakhir</p>
         </div>
        </div>
        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600"></i>
@@ -291,10 +334,29 @@
      </div>
     </div>
     <div class="glass-card rounded-3xl p-5 space-y-3">
+     <button id="btnToggleNominal" onclick="toggleSembunyikanNominal()" class="w-full bg-slate-950/40 border border-white/5 hover:bg-slate-900/40 text-slate-200 py-4 rounded-2xl font-bold text-center text-xs tracking-wider uppercase transition active:scale-95 flex items-center justify-center gap-2"><i data-lucide="eye-off" class="w-4 h-4"></i> Sembunyikan Nominal Uang</button>
      <button onclick="hapusSemuaRiwayatLokal()" class="w-full bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 text-orange-300 py-4 rounded-2xl font-bold text-center text-xs tracking-wider uppercase transition active:scale-95 flex items-center justify-center gap-2"><i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Semua Riwayat Lokal</button>
      <button onclick="logout()" class="w-full bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 py-4 rounded-2xl font-bold text-center text-xs tracking-wider uppercase transition active:scale-95 flex items-center justify-center gap-2"><i data-lucide="lock" class="w-4 h-4"></i> Kunci Aplikasi / Keluar</button>
     </div>
    </main>
+   <!-- CUSTOM CONFIRM MODAL -->
+   <div id="customConfirmModal" class="hidden fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm p-5 flex items-center justify-center">
+    <div class="glass-card rounded-3xl p-5 w-full max-w-sm border border-white/10 animate-fadeIn">
+     <div class="flex items-start gap-3">
+      <div id="modalIconBox" class="p-3 bg-red-500/10 text-red-400 rounded-2xl shrink-0">
+       <i id="modalIcon" data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <div class="min-w-0">
+       <h3 id="modalTitle" class="text-base font-black text-white tracking-tight">Konfirmasi</h3>
+       <p id="modalMessage" class="text-slate-400 text-xs leading-relaxed mt-1">Apakah Anda yakin?</p>
+      </div>
+     </div>
+     <div class="grid grid-cols-2 gap-2 mt-5">
+      <button id="modalCancelBtn" class="py-3 rounded-2xl bg-slate-900/80 border border-white/5 text-slate-300 text-xs font-bold uppercase tracking-wider">Batal</button>
+      <button id="modalConfirmBtn" class="py-3 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider">Ya, Lanjut</button>
+     </div>
+    </div>
+   </div>
    <!-- BOTTOM NAV -->
    <nav class="fixed bottom-4 left-4 right-4 p-3 bg-slate-950/70 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl z-50 flex justify-around items-center">
     <button id="nav-beranda" onclick="switchScreen('beranda', this.id)" class="flex flex-col items-center gap-1 text-indigo-400 font-extrabold transition duration-300 scale-105"><i data-lucide="home" class="w-5 h-5"></i> <span class="text-[9px] uppercase tracking-wider">Beranda</span></button>
@@ -310,9 +372,355 @@
       }
     }
 
+    const KERJAKU_APP_VERSION = "5.5.0";
+    const KERJAKU_DATA_SCHEMA = 4;
+
+    function getSemuaUsernameTersimpan() {
+      const hasil = new Set();
+
+      const users = parseJSONSafe(localStorage.getItem("users"), []);
+      if (Array.isArray(users)) {
+        users.forEach(user => {
+          if (user && user.username) {
+            hasil.add(user.username);
+          }
+        });
+      }
+
+      const lastUsername = localStorage.getItem("lastUsername");
+      const activeUser = localStorage.getItem("activeUser");
+
+      if (lastUsername) hasil.add(lastUsername);
+      if (activeUser) hasil.add(activeUser);
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+
+        if (key && key.startsWith("lembur_")) {
+          hasil.add(key.replace("lembur_", ""));
+        }
+
+        if (key && key.startsWith("config_")) {
+          hasil.add(key.replace("config_", ""));
+        }
+      }
+
+      return Array.from(hasil).filter(Boolean);
+    }
+
+    function buatSnapshotDataLokal() {
+      const semuaUser = getSemuaUsernameTersimpan();
+      const snapshot = {
+        app: "KerjaKu Pro",
+        backupType: "AUTO_BACKUP_BEFORE_UPDATE",
+        createdAt: new Date().toISOString(),
+        appVersionBefore: localStorage.getItem("kerjaku_app_version") || "unknown",
+        appVersionAfter: KERJAKU_APP_VERSION,
+        dataSchemaBefore: Number(localStorage.getItem("kerjaku_data_schema")) || 1,
+        dataSchemaAfter: KERJAKU_DATA_SCHEMA,
+        users: parseJSONSafe(localStorage.getItem("users"), []),
+        lastUsername: localStorage.getItem("lastUsername") || "",
+        activeUser: localStorage.getItem("activeUser") || "",
+        dataPerUser: {},
+        rawKeys: {}
+      };
+
+      semuaUser.forEach(username => {
+        snapshot.dataPerUser[username] = {
+          logs: parseJSONSafe(localStorage.getItem("lembur_" + username), []),
+          config: parseJSONSafe(localStorage.getItem("config_" + username), null),
+          hideNominal: localStorage.getItem("hideNominal_" + username)
+        };
+      });
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+
+        if (
+          key &&
+          (
+            key.startsWith("lembur_") ||
+            key.startsWith("config_") ||
+            key.startsWith("hideNominal_") ||
+            key === "users" ||
+            key === "lastUsername"
+          )
+        ) {
+          snapshot.rawKeys[key] = localStorage.getItem(key);
+        }
+      }
+
+      return snapshot;
+    }
+
+    function simpanAutoBackupSebelumUpdate(alasan) {
+      try {
+        const snapshot = buatSnapshotDataLokal();
+        const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const key = `kerjaku_auto_backup_${stamp}`;
+
+        localStorage.setItem(key, JSON.stringify({
+          ...snapshot,
+          reason: alasan || "update"
+        }));
+
+        localStorage.setItem("kerjaku_last_auto_backup_key", key);
+        return key;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function normalisasiItemLog(item) {
+      if (!item || typeof item !== "object") return null;
+      if (!item.tanggal) return null;
+
+      const hasil = {
+        ...item,
+        metode: item.metode === "flat" ? "mitra" : (item.metode || "pemerintah"),
+        jenisHari: item.jenisHari || "kerja",
+        isManual: item.isManual !== false,
+        schemaVersion: KERJAKU_DATA_SCHEMA
+      };
+
+      if (!hasil.totalDurasi && hasil.jamMasuk && hasil.jamPulang) {
+        const kotor = hitungMenitKotor(hasil.jamMasuk, hasil.jamPulang);
+        const bersih = hitungMenitBersih(kotor, hasil.jenisHari);
+
+        hasil.totalDurasiKotor = menitKeJam(kotor);
+        hasil.totalDurasi = menitKeJam(bersih);
+      }
+
+      if (hasil.jam === undefined || hasil.jam === null || hasil.jam === "") {
+        if (hasil.jamMasuk && hasil.jamPulang) {
+          const kotor = hitungMenitKotor(hasil.jamMasuk, hasil.jamPulang);
+          const bersih = hitungMenitBersih(kotor, hasil.jenisHari);
+
+          hasil.jam = hitungJamLemburDibayar(
+            hasil.jamMasuk,
+            hasil.jamPulang,
+            hasil.jenisHari,
+            hasil.metode,
+            bersih
+          );
+
+          hasil.jamLemburAsli = hasil.jam;
+        } else {
+          hasil.jam = 0;
+        }
+      }
+
+      hasil.total = Number(hasil.total) || 0;
+      hasil.gajiPokok = Number(hasil.gajiPokok) || Number(hasil.gaji) || 0;
+      hasil.uangHarian = Number(hasil.uangHarian) || 0;
+      hasil.uangLembur = Number(hasil.uangLembur) || 0;
+      hasil.tarifLemburMitra = Number(hasil.tarifLemburMitra) || 0;
+
+      return hasil;
+    }
+
+    function migrasiDataUser(username) {
+      if (!username) return false;
+
+      const key = "lembur_" + username;
+      const daftarAsli = parseJSONSafe(localStorage.getItem(key), []);
+
+      if (!Array.isArray(daftarAsli)) {
+        return false;
+      }
+
+      const mapByTanggal = new Map();
+      let berubah = false;
+
+      daftarAsli.forEach(item => {
+        const normal = normalisasiItemLog(item);
+
+        if (!normal) {
+          berubah = true;
+          return;
+        }
+
+        if (mapByTanggal.has(normal.tanggal)) {
+          berubah = true;
+        }
+
+        if (JSON.stringify(normal) !== JSON.stringify(item)) {
+          berubah = true;
+        }
+
+        mapByTanggal.set(normal.tanggal, normal);
+      });
+
+      const hasil = Array.from(mapByTanggal.values()).sort((a, b) => {
+        return String(a.tanggal).localeCompare(String(b.tanggal));
+      });
+
+      if (berubah) {
+        localStorage.setItem(key, JSON.stringify(hasil));
+      }
+
+      const configKey = "config_" + username;
+      const config = parseJSONSafe(localStorage.getItem(configKey), null);
+
+      if (config && typeof config === "object") {
+        const configNormal = {
+          metode: config.metode || "pemerintah",
+          jenisHari: config.jenisHari || "kerja",
+          gaji: config.gaji || "",
+          uangHarianBiasa: config.uangHarianBiasa || "",
+          uangHarianLibur: config.uangHarianLibur || "",
+          tarifLemburMitra: config.tarifLemburMitra || "",
+          schemaVersion: KERJAKU_DATA_SCHEMA
+        };
+
+        if (JSON.stringify(configNormal) !== JSON.stringify(config)) {
+          localStorage.setItem(configKey, JSON.stringify(configNormal));
+          berubah = true;
+        }
+      }
+
+      return berubah;
+    }
+
+    function jalankanSistemUpdateAman() {
+      const versiSebelumnya = localStorage.getItem("kerjaku_app_version");
+      const schemaSebelumnya = Number(localStorage.getItem("kerjaku_data_schema")) || 1;
+
+      const perluUpdate = versiSebelumnya !== KERJAKU_APP_VERSION || schemaSebelumnya < KERJAKU_DATA_SCHEMA;
+
+      if (perluUpdate) {
+        simpanAutoBackupSebelumUpdate("version_or_schema_change");
+
+        const semuaUser = getSemuaUsernameTersimpan();
+        semuaUser.forEach(username => migrasiDataUser(username));
+
+        localStorage.setItem("kerjaku_app_version", KERJAKU_APP_VERSION);
+        localStorage.setItem("kerjaku_data_schema", String(KERJAKU_DATA_SCHEMA));
+        localStorage.setItem("kerjaku_last_update_at", new Date().toISOString());
+
+        if (versiSebelumnya) {
+          localStorage.setItem(
+            "kerjaku_update_message",
+            `Aplikasi diperbarui dari versi ${versiSebelumnya} ke ${KERJAKU_APP_VERSION}. Data lokal tetap dipertahankan.`
+          );
+        } else {
+          localStorage.setItem(
+            "kerjaku_update_message",
+            `Aplikasi versi ${KERJAKU_APP_VERSION} siap digunakan. Data lokal akan dipertahankan saat update berikutnya.`
+          );
+        }
+      }
+
+      updateInfoAplikasi();
+    }
+
+    function updateInfoAplikasi() {
+      const status = document.getElementById("statusUpdateApp");
+      if (!status) return;
+
+      const lastUpdate = localStorage.getItem("kerjaku_last_update_at");
+      const backupKey = localStorage.getItem("kerjaku_last_auto_backup_key");
+      const message = localStorage.getItem("kerjaku_update_message");
+
+      let text = `Versi aplikasi: ${KERJAKU_APP_VERSION}. Schema data: ${KERJAKU_DATA_SCHEMA}.`;
+
+      if (lastUpdate) {
+        text += ` Update terakhir: ${new Date(lastUpdate).toLocaleString("id-ID")}.`;
+      }
+
+      if (backupKey) {
+        text += " Auto-backup lokal sebelum update sudah dibuat.";
+      }
+
+      if (message) {
+        text += " " + message;
+      }
+
+      status.innerText = text;
+    }
+
     function rupiah(angka) {
       const nilai = Number(angka) || 0;
       return "Rp " + Math.round(nilai).toLocaleString("id-ID");
+    }
+
+    function nominalDisembunyikan() {
+      const user = localStorage.getItem("activeUser") || localStorage.getItem("lastUsername");
+      if (!user) return false;
+      return localStorage.getItem(`hideNominal_${user}`) === "1";
+    }
+
+    function rupiahTampil(angka) {
+      if (nominalDisembunyikan()) {
+        return "Rp ••••••";
+      }
+
+      return rupiah(angka);
+    }
+
+    function updateTombolNominal() {
+      const btn = document.getElementById("btnToggleNominal");
+      if (!btn) return;
+
+      if (nominalDisembunyikan()) {
+        btn.innerHTML = `<i data-lucide="eye" class="w-4 h-4"></i> Tampilkan Nominal Uang`;
+      } else {
+        btn.innerHTML = `<i data-lucide="eye-off" class="w-4 h-4"></i> Sembunyikan Nominal Uang`;
+      }
+
+      safeCreateIcons();
+    }
+
+    function toggleSembunyikanNominal() {
+      const user = localStorage.getItem("activeUser");
+      if (!user) return;
+
+      const next = nominalDisembunyikan() ? "0" : "1";
+      localStorage.setItem(`hideNominal_${user}`, next);
+
+      updateTombolNominal();
+      tampilkanData();
+    }
+
+    function showConfirmModal(title, message, confirmText = "Ya, Lanjut", type = "danger") {
+      return new Promise(resolve => {
+        const modal = document.getElementById("customConfirmModal");
+        const titleEl = document.getElementById("modalTitle");
+        const messageEl = document.getElementById("modalMessage");
+        const confirmBtn = document.getElementById("modalConfirmBtn");
+        const cancelBtn = document.getElementById("modalCancelBtn");
+        const iconBox = document.getElementById("modalIconBox");
+
+        if (!modal || !titleEl || !messageEl || !confirmBtn || !cancelBtn || !iconBox) {
+          resolve(confirm(message));
+          return;
+        }
+
+        titleEl.innerText = title;
+        messageEl.innerText = message;
+        confirmBtn.innerText = confirmText;
+
+        if (type === "warning") {
+          iconBox.className = "p-3 bg-amber-500/10 text-amber-400 rounded-2xl shrink-0";
+          confirmBtn.className = "py-3 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold uppercase tracking-wider";
+        } else {
+          iconBox.className = "p-3 bg-red-500/10 text-red-400 rounded-2xl shrink-0";
+          confirmBtn.className = "py-3 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider";
+        }
+
+        const cleanup = result => {
+          modal.classList.add("hidden");
+          confirmBtn.onclick = null;
+          cancelBtn.onclick = null;
+          resolve(result);
+        };
+
+        confirmBtn.onclick = () => cleanup(true);
+        cancelBtn.onclick = () => cleanup(false);
+
+        modal.classList.remove("hidden");
+        safeCreateIcons();
+      });
     }
 
     function formatTanggal(date) {
@@ -690,9 +1098,13 @@
         document.getElementById("tarifLemburMitra").value = savedConfig.tarifLemburMitra || "";
       }
 
+      editTanggalAktif = null;
       cekMetode();
       perbaikiDataLamaOtomatis();
       tampilkanData();
+      updateTampilanModeEdit();
+      updateTombolNominal();
+      updateInfoAplikasi();
       safeCreateIcons();
     }
 
@@ -714,6 +1126,8 @@
       }
 
       document.getElementById("pin").value = "";
+      editTanggalAktif = null;
+      updateTampilanModeEdit();
       safeCreateIcons();
     }
 
@@ -924,6 +1338,117 @@
       }
     }
 
+    let editTanggalAktif = null;
+
+    function resetFormAbsensi() {
+      const tanggalManual = document.getElementById("tanggalManual");
+      const jamMasukManual = document.getElementById("jamMasukManual");
+      const jamPulangManual = document.getElementById("jamPulangManual");
+
+      if (tanggalManual) tanggalManual.value = formatTanggal(new Date());
+      if (jamMasukManual) jamMasukManual.value = "08:00";
+      if (jamPulangManual) jamPulangManual.value = "17:00";
+    }
+
+    function updateTampilanModeEdit() {
+      const box = document.getElementById("editModeBox");
+      const text = document.getElementById("editModeText");
+      const btnText = document.getElementById("btnSimpanAbsensiText");
+
+      if (!box || !text || !btnText) return;
+
+      if (editTanggalAktif) {
+        box.classList.remove("hidden");
+        text.innerText = `Anda sedang mengubah data untuk tanggal ${editTanggalAktif}.`;
+        btnText.innerText = "Update Absensi Manual";
+      } else {
+        box.classList.add("hidden");
+        btnText.innerText = "Simpan Absensi Manual";
+      }
+
+      safeCreateIcons();
+    }
+
+    function batalkanModeEdit() {
+      editTanggalAktif = null;
+      updateTampilanModeEdit();
+      resetFormAbsensi();
+      switchScreen("absen", "nav-absen");
+    }
+
+    function editDataTanggal(tanggal) {
+      const user = localStorage.getItem("activeUser");
+      if (!user) return;
+
+      let daftar = parseJSONSafe(localStorage.getItem("lembur_" + user), []);
+      if (!Array.isArray(daftar)) daftar = [];
+
+      const item = daftar.find(row => row && row.tanggal === tanggal);
+
+      if (!item) {
+        alert("Data tanggal tersebut tidak ditemukan.");
+        return;
+      }
+
+      document.getElementById("tanggalManual").value = item.tanggal || "";
+      document.getElementById("jamMasukManual").value = item.jamMasuk || "08:00";
+      document.getElementById("jamPulangManual").value = item.jamPulang || "17:00";
+      document.getElementById("jenisHari").value = item.jenisHari || "kerja";
+      document.getElementById("metodeHitung").value = item.metode || "pemerintah";
+
+      if ((item.metode || "pemerintah") === "mitra") {
+        document.getElementById("uangHarianBiasa").value = item.jenisHari === "libur" ? (document.getElementById("uangHarianBiasa").value || "") : (item.uangHarian || "");
+        document.getElementById("uangHarianLibur").value = item.jenisHari === "libur" ? (item.uangHarian || "") : (document.getElementById("uangHarianLibur").value || "");
+        document.getElementById("tarifLemburMitra").value = item.tarifLemburMitra || "";
+      } else {
+        document.getElementById("gaji").value = item.gajiPokok || "";
+      }
+
+      simpanKonfigurasi();
+      cekMetode();
+
+      editTanggalAktif = tanggal;
+      updateTampilanModeEdit();
+      switchScreen("absen", "nav-absen");
+    }
+
+    async function hapusDataTanggal(tanggal) {
+      const user = localStorage.getItem("activeUser");
+      if (!user) return;
+
+      const key = "lembur_" + user;
+      let daftar = parseJSONSafe(localStorage.getItem(key), []);
+      if (!Array.isArray(daftar)) daftar = [];
+
+      const item = daftar.find(row => row && row.tanggal === tanggal);
+
+      if (!item) {
+        alert("Data tidak ditemukan.");
+        return;
+      }
+
+      const yakin = await showConfirmModal(
+        "Hapus Data Tanggal",
+        `Data tanggal ${tanggal} akan dihapus dari riwayat lokal. Lanjutkan?`,
+        "Hapus",
+        "danger"
+      );
+
+      if (!yakin) {
+        return;
+      }
+
+      daftar = daftar.filter(row => !(row && row.tanggal === tanggal));
+      localStorage.setItem(key, JSON.stringify(daftar));
+
+      if (editTanggalAktif === tanggal) {
+        batalkanModeEdit();
+      }
+
+      tampilkanData();
+      alert(`Data tanggal ${tanggal} berhasil dihapus.`);
+    }
+
     function simpanAbsensiManual() {
       if (!validasiNominalUntukMetode()) return;
 
@@ -950,16 +1475,34 @@
       let daftar = parseJSONSafe(localStorage.getItem(logKey), []);
       if (!Array.isArray(daftar)) daftar = [];
 
-      if (daftar.find(item => item && item.tanggal === tanggal)) {
-        alert(`Tanggal ${tanggal} sudah terisi. Jika ingin mengganti, hapus data terlebih dahulu.`);
-        return;
-      }
-
       const totalMenitKotor = hitungMenitKotor(jamMasuk, jamPulang);
 
       if (totalMenitKotor <= 0) {
         alert("Jam masuk dan jam pulang tidak valid.");
         return;
+      }
+
+      const indexTanggalSama = daftar.findIndex(item => item && item.tanggal === tanggal);
+      const sedangEdit = !!editTanggalAktif;
+      const indexEditAktif = daftar.findIndex(item => item && item.tanggal === editTanggalAktif);
+
+      if (!sedangEdit && indexTanggalSama !== -1) {
+        alert(`Tanggal ${tanggal} sudah terisi. Jika ingin mengganti, gunakan tombol edit pada riwayat.`);
+        return;
+      }
+
+      if (sedangEdit) {
+        if (indexEditAktif === -1) {
+          editTanggalAktif = null;
+          updateTampilanModeEdit();
+          alert("Data yang sedang diedit tidak ditemukan. Silakan ulangi.");
+          return;
+        }
+
+        if (tanggal !== editTanggalAktif && indexTanggalSama !== -1) {
+          alert(`Tanggal ${tanggal} sudah terisi. Gunakan tanggal lain atau hapus data yang ada terlebih dahulu.`);
+          return;
+        }
       }
 
       const log = buatLogAbsensi({
@@ -969,19 +1512,50 @@
         totalMenitKotor
       });
 
-      daftar.push(log);
+      if (sedangEdit) {
+        daftar[indexEditAktif] = {
+          ...daftar[indexEditAktif],
+          ...log,
+          diupdatePada: new Date().toISOString()
+        };
+      } else {
+        daftar.push(log);
+      }
+
+      daftar.sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
       localStorage.setItem(logKey, JSON.stringify(daftar));
 
       tampilkanData();
       switchScreen("riwayat", "nav-riwayat");
 
-      alert(
-        `Absensi manual berhasil disimpan.\n` +
-        `Kerja bersih: ${log.totalDurasi} Jam.\n` +
-        `Lembur asli: ${log.jamLemburAsli} Jam.\n` +
-        `Lembur dibayar: ${log.jam} Jam.\n` +
-        `Total: ${rupiah(log.total)}.`
-      );
+      if (sedangEdit) {
+        const tanggalSebelum = editTanggalAktif;
+        editTanggalAktif = null;
+        updateTampilanModeEdit();
+
+        alert(
+          `Data berhasil diperbarui.\n` +
+          `Tanggal lama: ${tanggalSebelum}\n` +
+          `Tanggal baru: ${log.tanggal}\n` +
+          `Kerja bersih: ${log.totalDurasi} Jam.\n` +
+          `Lembur dibayar: ${log.jam} Jam.\n` +
+          `Total: ${rupiah(log.total)}.`
+        );
+      } else {
+        alert(
+          `Absensi manual berhasil disimpan.\n` +
+          `Kerja bersih: ${log.totalDurasi} Jam.\n` +
+          `Lembur asli: ${log.jamLemburAsli} Jam.\n` +
+          `Lembur dibayar: ${log.jam} Jam.\n` +
+          `Total: ${rupiah(log.total)}.`
+        );
+      }
+    }
+
+    function resetCariTanggal() {
+      const cariTanggal = document.getElementById("cariTanggal");
+      if (cariTanggal) cariTanggal.value = "";
+      tampilkanData();
     }
 
     function tampilkanData() {
@@ -992,6 +1566,7 @@
       if (!Array.isArray(daftar)) daftar = [];
 
       const filterBulan = document.getElementById("filterBulan").value;
+      const cariTanggal = document.getElementById("cariTanggal") ? document.getElementById("cariTanggal").value : "";
       const list = document.getElementById("listData");
 
       if (!list) return;
@@ -1002,7 +1577,13 @@
       let totalJamLembur = 0;
 
       let filtered = daftar.filter(item => {
-        return item && item.tanggal && (!filterBulan || item.tanggal.startsWith(filterBulan));
+        if (!item || !item.tanggal) return false;
+
+        if (cariTanggal) {
+          return item.tanggal === cariTanggal;
+        }
+
+        return !filterBulan || item.tanggal.startsWith(filterBulan);
       });
 
       filtered.sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
@@ -1029,9 +1610,9 @@
 
         let detailUang = "";
         if (item.metode === "mitra") {
-          detailUang = `Harian: ${rupiah(item.uangHarian || 0)} • Lembur: ${rupiah(item.uangLembur || 0)}`;
+          detailUang = `Harian: ${rupiahTampil(item.uangHarian || 0)} • Lembur: ${rupiahTampil(item.uangLembur || 0)}`;
         } else {
-          detailUang = `Upah lembur: ${rupiah(item.uangLembur || item.total || 0)}`;
+          detailUang = `Upah lembur: ${rupiahTampil(item.uangLembur || item.total || 0)}`;
         }
 
         const div = document.createElement("div");
@@ -1057,8 +1638,22 @@
             </p>
           </div>
 
-          <div class="text-right shrink-0 ml-3">
-            <h3 class="font-extrabold text-sm text-indigo-400">${rupiah(item.total)}</h3>
+          <div class="text-right shrink-0 ml-3 space-y-2">
+            <h3 class="font-extrabold text-sm text-indigo-400">${rupiahTampil(item.total)}</h3>
+
+            <div class="flex flex-col gap-1.5">
+              <button
+                onclick="editDataTanggal('${item.tanggal}')"
+                class="px-3 py-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-bold uppercase tracking-wider">
+                Edit
+              </button>
+
+              <button
+                onclick="hapusDataTanggal('${item.tanggal}')"
+                class="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 text-[10px] font-bold uppercase tracking-wider">
+                Hapus
+              </button>
+            </div>
           </div>
         `;
 
@@ -1069,12 +1664,12 @@
       const totalJamEl = document.getElementById("totalJam");
       const jumlahDataEl = document.getElementById("jumlahData");
 
-      if (totalUpahEl) totalUpahEl.innerText = rupiah(grandTotal);
+      if (totalUpahEl) totalUpahEl.innerText = rupiahTampil(grandTotal);
       if (totalJamEl) totalJamEl.innerText = totalJamLembur.toFixed(1) + " Jam";
       if (jumlahDataEl) jumlahDataEl.innerText = filtered.length + " Hari";
     }
 
-    function hapusData() {
+    async function hapusData() {
       const user = localStorage.getItem("activeUser");
       if (!user) return;
 
@@ -1101,7 +1696,14 @@
         return;
       }
 
-      if (confirm(`Hapus log hanya untuk periode ${filterBulan}?\n\nData bulan lain tidak akan terhapus.`)) {
+      const yakin = await showConfirmModal(
+        "Hapus Periode Terpilih",
+        `Hapus semua log hanya untuk periode ${filterBulan}? Data bulan lain tidak akan terhapus.`,
+        "Hapus Periode",
+        "danger"
+      );
+
+      if (yakin) {
         const dataTersisa = daftar.filter(item => !item || !item.tanggal || !item.tanggal.startsWith(filterBulan));
 
         localStorage.setItem(key, JSON.stringify(dataTersisa));
@@ -1215,6 +1817,34 @@
       );
 
       return JSON.parse(bytesToText(decrypted));
+    }
+
+    function downloadAutoBackupUpdateTerakhir() {
+      const key = localStorage.getItem("kerjaku_last_auto_backup_key");
+
+      if (!key) {
+        alert("Belum ada auto-backup update yang tersedia.");
+        return;
+      }
+
+      const data = localStorage.getItem(key);
+
+      if (!data) {
+        alert("Auto-backup update tidak ditemukan.");
+        return;
+      }
+
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+
+      a.href = url;
+      a.download = `${key}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
     }
 
     async function backupData() {
@@ -1579,6 +2209,97 @@
       doc.save(`Slip_Gaji_Upah_${user}_${filterBulan}.pdf`);
     }
 
+    function ambilDataUntukCetak() {
+      const user = localStorage.getItem("activeUser");
+      const filterBulan = document.getElementById("filterBulan").value;
+      const cariTanggal = document.getElementById("cariTanggal") ? document.getElementById("cariTanggal").value : "";
+
+      let daftar = parseJSONSafe(localStorage.getItem("lembur_" + user), []);
+      if (!Array.isArray(daftar)) daftar = [];
+
+      const data = daftar.filter(item => {
+        if (!item || !item.tanggal) return false;
+
+        if (cariTanggal) {
+          return item.tanggal === cariTanggal;
+        }
+
+        return !filterBulan || item.tanggal.startsWith(filterBulan);
+      }).sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
+
+      return {
+        user,
+        filterBulan,
+        cariTanggal,
+        data
+      };
+    }
+
+    function downloadExcel() {
+      if (!window.XLSX) {
+        alert("Library Excel belum siap. Periksa koneksi internet atau CDN XLSX.");
+        return;
+      }
+
+      const hasil = ambilDataUntukCetak();
+      const user = hasil.user;
+      const filterBulan = hasil.filterBulan;
+      const cariTanggal = hasil.cariTanggal;
+      const dataCetak = hasil.data;
+
+      if (dataCetak.length === 0) {
+        alert("Tidak ada data untuk diekspor.");
+        return;
+      }
+
+      let grandTotal = 0;
+      let totalJamLembur = 0;
+
+      const rows = dataCetak.map((item, index) => {
+        const total = Number(item.total) || 0;
+        const jam = Number(item.jam) || 0;
+
+        grandTotal += total;
+        totalJamLembur += jam;
+
+        return {
+          No: index + 1,
+          Tanggal: item.tanggal,
+          "Jam Masuk": item.jamMasuk || "",
+          "Jam Pulang": item.jamPulang || "",
+          Sistem: item.metode === "mitra" ? "Mitra" : "PKWT",
+          "Kategori Hari": item.jenisHari === "kerja" ? "Hari Biasa" : "Hari Libur",
+          "Kerja Bersih": Number(item.totalDurasi) || 0,
+          "Lembur Dibayar": jam,
+          "Gaji Pokok": Number(item.gajiPokok) || 0,
+          "Uang Harian": Number(item.uangHarian) || 0,
+          "Uang Lembur": Number(item.uangLembur) || 0,
+          "Tarif Lembur Mitra": Number(item.tarifLemburMitra) || 0,
+          Total: total
+        };
+      });
+
+      rows.push({});
+      rows.push({
+        No: "",
+        Tanggal: "TOTAL JAM LEMBUR",
+        Total: totalJamLembur
+      });
+      rows.push({
+        No: "",
+        Tanggal: "TOTAL REKAP",
+        Total: grandTotal
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap");
+
+      const periodeFile = cariTanggal || filterBulan || "Semua";
+      XLSX.writeFile(workbook, `Laporan_KerjaKu_${user}_${periodeFile}.xlsx`);
+    }
+
     async function downloadPDF() {
       if (!window.jspdf || !window.jspdf.jsPDF) {
         alert("Library PDF belum siap. Periksa koneksi internet atau CDN jsPDF.");
@@ -1590,15 +2311,10 @@
 
       const user = localStorage.getItem("activeUser");
       const filterBulan = document.getElementById("filterBulan").value;
+      const cariTanggal = document.getElementById("cariTanggal") ? document.getElementById("cariTanggal").value : "";
 
-      let daftar = parseJSONSafe(localStorage.getItem("lembur_" + user), []);
-      if (!Array.isArray(daftar)) daftar = [];
-
-      let dataCetak = daftar.filter(item => {
-        return item && item.tanggal && (!filterBulan || item.tanggal.startsWith(filterBulan));
-      });
-
-      dataCetak.sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
+      const hasilCetak = ambilDataUntukCetak();
+      let dataCetak = hasilCetak.data;
 
       if (dataCetak.length === 0) {
         alert("Tidak ada data untuk dicetak.");
@@ -1635,7 +2351,7 @@
 
       doc.setFont("helvetica", "normal");
       doc.setTextColor(15, 23, 42);
-      doc.text(filterBulan || "Semua Data", 58, y + 7);
+      doc.text(cariTanggal || filterBulan || "Semua Data", 58, y + 7);
 
       let grandTotal = 0;
       let totalJamLembur = 0;
@@ -1712,7 +2428,7 @@
       doc.setTextColor(99, 102, 241);
       doc.text(rupiah(grandTotal), 115, finalY + 31);
 
-      doc.save(`Laporan_KerjaKu_${user}_${filterBulan || "Semua"}.pdf`);
+      doc.save(`Laporan_KerjaKu_${user}_${cariTanggal || filterBulan || "Semua"}.pdf`);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -1741,9 +2457,12 @@
         });
       });
 
+      jalankanSistemUpdateAman();
       initPrivacyLock();
+      updateTombolNominal();
+      updateInfoAplikasi();
       safeCreateIcons();
     });
   </script>
  </body>
-</html>
+        </html>
